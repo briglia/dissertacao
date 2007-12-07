@@ -1,0 +1,258 @@
+\documentclass[12pt,brazil,a4paper]{article}
+%\usepackage{sbc2003}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{boxedminipage}
+%\usepackage{epsf}
+\usepackage[latin1]{inputenc}
+\usepackage{babel}
+\usepackage{graphicx}
+\usepackage{setspace}
+
+\begin{document} 
+
+\thispagestyle{empty}
+
+\begin{center}
+\begin{Large}
+Anderson Farias Briglia \\
+Orientador: Dr. Edward David Moreno\\
+Co-orientador: Raimundo Barreto\\
+\end{Large}
+\end{center}
+
+\vspace {3.8 cm}
+
+\begin{center}
+\begin{huge}
+Memória Cache Comprimido Adaptativo para o kernel 2.6 do Linux utilizando Mapas Auto-organizáveis
+\end{huge}
+\end{center}
+
+\vspace {3.8 cm}
+
+\begin{flushright}
+\begin{minipage}[t]{9 cm}
+Proposta de Dissertação apresentada ao Departamento de Ciência da Computação do Instituto de Ciências Exatas da Universidade Federal do Amazonas, como requisito parcial para obtenção do título de Mestre em Informática.
+\end{minipage}
+\end{flushright}
+
+%\vspace {3.8 cm}
+\vspace {4 cm}
+
+\begin{center}
+%\begin{Large}
+Manaus \\
+Novembro de 2007\\
+%\end{Large}
+\end{center}
+
+\newpage
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\newpage
+
+\onehalfspacing
+
+\section {Introdução}
+\label{sec:introducao}
+
+Segundo \cite{castro03}, uma das possíveis soluções para o problema de escassez de memória nos sistemas embarcados é a utilização de algoritmos de compressão. A compressão tem se mostrado uma técnica eficiente para otimizar o uso da memória em sistemas embarcados. Ela também tem sido utilizada como um meio de melhorar o uso da memória cache, reduzindo assim o consumo de potência e melhorando a performance, visto que a memória cache é, geralmente, mais rápida do que a memória principal de um computador ou dispositivo móvel. E sendo uma memória de acesso rápido, o processador gasta menos tempo para acessá-la, beneficiando também o consumo de potência total do sistema.
+
+\textit{Cache} Comprimido (CC) é uma técnica que adiciona um novo nível na hierarquia de memória do Linux \cite{castro03}. O CC é usado para aprimorar o tempo de acesso às páginas de memória no \textit{kernel} (ou núcleo) do Linux, armazenando mais páginas na memória RAM e reduzindo o número de páginas que vão para a área de \textit{swap} ou que seriam descartadas caso o sistema não possuísse \textit{swap}. A área de \textit{swap}, em geral, é muito mais lenta que a memória principal, e custosa com relação ao consumo de energia pois na maioria dos casos está associada a dispositivos de bloco, como por exemplo, um disco rígido. E ainda temos o problema de que em sistemas embarcados geralmente essa área não está presente ou n\~{a}o possui o tamanho ideal.
+
+Como forma de estimar o comportamento da memória, alinhando assim o tamanho do Cache Comprimido a ser utilizado, será utilizado Mapas Auto-Organizáveis com base no trabalho do Msc. Maurício Lin \cite{lin06}. Os Mapas Auto-Organizáveis (do inglês SOM - \textit{Self-Organized Maps}, como demonstrado em \cite{lin06}, podem ser utilizados afim de classificar determinados padrões de consumo de memória, das aplicações existentes no \textit{file system}. A essa técnica de redimensionamento do Cache Comprimido utilizando SOM, chamaremos de Cache Comprimido Adaptativo.
+
+\section {Motivação}
+\label{sec:motivacao}
+
+A memória é uma das áreas que possuem maiores restrições de recursos em sistemas embarcados. Por outro lado, os sistemas têm sido aperfeiçoados através de técnicas sofisticadas, algoritmos complexos e suporte a \textit{real time}. Como resultado, as aplicações para sistemas embarcados têm se tornado maiores e com um volume de dados manipulados sempre crescente.
+
+Dado esse cenário, é muito importante definir mecanismos que aperfeiçoem o consumo de memória e/ou a performance das aplicações quando estas fazem uso da memória do dispositivo.
+
+Em \cite{castro03}, foi implementada uma versão do Cache Comprimido Adaptativo para a versão 2.4.x do \textit{kernel} do Linux. Os mecanismos de falta de memória encontrados na versão 2.4.x são diferentes do que temos hoje, nas versões mais atuais (2.6.x). Um ponto motivacional deste trabalho é a realização de uma implementação do Cache Comprimido Adaptativo para as versões mais atuais do Linux \textit{kernel}, disponibilizando assim seu uso em dispositivos móveis mais atuais, baseados em Linux. A implementação do Cache Comprimido atual está em implementação \cite{ccache06}, e a idéia é contribuir nesse projeto \textit{Open Source}.
+
+Na versão anterior do Cache Comprimido Adaptativo, não foi utilizada nenhuma técnica para estimar o comportamento do tamanho da memória comprimida. A escolha de uma heurística inadequada pode impactar no desempenho de todo o sistema, pois a relação memória comprimida X memória descomprimida é muito importante quando se trata de adaptatividade. Estudos realizados anteriormente em \cite{castro03}, mostram que uma escolha errada no tamanho da memória comprimida pode criar \textit{overheads} desnecessários ao sistema, acarretando em perda de performance. Assim, a implementação de um esquema de adaptatividade utilizando SOM se torna um outro ponto de motivação do trabalho.
+
+\section{Objetivos}
+\label{sec:objetivos}
+
+O propósito principal deste trabalho é desenvolver um sistema de memória comprimida, utilizando como base a implementação \textit{Open Source} encontrada em \cite{ccache06}. A implementação não deverá ter dependências de arquitetura, apesar de ser focada em Linux embarcado para arquitetura ARM. Este trabalho também visa implementar uma heurística de adaptatividade do tamanho da memória comprimida alocada, utilizando SOM como forma de classificação dos diferentes casos de uso da memória principal.
+
+A área para memória comprimida será adicionada ao sistema existente como mostrado na figura \ref{fig:cc_intro}. 
+
+\begin{figure}[t]%htbp
+\centering
+\includegraphics[scale=0.85]{cc-intro}
+\caption{Hierarquia de memória com cache comprimido}
+\label{fig:cc_intro}
+\end{figure}
+
+A versão do \textit{kernel} utilizada será 2.6.x, e como trabalho final será gerado um \textit{patch} ou uma série de \textit{patches} que aplicados à última versão disponível deverá implementar o Cache Comprimido Adaptativo.
+
+Como objetivo, temos os testes realizados com Cache Comprimido para a versão 2.6.x. Esses testes são necessários para que seja feita uma avaliação dos ganhos quando o Cache Comprimido está adicionado ao sistema.
+
+\section{Estado Atual da Pesquisa}
+\label{sec:pesquisa}
+
+Esta seção tem o propósito de apresentar os estudos e as pesquisas realizadas até o momento, que são requisitos relevantes para o desenvolvimento da proposta descrita na Seção \ref{sec:objetivos}.
+
+Inicialmente será apresentado o estado atual de implementação do Cache Comprimido para a versão 2.6.x do \textit{kernel} do Linux. Em seguida serão apresentados alguns testes realizados com essa versão e apresentados em \cite{briglia07}. Por fim, será demonstrado o esquema de classificação de padrões de consumo de memória apresentado em \cite{lin06} e como essa metodologia poderá ajudar na implementação da adaptatividade no Cache Comprimido atual.
+
+\subsection{Cache Comprimido para Linux \textit{kernel} 2.6.x}
+
+Dados experimentais\cite{briglia07} avaliados em um sistema utilizando Cache Comprimido, nos mostram que nós podemos não só melhorar as taxas de E/S (Entrada e Saída), como também todo o comportamento do sistema, especialmente em situações de memória crítica, como por exemplo, adiando a chamada do \textit{out-of-memory killer} -- OOM.
+
+A implementação atual do Cache Comprimido tira vantagem do sistema de \textit{swap}, adicionando uma área de \textit{swap} virtual como área de estocagem das páginas de memória comprimida. Usando um algoritmo de compressão baseado em dicionários, páginas do \textit{page cache}, ou seja, do \textit{filesystem} e páginas anônimas são comprimidas e distribuídas em porções de memória de tamanho variável - \textit{\textbf{chunks}}\cite{irina05}. Com essa abordagem, tem-se o mínimo de framentação e uma rápida recuperação das páginas, quando estas são requisitadas pelo sistema. O tamanho do Cache Comprimido pode ser ajustado separadamente para páginas do \textit{page cache} e páginas anônimas. Este ajuste é efetuado através de escritas em variáveis exportadas no \texttt{procfs}, dando maior flexibidade ao usuário em relação aos casos de uso da memória.
+
+\subsection{A memória virtual do Linux}
+
+Páginas físicas são a unidade básica do gerenciamento de memória \cite{love05kerneldevel} e o MMU é o hardware responsável por traduzir endereços virtuais em reais das páginas de memória, e vice-versa. \\
+
+No gerenciamento da memória virtual, duas listas do tipo (LRU - \textit{Last Recently Used}) são utilizadas afim de classificar as páginas: LRU para páginas ativas e uma LRU para páginas inativas. Quando o sistema precisa alocar novas páginas, elas são retiradas da lista LRU de páginas inativas. O algoritmo responsável por selecionar e liberar as páginas é chamado de Page Frame Reclaiming Algorithm - PFRA.\\
+
+Afim de identificar cada tipo de página, \textit{flags} são utilizadas na estrutura de dados que implementam as páginas. Para diferenciar as páginas comprimidas das páginas comuns, esta implementação do Cache Comprimido adiciona uma \textit{flag} na estrutura de dados da página.\\
+
+Quando o sistema está sob pressão de memória, ou seja, há pouca menos memória disponível que o necessário, o PFRA libera as páginas de acordo com a sua classificação:
+
+\begin{itemize}
+\item Páginas do \textit{Swap-cache} são escritas na área de \textit{swap} disponível.
+
+\item Páginas "sujas" do \textit{Page cache} são escritas no \textit{filesystem} utilizando o procedimento específico de escrita.
+
+\item Páginas "limpas" do \textit{Page Cache} são simplesmente liberadas.
+\end{itemize}
+
+\subsubsection{O Swap Cache}
+
+Este é o cache para páginas anônimas. Toda as páginas do \textit{swap cache} são parte de um único \textbf{swapper\_space}, a estrutura que agrupa todas as páginas que podem ir para a área de \textit{swap}. Uma outra estrutura de dados, chamada \textit{radix tree} é utilizada para manter todas as páginas do \textit{swap cache} e torna a busca por páginas muito mais eficiente. O campo \textbf{swp\_entry\_t} da estrutura de dados da área de \textit{swap} é utilizado como chave-de-busca quando uma página do \textit{swap cache} é procurada. Este identificador identifica onde a página se encontra no dispositivo de bloco utilizado pelo \textit{swap}..
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.7]{swp_entry}
+	\caption{Campos da estrutura \texttt{swp\_entry\_t}}
+	\label{fig:swp_entry_fields}
+\end{figure}
+
+Na figura \ref{fig:swp_entry_fields}, \textbf{`type'} identifica páginas que podem ser \textit{swapped}.
+
+\subsubsection{O Page Cache}
+Este é o cache utilizado para armazenar as páginas do \textit{filesystem}. Ou seja, todo arquivo aberto pelas aplicações, possuem páginas de memória alocadas e armazenadas no Page Cache. Assim como o Swap Cache, este cache também possui uma \textit{radix tree} que armazena as referências, ou melhor, os ponteiros para as páginas do cache. O valor de \textit{offset} dentro do arquivo é utilizado como chave-de-busca. Cada arquivo aberto possui uma \textit{radix tree} própria. Paga páginas presentes na memória, o nodo correspondente na \textit{radix tree} aponta para a página que contém uma parte do arquivo e um valor de \textit{offset} da mesma dentro do arquivo o qual pertence.
+ 
+\subsection{Overview do Cache Comprimido}
+
+\subsection{Design da Implementação}
+
+\subsubsection{Armazenamento das Páginas Comprimidas}
+
+\subsubsection{Operações de Inserção e Deleção das Páginas}
+
+\subsection{Métodos de Compressão}
+
+\subsection{Mapas Auto-organizáveis}
+
+\subsubsection{Classificação da memória utilizando SOM}
+
+%\newpage
+\section{Cronograma}
+\label{sec:cronograma}
+O trabalho aqui proposto será dividido em etapas distintas conforme detalhadas nos itens seguintes:
+\begin{enumerate}
+
+\item Levantamento Bibliográfico - Coleta, organização e análise da literatura técnica relacionada com os assuntos abordados no trabalho.
+
+\item Etapa01 - 
+\item Etapa02 - 
+\item Etapa03 - 
+\item Etapa04 - 
+\item Etapa05 - 
+\end{enumerate}
+
+\vspace{\baselineskip}
+
+\newlength{\constlen}
+\newlength{\pllen}
+\setlength{\constlen}{7mm}
+\newcommand{\mkp}[1]{\makebox[\constlen]{#1}}
+
+\newcommand{\putobj}[3]{
+\setlength{\unitlength}{1mm}
+\begin{picture}(0,0)
+\put(#1,#2){#3}
+\end{picture}}
+\newcommand{\pl}[1]{\setlength{\pllen}{#1\constlen}\putobj{0}{0}{\rule[0.3mm]{\pllen}{2mm}}}
+
+\setlength{\tabcolsep}{0pt} %largura entre separadores das colunas
+\renewcommand{\arraystretch}{1.25} %altura das colunas
+
+\begin{table}[ht]
+    \centering
+\begin{tabular}{|l|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|}
+\hline
+\makebox[5cm]{Tarefas} &
+\multicolumn{1}{c|}{Jan} &
+\multicolumn{1}{c|}{Fev} &
+\multicolumn{1}{c|}{Mar} &
+\multicolumn{1}{c|}{Abr} &
+\multicolumn{1}{c|}{Mai} &
+\multicolumn{1}{c|}{Jun} &
+\multicolumn{1}{c|}{Jul} &
+\multicolumn{1}{c|}{Ago} &
+\multicolumn{1}{c|}{Set} &
+\multicolumn{1}{c|}{Out} &
+\multicolumn{1}{c|}{Nov} &
+\multicolumn{1}{c|}{Dez} \\
+\hline
+\hline
+Levantamento Bibliográfico &\pl{5} & & & & & & & &\pl{1} & & &  \\
+\hline
+Etapa01 &\pl{3} & & & & & & & & & & &\\
+\hline
+Etapa02 & & &\pl{3} & & & & & & & & & \\
+\hline
+Etapa03 & & & & &\pl{5} & & & & & & & \\
+\hline
+Etapa04 & & & & & & & & &\pl{3} & & &\\
+\hline
+Etapa05 & \pl{12} & & & & & & & & & & &\\
+\hline
+\end{tabular}
+    \caption{Cronograma de trabalho.}
+    \label{tab:cronograma}
+\end{table}
+
+\addcontentsline{toc}{section}{Referências}
+%\bibliographystyle{alpha}
+%\newpage
+
+\begin{flushleft}
+	\bibliography{briglia-ref}
+	\bibliographystyle{plain}
+\end{flushleft}
+
+%\begin{thebibliography}{999}
+
+%\bibitem{PECHER:2004}
+%PECHER, E. \textbf{Geração de seqüências de testes a partir de casos de uso}. 2004, 49f. Dissertação (Mestrado em Informática) - Departamento de Ciência da Computação, Universidade Federal do Amazonas, Manaus,  2004.
+
+%\bibitem{IYER:2003}
+%IYER, M. \textbf{Linux Test Project - How To}. Disponível em: http://ltp.sourceforge.net/ltphowto.php Acessado em: 01/11/2005.
+
+%\bibitem{LARMAN:2000}
+%LARMAN, G. \textbf{Utilizando UML e padrões:} Uma introdução à análise e ao projeto orientado a objetos. Porto Alegre: Bookman, 2000.
+
+%\bibitem{LOVE:2005}
+%LOVE, R. \textbf{Linux Kernel Development}. Second Edition. Indianapolis: Novell Press, 2005.
+
+%\bibitem{TANENBAUM:2003}
+%TANENBAUM, A. \textbf{Sistemas Operacionais Modernos}. Segunda Edição. São Paulo: Prentice Hall, 2003.
+
+%\bibitem{BURNSTEIN:2003}
+%BURNSTEIN, I. \textbf{Practical Software Testing}. First Edition. Chicago: Springer, 2003.
+
+%\end{thebibliography}
+
+\end{document}
