@@ -62,51 +62,45 @@ Novembro de 2007\\
 
 Segundo \cite{castro03}, uma das possíveis soluções para o problema de escassez de memória nos sistemas embarcados é a utilização de algoritmos de compressão. A compressão tem se mostrado uma técnica eficiente para otimizar o uso da memória em sistemas embarcados. Ela também tem sido utilizada como um meio de melhorar o uso da memória cache, reduzindo assim o consumo de potência e melhorando a performance, visto que a memória cache é, geralmente, mais rápida do que a memória principal de um computador ou dispositivo móvel. E sendo uma memória de acesso rápido, o processador gasta menos tempo para acessá-la, beneficiando também o consumo de potência total do sistema.
 
-\textit{Cache} Comprimido (CC) é uma técnica que adiciona um novo nível na hierarquia de memória do Linux \cite{castro03}. O CC é usado para aprimorar o tempo de acesso às páginas de memória no \textit{kernel} (ou núcleo) do Linux, armazenando mais páginas na memória RAM e reduzindo o número de páginas que vão para a área de \textit{swap} ou que seriam descartadas caso o sistema não possuísse \textit{swap}. A área de \textit{swap}, em geral, é muito mais lenta que a memória principal, e custosa com relação ao consumo de energia pois na maioria dos casos está associada a dispositivos de bloco, como por exemplo, um disco rígido. E ainda temos o problema de que em sistemas embarcados geralmente essa área não está presente ou n\~{a}o possui o tamanho ideal.
+\textit{Cache} Comprimido (CC) é uma técnica que adiciona um novo nível na hierarquia de memória do Linux \cite{castro03}. O CC é usado para aprimorar o tempo de acesso às páginas de memória no \textit{kernel} (ou núcleo) do Linux, armazenando mais páginas na memória RAM e reduzindo o número de páginas que vão para a área de \textit{swap} ou que seriam descartadas caso o sistema não possuísse \textit{swap}. É sabido que a área de \textit{swap}, em geral, é muito mais lenta que a memória principal, e custosa com relação ao consumo de energia pois na maioria dos casos está associada a dispositivos de bloco, como por exemplo, um disco rígido. E ainda tem-se o problema de que em sistemas embarcados geralmente essa área não está presente ou n\~{a}o possui o tamanho ideal.
 
-Como forma de estimar o comportamento da memória, alinhando assim o tamanho do Cache Comprimido a ser utilizado, será utilizado Mapas Auto-Organizáveis com base no trabalho do Msc. Maurício Lin \cite{lin06}. Os Mapas Auto-Organizáveis (do inglês SOM - \textit{Self-Organized Maps}, como demonstrado em \cite{lin06}, podem ser utilizados afim de classificar determinados padrões de consumo de memória, das aplicações existentes no \textit{file system}. A essa técnica de redimensionamento do Cache Comprimido utilizando SOM, chamaremos de Cache Comprimido Adaptativo.
+Como forma de estimar o comportamento da memória, alinhando assim o tamanho do Cache Comprimido a ser utilizado, será utilizado Mapas Auto-Organizáveis com base no trabalho do Msc. Maurício Lin \cite{lin06}. Os Mapas Auto-Organizáveis (do inglês SOM - \textit{Self-Organized Maps}, como demonstrado em \cite{lin06}, podem ser utilizados afim de classificar determinados padrões de utilização de memória, das aplicações existentes no \textit{file system}. A essa técnica de redimensionamento do Cache Comprimido utilizando SOM, chamaremos de Cache Comprimido Adaptativo.
 
 \section {Motivação}
 \label{sec:motivacao}
 
-A memória é uma das áreas que possuem maiores restrições de recursos em sistemas embarcados. Por outro lado, os sistemas têm sido aperfeiçoados através de técnicas sofisticadas, algoritmos complexos e suporte a \textit{real time}. Como resultado, as aplicações para sistemas embarcados têm se tornado maiores e com um volume de dados manipulados sempre crescente.
+A memória é um dos componentes críticos que possuem maiores restrições de recursos em sistemas embarcados. Por outro lado, os sistemas têm sido aperfeiçoados através de técnicas sofisticadas, algoritmos complexos e suporte a \textit{real time}. Como resultado, as aplicações para sistemas embarcados têm se tornado maiores e com um volume de dados manipulados sempre crescente.
 
-Dado esse cenário, é muito importante definir mecanismos que aperfeiçoem o consumo de memória e/ou a performance das aplicações quando estas fazem uso da memória do dispositivo.
+Dado esse cenário, é muito importante definir mecanismos que aperfeiçoem a utilização de memória e/ou a performance das aplicações quando estas fazem uso da memória do dispositivo.
 
-Em \cite{castro03}, foi implementada uma versão do Cache Comprimido Adaptativo para a versão 2.4.x do \textit{kernel} do Linux. Os mecanismos de falta de memória encontrados na versão 2.4.x são diferentes do que temos hoje, nas versões mais atuais (2.6.x). Um ponto motivacional deste trabalho é a realização de uma implementação do Cache Comprimido Adaptativo para as versões mais atuais do Linux \textit{kernel}, disponibilizando assim seu uso em dispositivos móveis mais atuais, baseados em Linux. A implementação do Cache Comprimido atual está em implementação \cite{ccache06}, e a idéia é contribuir nesse projeto \textit{Open Source}.
+Em \cite{castro03}, foi implementada uma versão do Cache Comprimido Adaptativo para a versão 2.4.x do \textit{kernel} do Linux. Os mecanismos de falta de memória encontrados na versão 2.4.x são diferentes do que temos hoje, nas versões mais atuais (2.6.x, por exemplo). Um ponto motivacional deste trabalho é a realização de uma implementação do Cache Comprimido Adaptativo para as versões mais atuais do Linux \textit{kernel}, disponibilizando assim seu uso em dispositivos móveis mais atuais, baseados em Linux. A implementação do Cache Comprimido atual está em implementação \cite{ccache06}, e a idéia desta dissertação é contribuir nesse projeto \textit{Open Source}.
 
-Na versão anterior do Cache Comprimido Adaptativo, não foi utilizada nenhuma técnica para estimar o comportamento do tamanho da memória comprimida. A escolha de uma heurística inadequada pode impactar no desempenho de todo o sistema, pois a relação memória comprimida X memória descomprimida é muito importante quando se trata de adaptatividade. Estudos realizados anteriormente em \cite{castro03}, mostram que uma escolha errada no tamanho da memória comprimida pode criar \textit{overheads} desnecessários ao sistema, acarretando em perda de performance. Assim, a implementação de um esquema de adaptatividade utilizando SOM se torna um outro ponto de motivação do trabalho.
+Na versão do Cache Comprimido Adaptativo apresentada em \cite{ccache06}, não foi utilizada nenhuma técnica para estimar o comportamento do tamanho da memória comprimida. A escolha de uma heurística inadequada pode impactar no desempenho de todo o sistema, pois a relação memória comprimida X memória descomprimida é muito importante quando se trata de adaptatividade. Estudos realizados anteriormente em \cite{castro03}, mostram que uma escolha errada no tamanho da memória comprimida pode criar \textit{overheads} desnecessários ao sistema, acarretando em perda de performance. Assim, a implementação de um esquema de adaptatividade utilizando SOM se torna um outro ponto de motivação do trabalho.
 
 \section{Objetivos}
 \label{sec:objetivos}
 
-O propósito principal deste trabalho é desenvolver um sistema de memória comprimida, utilizando como base a implementação \textit{Open Source} encontrada em \cite{ccache06}. A implementação não deverá ter dependências de arquitetura, apesar de ser focada em Linux embarcado para arquitetura ARM. Este trabalho também visa implementar uma heurística de adaptatividade do tamanho da memória comprimida alocada, utilizando SOM como forma de classificação dos diferentes casos de uso da memória principal.
+O propósito principal deste trabalho é desenvolver um sistema de memória comprimida, utilizando como base a implementação \textit{Open Source} encontrada em \cite{ccache06}, e que implemente o conceito de adaptatividade. Experimentos realizados em trabalhos anteriores como em \cite{castro03}, indicaram que o tamanho da área comprimida de memória afeta o desempenho do sistema. Espera-se que, seja possível classificar o uso da memória, como mostrado em \cite{lin06} e utilizar esses dados na heurística de como a área de cache comprimido deve ser dimensionada. A implementação deste trabalho, não deverá ter dependências de arquitetura, apesar de ser focada em Linux embarcado para arquitetura ARM.
 
 A área para memória comprimida será adicionada ao sistema existente como mostrado na figura \ref{fig:cc_intro}. 
 
-\begin{figure}[t]%htbp
+\begin{figure}[ht]%htbp
 \centering
 \includegraphics[scale=0.85]{cc-intro}
 \caption{Hierarquia de memória com cache comprimido}
 \label{fig:cc_intro}
 \end{figure}
 
-A versão do \textit{kernel} utilizada será 2.6.x, e como trabalho final será gerado um \textit{patch} ou uma série de \textit{patches} que aplicados à última versão disponível deverá implementar o Cache Comprimido Adaptativo.
+A versão do \textit{kernel} utilizada será 2.6.x, e como trabalho final será gerado um \textit{patch} ou uma série de \textit{patches} que aplicados à última versão disponível deverá implementar o Cache Comprimido Adaptativo. Também será gerada uma aplicação que extrairá os dados providenciados pelo SOM, durante a classificação do uso da memória. Essa aplicação exportará os dados necessários para o ajuste do tamanho do cache comprimido.
 
-Como objetivo, temos os testes realizados com Cache Comprimido para a versão 2.6.x. Esses testes são necessários para que seja feita uma avaliação dos ganhos quando o Cache Comprimido está adicionado ao sistema.
+Para a validação da implementação, serão utilizados dois tipos de testes: \textit{benchmarks} sintéticos e testes com casos de uso reais. Nos testes com \textit{benchmarks}, serão utilizados programas como o MemTest \cite{memtest06}, e o LLCbench \cite{llcbench07}, que são uma suíte de testes para avaliar a performance da memória principal e da memória \textit{cache}. No caso dos testes utilizando casos de uso, será utilizado uma ferramenta de automação chamada XAutomation \cite{xauto07}, para criar uma interação com o sistema, simulando um uso real das aplicações, enquanto dados referentes à utilização da memória cache comprimida são armazenados. Com estes dois tipos de testes, espera-se ter dados suficientes para apontar o impacto da utilização de compressão da memória utilizando SOM, com a heurística para adaptar o tamanho da memória comprimida.
 
 \section{Estado Atual da Pesquisa}
 \label{sec:pesquisa}
 
 Esta seção tem o propósito de apresentar os estudos e as pesquisas realizadas até o momento, que são requisitos relevantes para o desenvolvimento da proposta descrita na Seção \ref{sec:objetivos}.
 
-Inicialmente será apresentado o estado atual de implementação do Cache Comprimido para a versão 2.6.x do \textit{kernel} do Linux. Em seguida serão apresentados alguns testes realizados com essa versão e apresentados em \cite{briglia07}. Por fim, será demonstrado o esquema de classificação de padrões de consumo de memória apresentado em \cite{lin06} e como essa metodologia poderá ajudar na implementação da adaptatividade no Cache Comprimido atual.
-
-\subsection{Cache Comprimido para Linux \textit{kernel} 2.6.x}
-
-Dados experimentais\cite{briglia07} avaliados em um sistema utilizando Cache Comprimido, nos mostram que nós podemos não só melhorar as taxas de E/S (Entrada e Saída), como também todo o comportamento do sistema, especialmente em situações de memória crítica, como por exemplo, adiando a chamada do \textit{out-of-memory killer} -- OOM.
-
-A implementação atual do Cache Comprimido tira vantagem do sistema de \textit{swap}, adicionando uma área de \textit{swap} virtual como área de estocagem das páginas de memória comprimida. Usando um algoritmo de compressão baseado em dicionários, páginas do \textit{page cache}, ou seja, do \textit{filesystem} e páginas anônimas são comprimidas e distribuídas em porções de memória de tamanho variável - \textit{\textbf{chunks}}\cite{irina05}. Com essa abordagem, tem-se o mínimo de framentação e uma rápida recuperação das páginas, quando estas são requisitadas pelo sistema. O tamanho do Cache Comprimido pode ser ajustado separadamente para páginas do \textit{page cache} e páginas anônimas. Este ajuste é efetuado através de escritas em variáveis exportadas no \texttt{procfs}, dando maior flexibidade ao usuário em relação aos casos de uso da memória.
+Inicialmente será apresentado o estado da arte, onde serão apresentados alguns trabalhos relacionados. Em seguida, será apresentada a atual de implementação do Cache Comprimido para a versão 2.6.x do \textit{kernel} do Linux encontrada em \cite{ccache06}. Também serão apresentados alguns testes realizados com essa versão e apresentados em \cite{briglia07}. Por fim, será demonstrado o esquema de classificação de padrões de consumo de memória apresentado em \cite{lin06} e como essa metodologia poderá ajudar na implementação da adaptatividade no Cache Comprimido atual.
 
 \subsection{A memória virtual do Linux}
 
@@ -141,10 +135,27 @@ Na figura \ref{fig:swp_entry_fields}, \textbf{`type'} identifica páginas que pod
 
 \subsubsection{O Page Cache}
 Este é o cache utilizado para armazenar as páginas do \textit{filesystem}. Ou seja, todo arquivo aberto pelas aplicações, possuem páginas de memória alocadas e armazenadas no Page Cache. Assim como o Swap Cache, este cache também possui uma \textit{radix tree} que armazena as referências, ou melhor, os ponteiros para as páginas do cache. O valor de \textit{offset} dentro do arquivo é utilizado como chave-de-busca. Cada arquivo aberto possui uma \textit{radix tree} própria. Paga páginas presentes na memória, o nodo correspondente na \textit{radix tree} aponta para a página que contém uma parte do arquivo e um valor de \textit{offset} da mesma dentro do arquivo o qual pertence.
- 
-\subsection{Overview do Cache Comprimido}
 
-\subsection{Design da Implementação}
+\subsection{Cache Comprimido}
+Em um sistema com cache comprimido, a memória é dividida em duas grandes porções: memória comprimida e não-comprimida \cite{castro93}, \cite{douglis93}, \cite{kaplan99compressed}. A área de memória comprimida geralmente é alocada onde antes existia memória não-comprimida. A relação dos tamanhos da memória comprimida e não-comprimida deve ser avaliada pois os dois tamanhos interferem em como cada porção de memória se comporta, dependendo do \textit{workload} imposto pelas aplicações.\\
+
+Muitos pesquisadores têm investigado o uso de compressão para reduzir as operações de \textit{paging}, introduzindo um novo nível na hierarquia de memória. Armazenar as páginas de memória em uma área comprimida, naturalmente aumenta o tamanho efetivo da memória e também diminui o acesso à dispositivos de memória secundária \cite{castro03}, muito mais lenta que a principal. Apesar dessa diferença de velocidade entre a memória principal e a memória secundária ser grande, quando se leva em conta os sistemas embarcados, não tem-se uma diferença muito grande. Geralmente os sistemas embarcados não possuem memória secundária armazenada em um disco rígido, outros dispositivos são utilizados nesse caso. Memórias do tipo \textit{compact flash}, cartões MMC, são os principais dispositivos encontrados hoje no mercado, que são utilizados como memória secundária. Mesmo tendo a diferença de velocidade de acesso entre a memória principal e a secundária menor, os sistemas embarcados possuem um grande requisito relacionado ao tamanho dessa memória. Assim, o uso de compressão é justificado pois, como será discutido posteriormente, é capaz de aumentar o tamanho efetivo da memória disponível para as aplicações.\\
+
+As abordagens de cache comprimido baseadas em \textit{software}, ou seja, aquelas que não propõem alteração de \textit{hardware}, podem ser estáticas ou dinâmicas. As abordagens estáticas são caracterizadas por não possuírem uma heurística de redimensionamento do cache comprimido, diferente das abordagens dinâmicas. Nesse segundo tipo, existe um algoritmo que determina quando o cache comprimido deve alterar seu próprio tamanho, geralmente baseado no \textit{workload} da memória.\\
+
+Os primeiros estudos que utilizavam cache comprimido foram feitos por Wilson \cite{wilson99}, Appel e Li \cite{li91}, em 1990. Outro pesquisador, chamado Douglis\cite{douglis93}, obteve algumas melhorias na performance do sistema, usando uma implementação de cache comprimido adaptativo, no sistema operacional Sprite. Porém, Douglis também teve alguns problemas e não conseguiu concluir se o uso de cache comprimido é útil ou não.\\
+
+Tendo o trabalho de Douglis ser inconclusivo, muitos outros pesquisadores se ocuparam em estudar o caso. Em 1999, Kaplan\cite{kaplan99compressed} chegou à conclusão que a compressão do cache pode reduzir os custos das operações de \textit{paging}. Kaplan ainda confirmou o que Douglis\cite{douglis93} verificou anteriormente: cache comprimido estático beneficia menos do que um cache comprimido com adaptatividade. Alguns trabalhos correlatos também foram desenvolvidos em 1999. Como apresentado em \cite{swapcc99}, não se trata especificamente da memória cache comprimida, mas sim da compressão da área de \textit{swap} do sistema. No trabalho apresentado em \cite{swapcc99}, foi implementado uma versão de compressão da memória voltada às páginas que podem ser selecionadas para o \textit{swap}, salvando algum espaço no disco e diminuindo as operações de E/S no \textit{swap}. Testes concluíram que a compressão da área de \textit{swap} pode aumentar a velocidade das aplicações em 20\%. Outros trabalhos também apontaram ganhos na performance de aplicações, como apresentado em \cite{tuduce05}.\\
+
+Os trabalhos discutidos anteriormente, são antigos e foram implementados em sistemas operacionais da época. Os que foram implementados em Linux, utilizava a versão 2.4.x do \textit{kernel}. Daquela época para dos dias atuais, o \textit{kernel} do Linux sofreu muitas melhorias e o esquema utilizado para o cache comprimido nessa versão do \textit{kernel} é diferente. Por essa razão, as próximas seções fazem um \textit{overview} da versão do cache comprimido para o \textit{kernel} 2.6.x, implementada por Nitin Gupta \cite{ccache06} e apresentada em \cite{briglia07}.
+
+\subsection{Cache Comprimido para Linux \textit{kernel} 2.6.x}
+
+Dados experimentais\cite{briglia07} avaliados em um sistema utilizando Cache Comprimido, nos mostram que nós podemos não só melhorar as taxas de E/S (Entrada e Saída), como também todo o comportamento do sistema, especialmente em situações de memória crítica, como por exemplo, adiando a chamada do \textit{out-of-memory killer} -- OOM.
+
+A implementação atual do Cache Comprimido tira vantagem do sistema de \textit{swap}, adicionando uma área de \textit{swap} virtual como área de estocagem das páginas de memória comprimida. Usando um algoritmo de compressão baseado em dicionários, páginas do \textit{page cache}, ou seja, do \textit{filesystem} e páginas anônimas são comprimidas e distribuídas em porções de memória de tamanho variável - \textit{\textbf{chunks}}\cite{irina05}. Com essa abordagem, tem-se o mínimo de framentação e uma rápida recuperação das páginas, quando estas são requisitadas pelo sistema. O tamanho do Cache Comprimido pode ser ajustado separadamente para páginas do \textit{page cache} e páginas anônimas. Este ajuste é efetuado através de escritas em variáveis exportadas no \texttt{procfs}, dando maior flexibidade ao usuário em relação aos casos de uso da memória.
+
+\subsubsection{Design da Implementação}
 
 \subsubsection{Armazenamento das Páginas Comprimidas}
 
@@ -152,7 +163,7 @@ Este é o cache utilizado para armazenar as páginas do \textit{filesystem}. Ou se
 
 \subsection{Métodos de Compressão}
 
-\subsection{Mapas Auto-organizáveis}
+\section{Mapas Auto-organizáveis}
 
 \subsubsection{Classificação da memória utilizando SOM}
 
