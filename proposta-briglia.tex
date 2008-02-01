@@ -1,4 +1,4 @@
-\documentclass[12pt,brazil,a4paper]{article}
+\documentclass[12pt,brazil,a4paper]{report}
 %\usepackage{sbc2003}
 \usepackage{amsfonts}
 \usepackage{amsmath}
@@ -43,7 +43,7 @@ Proposta de Dissertação apresentada ao Departamento de Ciência da Computação do 
 \begin{center}
 %\begin{Large}
 Manaus \\
-Novembro de 2007\\
+Janeiro de 2008\\
 %\end{Large}
 \end{center}
 
@@ -57,7 +57,8 @@ Novembro de 2007\\
 
 \onehalfspacing
 
-\section {Introdução}
+\chapter{Introdução}
+%\section {Introdução}
 \label{sec:introducao}
 
 Segundo \cite{castro03}, uma das possíveis soluções para o problema de escassez de memória nos sistemas embarcados é a utilização de algoritmos de compressão. A compressão tem se mostrado uma técnica eficiente para otimizar o uso da memória em sistemas embarcados. Ela também tem sido utilizada como um meio de melhorar o uso da memória cache, reduzindo assim o consumo de potência e melhorando a performance, visto que a memória cache é, geralmente, mais rápida do que a memória principal de um computador ou dispositivo móvel. E sendo uma memória de acesso rápido, o processador gasta menos tempo para acessá-la, beneficiando também o consumo de potência total do sistema.\\
@@ -95,6 +96,7 @@ A versão do \textit{kernel} utilizada será 2.6.x, e como trabalho final será ger
 
 Para a validação da implementação, serão utilizados dois tipos de testes: \textit{benchmarks} sintéticos e testes com casos de uso reais. Nos testes com \textit{benchmarks}, serão utilizados programas como o MemTest \cite{memtest06}, e o LLCbench \cite{llcbench07}, que são uma suíte de testes para avaliar a performance da memória principal e da memória \textit{cache}. No caso dos testes utilizando casos de uso, será utilizado uma ferramenta de automação chamada XAutomation \cite{xauto07}, para criar uma interação com o sistema, simulando um uso real das aplicações, enquanto dados referentes à utilização da memória cache comprimida são armazenados. Com estes dois tipos de testes, espera-se ter dados suficientes para apontar o impacto da utilização de compressão da memória utilizando SOM, com a heurística para adaptar o tamanho da memória comprimida.
 
+\chapter{Cache Comprimido}
 \section{Estado Atual da Pesquisa}
 \label{sec:pesquisa}
 
@@ -157,12 +159,194 @@ A implementação atual do Cache Comprimido tira vantagem do sistema de \textit{sw
 
 \subsubsection{Design da Implementação}
 
+Quando uma página está para ser comprimida, o nodo da árvore radix que está apontando para a página tem sua referência trocada, apontando para um \textit{chunk\_head}. Por sua vez, a estrutura \textit{chunk\_head} possui todas as informações para encontrar os outros \textit{chunks} e assim recuperar a página comprimida: tamanho da página comprimida, algoritmo usado na compressão, localização do primeiro \textit{chunk}, etc.\\
+
+Quando uma página é requisitada, uma operação de \textit{lookup} é realizada na árvore radix do page-cache. Se esta operação retornar um \textit{chunk\_head}, significa que a página é comprimida e está dividida em vários \textit{chunks} de tamanho menor que \texttt{PAGE\_SIZE}. Como o \textit{chunk\_head} possui um ponteiro para o primeiro \textit{chunk} da lista de \textit{chunks} da página, é possível recuperar todos os \textit{chunks}, pois os mesmos fazem parte de uma lista encadeada. Após todos os \textit{chunks} serem recuperados, a página pode ser descomprimida e um ponteiro para ela é passado à função de \textit{lookup}. Esta sequência de operações será detalhada nas seções posteriores deste trabalho.
+
 \subsubsection{Armazenamento das Páginas Comprimidas}
 
-\subsubsection{Operações de Inserção e Deleção das Páginas}
+A idéia básica é armazenar as páginas comprimidas em blocos de memória de tamanho variável, chamados \textit{chunks}. Uma página comprimida é armazenada em vários \textit{chunks}. O espaço em memória para os \textit{chunks} é obtido se fazendo alocações de páginas da memória, o espaço alocado é gerenciado e dividido em tamanhos menores. Todos os chunks são conectados em uma lista duplamente encadeada chamada \textit{master chunks list}. Além desta lista, os \textit{chunks} do mesmo tipo, por exemplo, todos os \textit{chunks} livres ou todos os \textit{chunks} pertencentes à mesma página comprimida, também são conectados através de uma lista encadeada.
 
-\subsection{Métodos de Compressão}
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.60]{chunks}
+	\caption{Um exemplo de uma página comprimida dividida em vários \textit{chunks}. Blocos de mesma cor significam que os \textit{chunks} pertencem à mesma página. A cor branca indica \textit{chunks} livres, ou seja, que não pertencem a nenhuma página comprimida.}
+	\label{fig:comp_storage_structure}
+\end{figure}
 
+Note que:
+\begin{itemize}
+	\item Um \textit{chunk} não pode ultrapassar os limites de um \textit{slot} de página, como mostrado na figura \ref{fig:comp_storage_structure}. Um \textit{chunk} é separado nesses casos. O tamanho máximo de um \textit{chunk} é \texttt{PAGE\_SIZE}.
+	\item Estra estrutura reduz a fragmentação ao máximo, pois todo espaço livre é aproveitado.
+	\item Quando uma página comprimida é retirada, seus \textit{chunks} são liberados e adicionados à lista de \textit{chunks} livres. \textit{Chunks} livres adjacentes são mesclados, respeitando o limite do \textit{slot} da página. Se um \textit{chunk} livre tiver o mesmo tamanho de uma página, ou seja, \texttt{4KB}, a página inteira é liberada.
+\end{itemize}
+
+O tamanho do Cache Comprimido se inicia com uma única página de memória (\texttt{4KB}), e se expande à medida que novas páginas são comprimidas e armazenadas.\\
+
+Uma lista LRU - \textit{Least Recently Used} é mantida para todos os \textit{chunks}, na medida que estes são criados. O último \textit{chunk} da lista é o mais antigo. Esta lista é utilizada na liberação dos \textit{chunks}, os mais antigos possuem prioridade para serem liberados.
+
+\subsubsection{Operações de Inserção e Remoção das Páginas}
+
+\textbf{Adição de páginas no Cache Comprimido:} a página descomprimida é primeiramente comprimida numa página de \textit{buffer}. Então, o número de \textit{chunks} livres é pego da lista de \textit{chunks} livres, ou uma nova página é alocada e utilizada para o \textit{chunk}, de acordo com o tamanho da página comprimida. Os \textit{chunks} pertencentes à mesma página comprimida são conectados numa mesma lista. O espaço livre remanescente do último \textit{chunk} é inserido na lista de \textit{chunks} livres. O ponteiro para a página presente na árvore \textit{radix} do page-cache é substituído para apontar o \textit{chunk\_head} da página recém comprimida. Páginas que aumentam seu tamanho ou que não podem ser comprimidas, nunca são adicionadas ao Cache Comprimido. Elas são tratadas de forma padrão pelo PFRA.\\
+
+\textbf{Remoção de páginas do Cache Comprimido:} quando uma página é armazenada na memória, geralmente é utilizada uma estrutura de dados do tipo \texttt{page} correspondente à página física da memória. Mas, se uma página foi comprimida, temos uma estrutura chamada \textit{chunk\_head}, ao invés da estrutura padrão de página. A \textit{flag} \texttt{PG\_COMPRESSED} é utilizada para identificar o nodo da árvore \textit{radix} que possui um ponteiro para uma página comprimida (um \textit{chunk\_head}. Como todos os \textit{chunks} de uma página comprimida são conectados numa lista, para descomprimir somente é necessário agrupá-los e descomprimi-los numa página de \textit{buffer}. Após isso, passa-se o ponteiro da página de \textit{buffer} para a árvore \textit{radix}, retornando assim a página descomprimida.
+
+\section{Experimentos}
+
+Nesta seção serão apresentados os testes que foram executados utilizando Cache Comprimido em um sistema embarcado. O principal objetivo dos testes é avaliar os impactos e as características do consumo de memória, quando temos uma área comprimida adicionada ao sistema.\\
+
+Como dito anteriormente, a atual implementação do Cache Comprimido trata dois tipos de páginas: páginas anônimas e páginas do page-cache. O primeiro tipo de páginas foi utilizado como referência pois pode ser feito \textit{swap}, facilitando a obtenção de dados para os gráficos.\\
+
+Foram realizados testes com e sem um \textit{swap} real, utilizando uma partição em um cartão MMC. A utilização de um \textit{swap} real se justifica pois é importante comparar o \textit{swap} virtual com o real. Como medidas desta comparação, foram considerados os seguintes itens:
+
+\begin{itemize}
+	\item  Quantas páginas são mantidas no Cache Comprimido e não vão para o \textit{swap} real, evitando assim um maior \textit{overhead} por causa das I/O's
+	\item Mudanças no consumo de potência do equipamento.
+	\item Comparação entre os diferentes algoritmos de compressão utilizados.
+\end{itemize}
+
+\subsection{Suite de Testes e Metodologia}
+
+Utilizou-se um dispositivo móvel, parecido com um PDA, que possui Linux embarcado como sistema operacional nativo. O Nokia Internet Tablet N800 tem um processador ARM1136 com 330Mhz, 128MB de memória RAM e 256MB de memória \textit{flash}, utilizada como armazenamento secundário. Ainda possui acelerador gráfico 2D/3D e dois leitores de cartão MMC/SD.\\
+
+Nota-se que este dispositivo, como muitos outros, foi projetado para aplicações multimídia. Este tipo de aplicação demanda muito poder de processamento e quantidade de memória razoável para as aplicações. Levando isso em consideração, os testes foram realizados afim de verificar o comportamento de todo o sistema e das aplicações multimídia, quando a quantidade de memória livre disponível é muito baixa. Seria a performance de todo o sistema, abalada pelas operações de compressão e recuperação das páginas comprimidas?\\
+
+Os casos de uso dos testes podem ser divididos em duas partes: testes que utilizam \textit{benchmarks} sintéticos e testes que simulam a utilização real do aparelho. No primeiro grupo, existe um maior controle do consumo de memória e assim, pode-se avaliar o comportamento do Cache Comprimido quando é submetido à pressões por falta de memória. No segundo grupo, foi verificado se o Cache Comprimido exerce um \textit{overhead} muito grande no sistema, afetando assim a performance das aplicações que o usuário pode executar. Espera-se que a performance das aplicações melhore, visto que o número de I/O's resultantes de acessos à um dispositivo de \textit{swap} real (um \textit{block device)}, é diminuído pois mais páginas se encontram na memória principal.\\
+
+Os testes utilizando aplições, consistem em:
+
+\begin{itemize}
+
+\item Executar 8 ou 9 instâncias do navegador WEB, simultaneamente, acessando páginas na Internet através de uma conexão de rede sem-fio.
+
+\item Tocar um arquivo de vídeo de 7,5MB.
+
+\item Abrir um documento em formato PDF.
+\end{itemize}
+
+Para fazer a interação entre o X system e as aplicações, foi utilizado uma ferramenta chamada Xautomation \cite{xauto07}. Com esta ferramenta foi possível controlar toda a movimentação do cursor na tela e os cliques. Enquanto as aplicações eram executadas, outros programas ficam responsáveis de fazer a coleta das informações referentes ao consumo de memória, através de leituras das estatísticas exportadas pelo \texttt{procfs}. É com base nesses dados que alguns gráficos foram plotados e discutidos nas seções posteriores deste trabalho.\\
+
+Os testes utilizando \textit{benchmarks} sintéticos, foram executados usando um conjunto de utilitários chamado MemTest \cite{memtest06}. MemTest foi implementado para valiar a estabilidade e consistência do sistema de gerência de memória do Linux \textit{kernel}. Do MemTest foi utilizado um utilitário chamado \texttt{fillmem}. Este utilitário faz várias alocações de memória, ou seja, de páginas de memória, disparando a necessidade de mandar algumas páginas para o \textit{swap}. É nesse momento que foram realizadas as medições referentes às páginas comprimidas, tais como, tamanho da página após a compressão, memória livre, se o Out-of-memory killer foi invocado, etc.\\
+
+Ambos os tipos de testes, utilizaram cenários pré-definidos, dependendo do que se queria medir. Basicamente, os cenários apresentavam diferentes tamanhos da memória principal, se possuíam uma área de \textit{swap} real ou não, ou se estavam com o Cache Comprimido sendo executado ou não.\\
+
+Os testes de comportamento do consumo de memória visam avaliar como a memória é consumida ao longo do tempo de duração do teste. Assim, espera-se identificar os pontos de falta de memória e a atuação do Out-of-memory killer. Como o Cache Comprimido se utiliza da memória principal para armazenar as páginas, a quantidade de memória não-comprimida disponível para as aplicações é decrescida, e isso pode levar a uma chamada precoce do OOM killer. Por fim, os testes consumo de potência foram realizados com o propósito de avaliar e medir os impactos da compressão de memória no consumo da bateria do aparelho, visto que esse é um ponto crucial quando se está desenvolvendo para sistemas embarcados.
+
+\subsubsection{Ajustando o kernel}
+
+Antes dos testes serem iniciados, alguns parâmetros do gerenciamento de memória do \textit{kernel} devem ser ajustados, afim de garantir que os testes sejam executados com sucesso.\\
+
+O sistema de \textit{swap} do \textit{kernel} possui alguns parâmetros que podem interferir nos valores medidos, e até na execução das aplicações. Durante os testes, foram alterados dois parâmetros:
+
+\begin{itemize}
+\item \textbf{swappiness} \cite{linuxinet07} é um parâmetro que configura um fator de balanço que o \textit{kernel} utiliza para manter mais ou menos páginas no page-cache antes de mandar para a área de \textit{swap}. Seu valor \textit{default} é 60.
+\item \textbf{min\_free\_kbytes} \cite{linuxinet07} é usado como um limite mínimo de memória livre para que o sistema de gerenciamento de memória virtual do \textit{kernel} comece a mandar páginas para o \textit{swap}.
+\end{itemize}
+
+Se o usuário quer que o \textit{kernel} mande mais páginas para o \textit{swap}, o que significa em mais páginas comprimidas, o parâmetro \texttt{swappiness} deve ser acrescido. Uma outra forma de mandar as páginas mais cedo para o \textit{swap}, é aumentar o valor do \texttt{min\_free\_kbytes}. Durante os testes, foram utilizados valores diferentes desses dois parâmetros em cada cenário.\\
+
+Existem outros parâmetros que também devem ser ajustados, mas que não fazem parte do \textit{kernel} padrão. São os parâmetros que configuram o tamanho do Cache Comprimido para as páginas anônimas e as páginas do page-cache. Os parâmetros são os seguintes:
+
+\begin{itemize}
+ \item \texttt{max\_fs\_backed\_cc\_size:} este parâmetro é utilizado para configurar o tamanho máximo do Cache Comprimido para páginas que pertencem ao page-cache.
+\item \texttt{max\_anon\_cc\_size:} este parâmetro é encarregado de configurar o tamanho máximo do Cache Comprimido para pa?inas anônimas.
+\end{itemize}
+
+Vale ressaltar que os valores que devem se escritos nesses parâmetros estão na unidade de quantidade de páginas de memória (\texttt{4KB}).
+
+\subsection{Testes do Comportamento do Consumo de Memória}
+\label{sec:mem_behavior}
+
+O principal objetivo deste tipo de testes é visualizar como a memória é consumida ao longo do tempo, quando várias aplicações são executadas pelo usuário. Para realizar estes testes, foram utilizados cenários que simulasse a interação do usuário.\\
+
+Usando um \textit{bash script} com o XAutomation \cite{xauto07}, foi possível interagir com o servidor gráfico. Enquanto as aplicações eram executadas, um outro programa fazia leituras no \texttt{procfs}, coletando informações sobre a memória.\\
+
+A Figura \ref{fig:memtest01} mostra o consumo de memória através do tempo com o \texttt{max\_anon\_cc\_size} configurado para 1024 páginas (ou 4MB de tamanho).
+
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.26]{mem_behavior01}
+	\caption{Tamanho do Comp. Cache x tempo: max\_anon\_cc\_size = 1024, Mem = 128M}
+	\label{fig:memtest01}
+\end{figure}
+
+Como pode-se notar na Figura \ref{fig:memtest01}, o consumo da área reservada para as páginas comprimidas foi baixo. Isso se deve ao fato do \textit{kernel} estar configurado para reter mais páginas na memória, ou seja, na área descomprimida antes de enviá-las ao \textit{swap}. Lembrando que a implementação atual do Cache Comprimido se aproveita do sistema de \textit{swap} para comprimir as páginas, se o \textit{swap} estiver configurado para não ser muito utilizado, isso reflete no consumo do Cache Comprimido. Na Figura \ref{fig:memtest02}, a memória RAM foi limitada para somente 100 MB, ao invés de 128 MB. Pode-se notar que o OOM \textit{killer} foi invocada no tempo 600 ms. O Cache Comprimido nem teve tempo suficiente para reagir à rápida alocação do sistema.
+
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.32]{mem_behavior02}
+	\caption{Cache Comprimido x tempo: max\_anon\_cc\_size = 1024, Mem = 100M}
+	\label{fig:memtest02}
+\end{figure}
+
+Usando o mesmo teste, mas com \texttt{swappiness = 60} e \texttt{min\_free\_kbytes = 3072}, o OOM \textit{killer} não foi invocado e o Cache Comprimido finalmente foi bastante utilizado. Veja na Figura \ref{fig:memtest03}.
+
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.33]{mem_behavior03}
+	\caption{Cache Comprimido x tempo: swappiness = 60, min\_free\_kbytes = 3072}
+	\label{fig:memtest03}
+\end{figure}
+
+A Figura \ref{fig:memtest03} mostra que o Cache Comprimido não é suficiente para a carga de memória imposta pelo teste. Seria necessário aumentar o tamanho do Cache Comprimido, porém, tem-se um problema aqui: se o tamanho do Cache Comprimido foi muito grande, não restará muita memória livre para as outras operações do \textit{kernel}, uma vez que o Cache Comprimido utiliza páginas da memória RAM para a área de \textit{swap} virtual. Uma das possíveis soluções para este problema é a implementação de um esquema de adaptabilidade do tamanho do Cache Comprimido \cite{castro03, irina05}.\\
+
+Durante os testes, o tamanho das páginas comprimidas foi coletado afim de verificar qual é o tamanho médio de uma página depois de comprimida. Como pode-se ver na Figura \ref{fig:cc_dist}, a maioria das páginas ficam com metade do tamanho original depois de comprimidas. Mais ou menos 42\% das páginas ficam com tamanho entre 1 Kb e 2 Kb, depois da compressão.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.46]{cc_distribution}
+	\caption{Distribuição do tamanho das páginas comprimidas}
+	\label{fig:cc_dist}
+\end{figure}
+
+Os resultados destes testes indicam que tem-se um ganho na memória disponível para as aplicações quando o Cache Comprimido é utilizado. Com a fragmentação controlada através da abordagem de \textit{chunks}, e com a maioria das páginas comprimidas ficando com o tamanho entre 1 Kb e 2 Kb, pode-se chegar à conclusão que o Cache Comprimido aumenta em 100\% a memória disponível para as aplicações, através do \textit{swap} virtual. Esta é uma vantagem importante pois, aplicações que antes não puderam ser executadas por falta de memória, agora podem se beneficiar de uma memória virtualmente maior.\\
+
+Um dos problemas encontrados é que o \textit{kernel} deve ser bem ajustado para o uso do Cache Comprimido. Se isso não acontecer, o \textit{swap} virtual não é utilizado e as páginas não são comprimidas. Como as páginas reservadas ao Cache Comprimido nunca são liberadas pelo PFRA, seu tamanho pode diminuir a memória disponível para as aplicações, acarretando em constantes invocações do OOM \textit{killer}.
+
+\subsection{Testes de Performance}
+
+Nos testes de performance foram utilizados os \textit{bechmarks} sintéticos para avaliar alguns \textit{overheads} impostos pelo Cache Comprimido: overhead de compressão, overhead das listas de \textit{chunks} e overhead de compressão das páginas. Através dessa análise, espera-se que o Cache Comprimido seja mais rápido do que utilizar um \textit{swap} real em um dispositivo de armazenamento secundário, como um cartão MMC.\\
+
+Somente as páginas que podem ir para o \textit{swap} estão sendo consideradas aqui, ou seja, somente as páginas anônimas. Na Table \ref{tab:tab01} estão os resultados do tempo de execução do \texttt{fillmem} alocando 70 MB de memória (\texttt{swappiness = 60, min\_free\_kbytes = 1024KB, max\_cc\_anon\_size = 1280 páginas}).
+
+\begin{table}[tbph]
+\footnotesize
+\centering
+ \begin{tabular}{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
+ \hline
+ \bfseries Teste & Sem-CCache & CCache WKdm & CCache WK4x4 & CCache LZO \\
+ \hline
+ \bfseries Tempo(s) & 14.68 & 4.64 & -- & 4.25 \\
+ \hline 
+ \end{tabular}
+\normalsize
+\caption{fillmem(70): Tempo usando Cache Comprimido x Tempo usando swap real}
+\label{tab:tab01}
+\end{table}
+
+O teste que utilizou o algoritmo de compressão \texttt{WK4x4} invocou o OOM \textit{killer} e não pôde ser finalizado. Mas, analisando os outros valores, pode-se concluir que a operação de \textit{swap} utilizando o Cache Comprimido é cerca de 3 vezes mais rápida do que utilizando um cartão MMC. Mas, e o OOM \textit{killer}?\\
+
+Como discutido anteriormente, o Cache Comprimido não possui a adaptabilidade para dimensionar o próprio tamanho da área comprimida utilizada. Assim, em algumas ocasiões o Cache Comprimido afeta o tamanho da memória livre e as aplicações acabam sendo terminadas pelo OOM \textit{killer}. Para um melhor desempenho do Cache Comprimido, é necessário que o sistema de \textit{swap} do \textit{kernel} seja bem configurado, como mostrado nas seções anteriores.
+
+\subsection{Testes de Consumo de Potência}
+
+Neste teste, a bateria do aparelho foi substituída por uma fonte de alimentação mensurável e variável. Com este equipamento, foi medida a potência total necessária pelo aparelho. Note que não foi avaliada a energia gasta no processador, seria um processo bastante complexo e intrusivo. A Figura \ref{fig:pm_test} mostra o consumo de potência ao longo de um dos testes realizados na seção \ref{sec:mem_behavior}.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.47]{pm_table}
+	\label{fig:pm_table}
+\end{figure}
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.47]{pm_test01}
+	\caption{Power Consumption tests using CCache}
+	\label{fig:pm_test}
+\end{figure}
+
+Nos passo 1 a 5, o consumo de potência é padrão pois o Cache Comprimido estava ativo mas não utilizado. Os passos mais importantes são de 5 a 8. Nestes passos o Cache Comprimido começou a ser utilizado e podemos ver uma leve diferença no consumo de potência quando se usa o Cache Comprimido e quando não se usa. Nota-se que, quando o Cache Comprimido é utilizado, ao invés do \textit{swap} real, há um ganho de 3\% no consumo de potência. Acredita-se que isso se deve ao fato do \textit{kernel} fazer menos requisições de I/O, não necessitando assim acessar o controlador do cartão MMC.
+
+\chapter{Redes Neurais e Mapas Auto-organizáveis}
 \section{Redes Neurais e Mapas Auto-organizáveis}
 \label{sec:redes_artificiais}
 
@@ -380,27 +564,5 @@ Etapa05 & \pl{12} & & & & & & & & & & &\\
 	\bibliography{briglia-ref}
 	\bibliographystyle{plain}
 \end{flushleft}
-
-%\begin{thebibliography}{999}
-
-%\bibitem{PECHER:2004}
-%PECHER, E. \textbf{Geração de seqüências de testes a partir de casos de uso}. 2004, 49f. Dissertação (Mestrado em Informática) - Departamento de Ciência da Computação, Universidade Federal do Amazonas, Manaus,  2004.
-
-%\bibitem{IYER:2003}
-%IYER, M. \textbf{Linux Test Project - How To}. Disponível em: http://ltp.sourceforge.net/ltphowto.php Acessado em: 01/11/2005.
-
-%\bibitem{LARMAN:2000}
-%LARMAN, G. \textbf{Utilizando UML e padrões:} Uma introdução à análise e ao projeto orientado a objetos. Porto Alegre: Bookman, 2000.
-
-%\bibitem{LOVE:2005}
-%LOVE, R. \textbf{Linux Kernel Development}. Second Edition. Indianapolis: Novell Press, 2005.
-
-%\bibitem{TANENBAUM:2003}
-%TANENBAUM, A. \textbf{Sistemas Operacionais Modernos}. Segunda Edição. São Paulo: Prentice Hall, 2003.
-
-%\bibitem{BURNSTEIN:2003}
-%BURNSTEIN, I. \textbf{Practical Software Testing}. First Edition. Chicago: Springer, 2003.
-
-%\end{thebibliography}
 
 \end{document}
