@@ -18,7 +18,7 @@
 \begin{Large}
 Anderson Farias Briglia \\
 Orientador: Dr. Edward David Moreno\\
-Co-orientador: Raimundo Barreto\\
+Co-orientador: Dr. Raimundo Barreto\\
 \end{Large}
 \end{center}
 
@@ -26,7 +26,7 @@ Co-orientador: Raimundo Barreto\\
 
 \begin{center}
 \begin{huge}
-Memória Cache Comprimido Adaptativo para o kernel 2.6 do Linux utilizando Mapas Auto-organizáveis
+Mapas Auto-organizáveis na Compressão de Memória Cache em Sistemas Embarcados
 \end{huge}
 \end{center}
 
@@ -61,12 +61,17 @@ Janeiro de 2008\\
 \chapter{Introdução}
 %\section {Introdução}
 \label{sec:introducao}
+A grande maioria dos sistemas embarcados têm como principal característica seu uso para uma tarefa específica, porém, existem sistemas embarcados que não necessariamente são específicos \cite{mor00}. Como é o caso do sistema operacional \textit{Linux} analisado nesta dissertação de mestrado. O avanço da minituarização dos componentes eletrônicos e a queda do preço dos equipamentos, fez com que o poder de processamento de um PDA (\textit{Personal Data Assistance}, por exemplo, caísse consideravelmente.\\
 
-Segundo \cite{castro03}, uma das possíveis soluções para o problema de escassez de memória nos sistemas embarcados é a utilização de algoritmos de compressão. A compressão tem se mostrado uma técnica eficiente para otimizar o uso da memória em sistemas embarcados. Ela também tem sido utilizada como um meio de melhorar o uso da memória cache, reduzindo assim o consumo de potência e melhorando a performance, visto que a memória cache é, geralmente, mais rápida do que a memória principal de um computador ou dispositivo móvel. E sendo uma memória de acesso rápido, o processador gasta menos tempo para acessá-la, beneficiando também o consumo de potência total do sistema.\\
+Com o poder de processamento dos dispositivos móveis aumentando, as aplicações disponíveis aos usuários acompanham este crescimento e se tornam mais complexas. Como características inerentes de qualquer sistema embarcado, pode-se citar o processamento limitado, consumo de energia bem restrito e problemas relacionados à memória disponível para as aplicações. Nesta dissertação, uma possível solução para o problema de memória dos sistemas embarcados é proposta e analisada. Possíveis soluções para o problema de consumo de potência ou aumento do poder de processamento dos sistemas embarcados, não é o foco deste trabalho.\\
 
-\textit{Cache} Comprimido (CC) é uma técnica que adiciona um novo nível na hierarquia de memória do Linux \cite{castro03}. O CC é usado para aprimorar o tempo de acesso às páginas de memória no \textit{kernel} (ou núcleo) do Linux, armazenando mais páginas na memória RAM e reduzindo o número de páginas que vão para a área de \textit{swap} ou que seriam descartadas caso o sistema não possuísse \textit{swap}. É sabido que a área de \textit{swap}, em geral, é muito mais lenta que a memória principal, e custosa com relação ao consumo de energia pois na maioria dos casos está associada a dispositivos de bloco, como por exemplo, um disco rígido. E ainda tem-se o problema de que em sistemas embarcados geralmente essa área não está presente ou n\~{a}o possui o tamanho ideal.\\
+Segundo \cite{castro03}, uma das possíveis soluções para o problema de escassez de memória nos sistemas embarcados é a utilização de algoritmos de compressão. A compressão tem se mostrado uma técnica eficiente para otimizar o uso da memória em sistemas embarcados\cite{douglis93, kaplan99compressed, castro03, irina05, briglia07}. Ela também tem sido utilizada como um meio de melhorar o uso da memória cache, reduzindo assim o consumo de potência e melhorando a performance do sistema de memória, visto que a memória cache é, geralmente, mais rápida do que a memória principal de um computador ou de um dispositivo móvel. E sendo uma memória de acesso rápido, o processador gasta menos tempo para acessá-la, beneficiando também o consumo de potência total do sistema.\\
 
-Como forma de estimar o comportamento da memória, alinhando assim o tamanho do Cache Comprimido a ser utilizado, será utilizado Mapas Auto-Organizáveis com base no trabalho do Msc. Maurício Lin \cite{Mlin:06}. Os Mapas Auto-Organizáveis (do inglês SOM - \textit{Self-Organized Maps}, como demonstrado em \cite{Mlin:06}, podem ser utilizados afim de classificar determinados padrões de utilização de memória, das aplicações existentes no \textit{file system}. A essa técnica de redimensionamento do Cache Comprimido utilizando SOM, chamaremos de Cache Comprimido Adaptativo.
+O \textit{Cache} Comprimido (CC) é uma técnica que adiciona um novo nível na hierarquia de memória do Linux \cite{castro03, kaplan99compressed, douglis93}. O CC é usado para aprimorar o tempo de acesso às páginas de memória no \textit{kernel} (ou núcleo) do Linux, armazenando mais páginas na memória RAM \textit{Random Access Memory} e reduzindo o número de páginas que vão para a área de \textit{swap} ou que seriam descartadas caso o sistema não possuísse \textit{swap}\footnote{Área de swap é uma área reservada no sistema de arquivos do Sistema Operacional, afim de ser utilizada como uma extensão de memória principal.}. É sabido que a área de \textit{swap}, em geral, é muito mais lenta que a memória principal, e custosa com relação ao consumo de energia pois na maioria dos casos está associada a dispositivos de bloco, como por exemplo, um disco rígido. E ainda tem-se o problema de que em sistemas embarcados geralmente essa área não está presente ou n\~{a}o possui o tamanho ideal.\\
+
+O tamanho da área de CC possui influência na quantidade de memória disponível para as aplicações. Se o tamanho do CC for muito grande, podem ocorrer situações de falta de memória, ocasionando em travamento do sistema ou das aplicações que estão sendo executadas no momento. Hoje, a escolha de um tamanho para o CC é empírica. Ou seja, é escolhido um tamanho baseado em experimentos (como os vistos nas seções posteriores deste trabalho), ou simplesmente na estimativa de memória total livre após a alocação do CC. Um cenário ideal para calcular o tamanho do CC é que o perfil das aplicações, ou melhor, das alocações de memória das aplicações, seja levando em conta quando o tamanho do CC for escolhido.\\
+
+Como forma de estimar o comportamento da memória, alinhando assim o tamanho do CC a ser utilizado com a forma de como as aplicações utilizam a memória, é utilizado o trabalho de mestrado de Maurício Lin \cite{Mlin:06}. Neste trabalho foi implementado um esquema de classificação de padrões de consumo de memória utilizando Mapas Auto-Organizáveis (do inglês SOM - \textit{Self-Organized Maps}. Basicamente é feito um "mapa" de como a memória foi utilizada por determinada aplicação. Nesta dissertação de mestrado, esse "mapa" é utilizado como entrada para a ferramenta que irá calcular o tamanho do CC, baseado no "mapa" das aplicações testadas.
 
 \section {Motivação}
 \label{sec:motivacao}
@@ -75,16 +80,20 @@ A memória é um dos componentes críticos que possuem maiores restrições de recurs
 
 Dado esse cenário, é muito importante definir mecanismos que aperfeiçoem a utilização de memória e/ou a performance das aplicações quando estas fazem uso da memória do dispositivo.\\
 
-Em \cite{castro03}, foi implementada uma versão do Cache Comprimido Adaptativo para a versão 2.4.x do \textit{kernel} do Linux. Os mecanismos de falta de memória encontrados na versão 2.4.x são diferentes do que temos hoje, nas versões mais atuais (2.6.x, por exemplo). Um ponto motivacional deste trabalho é a realização de uma implementação do Cache Comprimido Adaptativo para as versões mais atuais do Linux \textit{kernel}, disponibilizando assim seu uso em dispositivos móveis mais atuais, baseados em Linux. A implementação do Cache Comprimido atual está em implementação \cite{ccache06}, e a idéia desta dissertação é contribuir nesse projeto \textit{Open Source}.\\
+Em \cite{castro03}, foi implementada uma versão do Cache Comprimido Adaptativo para a versão 2.4.x do \textit{kernel} do Linux. Os mecanismos de falta de memória encontrados na versão 2.4.x são diferentes do que temos hoje (ex. mapeamento de páginas anônimas, Out-of-memory killer, etc), nas versões mais atuais (2.6.x, por exemplo).\\
 
-Na versão do Cache Comprimido Adaptativo apresentada em \cite{ccache06}, não foi utilizada nenhuma técnica para estimar o comportamento do tamanho da memória comprimida. A escolha de uma heurística inadequada pode impactar no desempenho de todo o sistema, pois a relação memória comprimida X memória descomprimida é muito importante quando se trata de adaptatividade. Estudos realizados anteriormente em \cite{castro03}, mostram que uma escolha errada no tamanho da memória comprimida pode criar \textit{overheads} desnecessários ao sistema, acarretando em perda de performance. Assim, a implementação de um esquema de adaptatividade utilizando SOM se torna um outro ponto de motivação do trabalho.
+Um ponto motivacional deste trabalho é a realização de uma implementação do Cache Comprimido Adaptativo para as versões mais atuais do \textit{kernel} do Linux, disponibilizando assim seu uso em dispositivos móveis mais atuais, baseados neste sistema operacional. Uma implementação atual do CC está em implementação \cite{ccache06}, e a idéia desta dissertação é contribuir nesse projeto \textit{Open Source}, além de melhorar o desempenho das aplicações quando executadas em ambiente de Linux embarcado, propondo uma nova metodologia de gerenciamento de memória no \textit{kernel} do Linux.\\
+
+Na versão do Cache Comprimido Adaptativo apresentada em \cite{ccache06}, não foi utilizada nenhuma técnica para estimar o comportamento do tamanho da memória comprimida. A escolha de uma heurística inadequada pode impactar no desempenho de todo o sistema, pois a relação memória comprimida X memória não-comprimida é muito importante quando se trata de adaptatividade. Estudos realizados anteriormente em \cite{castro03}, mostram que uma escolha errada no tamanho da memória comprimida pode criar \textit{overheads} desnecessários ao sistema, acarretando em perda de performance. Assim, a implementação de um esquema de adaptatividade utilizando SOM se torna um outro ponto de motivação do trabalho.
 
 \section{Objetivos}
 \label{sec:objetivos}
 
-O propósito principal deste trabalho é desenvolver um sistema de memória comprimida, utilizando como base a implementação \textit{Open Source} encontrada em \cite{ccache06}, e que implemente o conceito de adaptatividade. Experimentos realizados em trabalhos anteriores como em \cite{castro03}, indicaram que o tamanho da área comprimida de memória afeta o desempenho do sistema. Espera-se que, seja possível classificar o uso da memória, como mostrado em \cite{Mlin:06} e utilizar esses dados na heurística de como a área de cache comprimido deve ser dimensionada. A implementação deste trabalho, não deverá ter dependências de arquitetura, apesar de ser focada em Linux embarcado para arquitetura ARM.\\
+O propósito principal deste trabalho é desenvolver um sistema de memória comprimida, utilizando como base a implementação \textit{Open Source} encontrada em \cite{ccache06}, e que implemente o conceito de adaptatividade do tamanho do CC, baseado em perfis de aplicações, definidos utilizando SOM's.\\
 
-A área para memória comprimida será adicionada ao sistema existente como mostrado na figura \ref{fig:cc_intro}. 
+Experimentos realizados em trabalhos anteriores como em \cite{castro03, briglia07}, indicaram que o tamanho da área comprimida de memória afeta o desempenho do sistema. Espera-se que, seja possível classificar o uso da memória, como mostrado em \cite{Mlin:06} e utilizar esses dados na heurística de como a área de cache comprimido deve ser dimensionada. A implementação deste trabalho, não deverá ter dependências de arquitetura, apesar de ser focada em Linux embarcado para arquitetura ARM (\textit{Advanced RISC Machine}.\\
+
+A área para memória comprimida será adicionada ao sistema existente como mostrado na figura \ref{fig:cc_intro}.
 
 \begin{figure}[ht]%htbp
 \centering
@@ -93,415 +102,21 @@ A área para memória comprimida será adicionada ao sistema existente como mostrad
 \label{fig:cc_intro}
 \end{figure}
 
-A versão do \textit{kernel} utilizada será 2.6.x, e como trabalho final será gerado um \textit{patch} ou uma série de \textit{patches} que aplicados à última versão disponível deverá implementar o Cache Comprimido Adaptativo. Também será gerada uma aplicação que extrairá os dados providenciados pelo SOM, durante a classificação do uso da memória. Essa aplicação exportará os dados necessários para o ajuste do tamanho do cache comprimido.\\
+A versão do \textit{kernel} utilizada é a 2.6.x, e como resultado prático final um \textit{patch} ou uma série de \textit{patches} serão gerados, com modificações relativas à implementação do CC para a última versão do \textit{kernel} disponível. Uma aplicação que extrai os dados providenciados pelo SOM durante a classificação do uso da memória, será implementada. Essa aplicação exportará os dados necessários (como os perfis de consumo de memória de aplicações escolhidas), para o ajuste do tamanho do CC.\\
 
-Para a validação da implementação, serão utilizados dois tipos de testes: \textit{benchmarks} sintéticos e testes com casos de uso reais. Nos testes com \textit{benchmarks}, serão utilizados programas como o MemTest \cite{memtest06}, e o LLCbench \cite{llcbench07}, que são uma suíte de testes para avaliar a performance da memória principal e da memória \textit{cache}. No caso dos testes utilizando casos de uso, será utilizado uma ferramenta de automação chamada XAutomation \cite{xauto07}, para criar uma interação com o sistema, simulando um uso real das aplicações, enquanto dados referentes à utilização da memória cache comprimida são armazenados. Com estes dois tipos de testes, espera-se ter dados suficientes para apontar o impacto da utilização de compressão da memória utilizando SOM, com a heurística para adaptar o tamanho da memória comprimida.
+Para a validação da implementação, são utilizados dois tipos de testes: \textit{benchmarks} sintéticos e testes com casos de uso que simulam a utilização real do sistema. Nos testes com \textit{benchmarks}, são utilizados suites como o MemTest \cite{memtest06}, o LLCbench \cite{llcbench07}, que são um conjunto de testes para avaliar a performance da memória principal e da memória \textit{cache} de um sistema operacional. Também é utilizado o MiBench \cite{GRE01}, um \textit{benchmark} específico para sistemas embarcados. No caso dos testes utilizando casos de uso, será utilizado uma ferramenta de automação chamada XAutomation \cite{xauto07}, para criar uma interação com o sistema, simulando um uso real das aplicações, enquanto dados referentes à utilização da memória cache comprimida são armazenados. Com estes dois tipos de testes, espera-se ter dados suficientes para apontar o impacto da utilização de compressão da memória utilizando SOM, com a heurística para adaptar o tamanho da memória comprimida.
 
-\chapter{Cache Comprimido}
-\section{Estado Atual da Pesquisa}
-\label{sec:pesquisa}
-
-Esta seção tem o propósito de apresentar os estudos e as pesquisas realizadas até o momento, que são requisitos relevantes para o desenvolvimento da proposta descrita na Seção \ref{sec:objetivos}.\\
-
-Inicialmente será apresentado o estado da arte, onde serão apresentados alguns trabalhos relacionados. Em seguida, será apresentada a atual de implementação do Cache Comprimido para a versão 2.6.x do \textit{kernel} do Linux encontrada em \cite{ccache06}. Também serão apresentados alguns testes realizados com essa versão e apresentados em \cite{briglia07}. Por fim, será demonstrado o esquema de classificação de padrões de consumo de memória apresentado em \cite{Mlin:06} e como essa metodologia poderá ajudar na implementação da adaptatividade no Cache Comprimido atual.
-
-\subsection{A memória virtual do Linux}
-
-Páginas físicas são a unidade básica do gerenciamento de memória \cite{love05kerneldevel} e o MMU é o hardware responsável por traduzir endereços virtuais em reais das páginas de memória, e vice-versa. \\
-
-No gerenciamento da memória virtual, duas listas do tipo (LRU - \textit{Last Recently Used}) são utilizadas afim de classificar as páginas: LRU para páginas ativas e uma LRU para páginas inativas. Quando o sistema precisa alocar novas páginas, elas são retiradas da lista LRU de páginas inativas. O algoritmo responsável por selecionar e liberar as páginas é chamado de Page Frame Reclaiming Algorithm - PFRA.\\
-
-Afim de identificar cada tipo de página, \textit{flags} são utilizadas na estrutura de dados que implementam as páginas. Para diferenciar as páginas comprimidas das páginas comuns, esta implementação do Cache Comprimido adiciona uma \textit{flag} na estrutura de dados da página.\\
-
-Quando o sistema está sob pressão de memória, ou seja, há pouca menos memória disponível que o necessário, o PFRA libera as páginas de acordo com a sua classificação:
-
-\begin{itemize}
-\item Páginas do \textit{Swap-cache} são escritas na área de \textit{swap} disponível.
-
-\item Páginas "sujas" do \textit{Page cache} são escritas no \textit{filesystem} utilizando o procedimento específico de escrita.
-
-\item Páginas "limpas" do \textit{Page Cache} são simplesmente liberadas.
-\end{itemize}
-
-\subsubsection{O Swap Cache}
-
-Este é o cache para páginas anônimas. Toda as páginas do \textit{swap cache} são parte de um único \textbf{swapper\_space}, a estrutura que agrupa todas as páginas que podem ir para a área de \textit{swap}. Uma outra estrutura de dados, chamada \textit{radix tree} é utilizada para manter todas as páginas do \textit{swap cache} e torna a busca por páginas muito mais eficiente. O campo \textbf{swp\_entry\_t} da estrutura de dados da área de \textit{swap} é utilizado como chave-de-busca quando uma página do \textit{swap cache} é procurada. Este identificador identifica onde a página se encontra no dispositivo de bloco utilizado pelo \textit{swap}..
-
-\begin{figure}[htb]
-	\centering
-	\includegraphics[scale=0.7]{swp_entry}
-	\caption{Campos da estrutura \texttt{swp\_entry\_t}}
-	\label{fig:swp_entry_fields}
-\end{figure}
-
-Na figura \ref{fig:swp_entry_fields}, \textbf{`type'} identifica páginas que podem ser \textit{swapped}.
-
-\subsubsection{O Page Cache}
-Este é o cache utilizado para armazenar as páginas do \textit{filesystem}. Ou seja, todo arquivo aberto pelas aplicações, possuem páginas de memória alocadas e armazenadas no Page Cache. Assim como o Swap Cache, este cache também possui uma \textit{radix tree} que armazena as referências, ou melhor, os ponteiros para as páginas do cache. O valor de \textit{offset} dentro do arquivo é utilizado como chave-de-busca. Cada arquivo aberto possui uma \textit{radix tree} própria. Paga páginas presentes na memória, o nodo correspondente na \textit{radix tree} aponta para a página que contém uma parte do arquivo e um valor de \textit{offset} da mesma dentro do arquivo o qual pertence.
-
-\subsection{Cache Comprimido}
-Em um sistema com cache comprimido, a memória é dividida em duas grandes porções: memória comprimida e não-comprimida \cite{castro03}, \cite{douglis93}, \cite{kaplan99compressed}. A área de memória comprimida geralmente é alocada onde antes existia memória não-comprimida. A relação dos tamanhos da memória comprimida e não-comprimida deve ser avaliada pois os dois tamanhos interferem em como cada porção de memória se comporta, dependendo do \textit{workload} imposto pelas aplicações.\\
-
-Muitos pesquisadores têm investigado o uso de compressão para reduzir as operações de \textit{paging}, introduzindo um novo nível na hierarquia de memória. Armazenar as páginas de memória em uma área comprimida, naturalmente aumenta o tamanho efetivo da memória e também diminui o acesso à dispositivos de memória secundária \cite{castro03}, muito mais lenta que a principal. Apesar dessa diferença de velocidade entre a memória principal e a memória secundária ser grande, quando se leva em conta os sistemas embarcados, não tem-se uma diferença muito grande. Geralmente os sistemas embarcados não possuem memória secundária armazenada em um disco rígido, outros dispositivos são utilizados nesse caso. Memórias do tipo \textit{compact flash}, cartões MMC, são os principais dispositivos encontrados hoje no mercado, que são utilizados como memória secundária. Mesmo tendo a diferença de velocidade de acesso entre a memória principal e a secundária menor, os sistemas embarcados possuem um grande requisito relacionado ao tamanho dessa memória. Assim, o uso de compressão é justificado pois, como será discutido posteriormente, é capaz de aumentar o tamanho efetivo da memória disponível para as aplicações.\\
-
-As abordagens de cache comprimido baseadas em \textit{software}, ou seja, aquelas que não propõem alteração de \textit{hardware}, podem ser estáticas ou dinâmicas. As abordagens estáticas são caracterizadas por não possuírem uma heurística de redimensionamento do cache comprimido, diferente das abordagens dinâmicas. Nesse segundo tipo, existe um algoritmo que determina quando o cache comprimido deve alterar seu próprio tamanho, geralmente baseado no \textit{workload} da memória.\\
-
-Os primeiros estudos que utilizavam cache comprimido foram feitos por Wilson \cite{wilson99}, Appel e Li \cite{li91}, em 1990. Outro pesquisador, chamado Douglis\cite{douglis93}, obteve algumas melhorias na performance do sistema, usando uma implementação de cache comprimido adaptativo, no sistema operacional Sprite. Porém, Douglis também teve alguns problemas e não conseguiu concluir se o uso de cache comprimido é útil ou não.\\
-
-Tendo o trabalho de Douglis ser inconclusivo, muitos outros pesquisadores se ocuparam em estudar o caso. Em 1999, Kaplan\cite{kaplan99compressed} chegou à conclusão que a compressão do cache pode reduzir os custos das operações de \textit{paging}. Kaplan ainda confirmou o que Douglis\cite{douglis93} verificou anteriormente: cache comprimido estático beneficia menos do que um cache comprimido com adaptatividade. Alguns trabalhos correlatos também foram desenvolvidos em 1999. Como apresentado em \cite{swapcc99}, não se trata especificamente da memória cache comprimida, mas sim da compressão da área de \textit{swap} do sistema. No trabalho apresentado em \cite{swapcc99}, foi implementado uma versão de compressão da memória voltada às páginas que podem ser selecionadas para o \textit{swap}, salvando algum espaço no disco e diminuindo as operações de E/S no \textit{swap}. Testes concluíram que a compressão da área de \textit{swap} pode aumentar a velocidade das aplicações em 20\%. Outros trabalhos também apontaram ganhos na performance de aplicações, como apresentado em \cite{tuduce05}.\\
-
-Os trabalhos discutidos anteriormente, são antigos e foram implementados em sistemas operacionais da época. Os que foram implementados em Linux, utilizava a versão 2.4.x do \textit{kernel}. Daquela época para dos dias atuais, o \textit{kernel} do Linux sofreu muitas melhorias e o esquema utilizado para o cache comprimido nessa versão do \textit{kernel} é diferente. Por essa razão, as próximas seções fazem um \textit{overview} da versão do cache comprimido para o \textit{kernel} 2.6.x, implementada por Nitin Gupta \cite{ccache06} e apresentada em \cite{briglia07}.
-
-\subsection{Cache Comprimido para Linux \textit{kernel} 2.6.x}
-
-Dados experimentais\cite{briglia07} avaliados em um sistema utilizando Cache Comprimido, nos mostram que nós podemos não só melhorar as taxas de E/S (Entrada e Saída), como também todo o comportamento do sistema, especialmente em situações de memória crítica, como por exemplo, adiando a chamada do \textit{out-of-memory killer} -- OOM.\\
-
-A implementação atual do Cache Comprimido tira vantagem do sistema de \textit{swap}, adicionando uma área de \textit{swap} virtual como área de estocagem das páginas de memória comprimida. Usando um algoritmo de compressão baseado em dicionários, páginas do \textit{page cache}, ou seja, do \textit{filesystem} e páginas anônimas são comprimidas e distribuídas em porções de memória de tamanho variável - \textit{\textbf{chunks}}\cite{irina05}. Com essa abordagem, tem-se o mínimo de framentação e uma rápida recuperação das páginas, quando estas são requisitadas pelo sistema. O tamanho do Cache Comprimido pode ser ajustado separadamente para páginas do \textit{page cache} e páginas anônimas. Este ajuste é efetuado através de escritas em variáveis exportadas no \texttt{procfs}, dando maior flexibidade ao usuário em relação aos casos de uso da memória.
-
-\subsubsection{Design da Implementação}
-
-Quando uma página está para ser comprimida, o nodo da árvore radix que está apontando para a página tem sua referência trocada, apontando para um \textit{chunk\_head}. Por sua vez, a estrutura \textit{chunk\_head} possui todas as informações para encontrar os outros \textit{chunks} e assim recuperar a página comprimida: tamanho da página comprimida, algoritmo usado na compressão, localização do primeiro \textit{chunk}, etc.\\
-
-Quando uma página é requisitada, uma operação de \textit{lookup} é realizada na árvore radix do page-cache. Se esta operação retornar um \textit{chunk\_head}, significa que a página é comprimida e está dividida em vários \textit{chunks} de tamanho menor que \texttt{PAGE\_SIZE}. Como o \textit{chunk\_head} possui um ponteiro para o primeiro \textit{chunk} da lista de \textit{chunks} da página, é possível recuperar todos os \textit{chunks}, pois os mesmos fazem parte de uma lista encadeada. Após todos os \textit{chunks} serem recuperados, a página pode ser descomprimida e um ponteiro para ela é passado à função de \textit{lookup}. Esta sequência de operações será detalhada nas seções posteriores deste trabalho.
-
-\subsubsection{Armazenamento das Páginas Comprimidas}
-
-A idéia básica é armazenar as páginas comprimidas em blocos de memória de tamanho variável, chamados \textit{chunks}. Uma página comprimida é armazenada em vários \textit{chunks}. O espaço em memória para os \textit{chunks} é obtido se fazendo alocações de páginas da memória, o espaço alocado é gerenciado e dividido em tamanhos menores. Todos os chunks são conectados em uma lista duplamente encadeada chamada \textit{master chunks list}. Além desta lista, os \textit{chunks} do mesmo tipo, por exemplo, todos os \textit{chunks} livres ou todos os \textit{chunks} pertencentes à mesma página comprimida, também são conectados através de uma lista encadeada.
-
-\begin{figure}[tb]
-	\centering
-	\includegraphics[width=\columnwidth,scale=0.60]{chunks}
-	\caption{Um exemplo de uma página comprimida dividida em vários \textit{chunks}. Blocos de mesma cor significam que os \textit{chunks} pertencem à mesma página. A cor branca indica \textit{chunks} livres, ou seja, que não pertencem a nenhuma página comprimida.}
-	\label{fig:comp_storage_structure}
-\end{figure}
-
-Note que:
-\begin{itemize}
-	\item Um \textit{chunk} não pode ultrapassar os limites de um \textit{slot} de página, como mostrado na figura \ref{fig:comp_storage_structure}. Um \textit{chunk} é separado nesses casos. O tamanho máximo de um \textit{chunk} é \texttt{PAGE\_SIZE}.
-	\item Estra estrutura reduz a fragmentação ao máximo, pois todo espaço livre é aproveitado.
-	\item Quando uma página comprimida é retirada, seus \textit{chunks} são liberados e adicionados à lista de \textit{chunks} livres. \textit{Chunks} livres adjacentes são mesclados, respeitando o limite do \textit{slot} da página. Se um \textit{chunk} livre tiver o mesmo tamanho de uma página, ou seja, \texttt{4KB}, a página inteira é liberada.
-\end{itemize}
-
-O tamanho do Cache Comprimido se inicia com uma única página de memória (\texttt{4KB}), e se expande à medida que novas páginas são comprimidas e armazenadas.\\
-
-Uma lista LRU - \textit{Least Recently Used} é mantida para todos os \textit{chunks}, na medida que estes são criados. O último \textit{chunk} da lista é o mais antigo. Esta lista é utilizada na liberação dos \textit{chunks}, os mais antigos possuem prioridade para serem liberados.
-
-\subsubsection{Operações de Inserção e Remoção das Páginas}
-
-\textbf{Adição de páginas no Cache Comprimido:} a página descomprimida é primeiramente comprimida numa página de \textit{buffer}. Então, o número de \textit{chunks} livres é pego da lista de \textit{chunks} livres, ou uma nova página é alocada e utilizada para o \textit{chunk}, de acordo com o tamanho da página comprimida. Os \textit{chunks} pertencentes à mesma página comprimida são conectados numa mesma lista. O espaço livre remanescente do último \textit{chunk} é inserido na lista de \textit{chunks} livres. O ponteiro para a página presente na árvore \textit{radix} do page-cache é substituído para apontar o \textit{chunk\_head} da página recém comprimida. Páginas que aumentam seu tamanho ou que não podem ser comprimidas, nunca são adicionadas ao Cache Comprimido. Elas são tratadas de forma padrão pelo PFRA.\\
-
-\textbf{Remoção de páginas do Cache Comprimido:} quando uma página é armazenada na memória, geralmente é utilizada uma estrutura de dados do tipo \texttt{page} correspondente à página física da memória. Mas, se uma página foi comprimida, temos uma estrutura chamada \textit{chunk\_head}, ao invés da estrutura padrão de página. A \textit{flag} \texttt{PG\_COMPRESSED} é utilizada para identificar o nodo da árvore \textit{radix} que possui um ponteiro para uma página comprimida (um \textit{chunk\_head}. Como todos os \textit{chunks} de uma página comprimida são conectados numa lista, para descomprimir somente é necessário agrupá-los e descomprimi-los numa página de \textit{buffer}. Após isso, passa-se o ponteiro da página de \textit{buffer} para a árvore \textit{radix}, retornando assim a página descomprimida.
-
-\section{Experimentos}
-
-Nesta seção serão apresentados os testes que foram executados utilizando Cache Comprimido em um sistema embarcado. O principal objetivo dos testes é avaliar os impactos e as características do consumo de memória, quando temos uma área comprimida adicionada ao sistema.\\
-
-Como dito anteriormente, a atual implementação do Cache Comprimido trata dois tipos de páginas: páginas anônimas e páginas do page-cache. O primeiro tipo de páginas foi utilizado como referência pois pode ser feito \textit{swap}, facilitando a obtenção de dados para os gráficos.\\
-
-Foram realizados testes com e sem um \textit{swap} real, utilizando uma partição em um cartão MMC. A utilização de um \textit{swap} real se justifica pois é importante comparar o \textit{swap} virtual com o real. Como medidas desta comparação, foram considerados os seguintes itens:
-
-\begin{itemize}
-	\item  Quantas páginas são mantidas no Cache Comprimido e não vão para o \textit{swap} real, evitando assim um maior \textit{overhead} por causa das I/O's
-	\item Mudanças no consumo de potência do equipamento.
-	\item Comparação entre os diferentes algoritmos de compressão utilizados.
-\end{itemize}
-
-\subsection{Suite de Testes e Metodologia}
-
-Utilizou-se um dispositivo móvel, parecido com um PDA, que possui Linux embarcado como sistema operacional nativo. O Nokia Internet Tablet N800 tem um processador ARM1136 com 330Mhz, 128MB de memória RAM e 256MB de memória \textit{flash}, utilizada como armazenamento secundário. Ainda possui acelerador gráfico 2D/3D e dois leitores de cartão MMC/SD.\\
-
-Nota-se que este dispositivo, como muitos outros, foi projetado para aplicações multimídia. Este tipo de aplicação demanda muito poder de processamento e quantidade de memória razoável para as aplicações. Levando isso em consideração, os testes foram realizados afim de verificar o comportamento de todo o sistema e das aplicações multimídia, quando a quantidade de memória livre disponível é muito baixa. Seria a performance de todo o sistema, abalada pelas operações de compressão e recuperação das páginas comprimidas?\\
-
-Os casos de uso dos testes podem ser divididos em duas partes: testes que utilizam \textit{benchmarks} sintéticos e testes que simulam a utilização real do aparelho. No primeiro grupo, existe um maior controle do consumo de memória e assim, pode-se avaliar o comportamento do Cache Comprimido quando é submetido à pressões por falta de memória. No segundo grupo, foi verificado se o Cache Comprimido exerce um \textit{overhead} muito grande no sistema, afetando assim a performance das aplicações que o usuário pode executar. Espera-se que a performance das aplicações melhore, visto que o número de I/O's resultantes de acessos à um dispositivo de \textit{swap} real (um \textit{block device)}, é diminuído pois mais páginas se encontram na memória principal.\\
-
-Os testes utilizando aplições, consistem em:
-
-\begin{itemize}
-
-\item Executar 8 ou 9 instâncias do navegador WEB, simultaneamente, acessando páginas na Internet através de uma conexão de rede sem-fio.
-
-\item Tocar um arquivo de vídeo de 7,5MB.
-
-\item Abrir um documento em formato PDF.
-\end{itemize}
-
-Para fazer a interação entre o X system e as aplicações, foi utilizado uma ferramenta chamada Xautomation \cite{xauto07}. Com esta ferramenta foi possível controlar toda a movimentação do cursor na tela e os cliques. Enquanto as aplicações eram executadas, outros programas ficam responsáveis de fazer a coleta das informações referentes ao consumo de memória, através de leituras das estatísticas exportadas pelo \texttt{procfs}. É com base nesses dados que alguns gráficos foram plotados e discutidos nas seções posteriores deste trabalho.\\
-
-Os testes utilizando \textit{benchmarks} sintéticos, foram executados usando um conjunto de utilitários chamado MemTest \cite{memtest06}. MemTest foi implementado para valiar a estabilidade e consistência do sistema de gerência de memória do Linux \textit{kernel}. Do MemTest foi utilizado um utilitário chamado \texttt{fillmem}. Este utilitário faz várias alocações de memória, ou seja, de páginas de memória, disparando a necessidade de mandar algumas páginas para o \textit{swap}. É nesse momento que foram realizadas as medições referentes às páginas comprimidas, tais como, tamanho da página após a compressão, memória livre, se o Out-of-memory killer foi invocado, etc.\\
-
-Ambos os tipos de testes, utilizaram cenários pré-definidos, dependendo do que se queria medir. Basicamente, os cenários apresentavam diferentes tamanhos da memória principal, se possuíam uma área de \textit{swap} real ou não, ou se estavam com o Cache Comprimido sendo executado ou não.\\
-
-Os testes de comportamento do consumo de memória visam avaliar como a memória é consumida ao longo do tempo de duração do teste. Assim, espera-se identificar os pontos de falta de memória e a atuação do Out-of-memory killer. Como o Cache Comprimido se utiliza da memória principal para armazenar as páginas, a quantidade de memória não-comprimida disponível para as aplicações é decrescida, e isso pode levar a uma chamada precoce do OOM killer. Por fim, os testes consumo de potência foram realizados com o propósito de avaliar e medir os impactos da compressão de memória no consumo da bateria do aparelho, visto que esse é um ponto crucial quando se está desenvolvendo para sistemas embarcados.
-
-\subsubsection{Ajustando o kernel}
-
-Antes dos testes serem iniciados, alguns parâmetros do gerenciamento de memória do \textit{kernel} devem ser ajustados, afim de garantir que os testes sejam executados com sucesso.\\
-
-O sistema de \textit{swap} do \textit{kernel} possui alguns parâmetros que podem interferir nos valores medidos, e até na execução das aplicações. Durante os testes, foram alterados dois parâmetros:
-
-\begin{itemize}
-\item \textbf{swappiness} \cite{linuxinet07} é um parâmetro que configura um fator de balanço que o \textit{kernel} utiliza para manter mais ou menos páginas no page-cache antes de mandar para a área de \textit{swap}. Seu valor \textit{default} é 60.
-\item \textbf{min\_free\_kbytes} \cite{linuxinet07} é usado como um limite mínimo de memória livre para que o sistema de gerenciamento de memória virtual do \textit{kernel} comece a mandar páginas para o \textit{swap}.
-\end{itemize}
-
-Se o usuário quer que o \textit{kernel} mande mais páginas para o \textit{swap}, o que significa em mais páginas comprimidas, o parâmetro \texttt{swappiness} deve ser acrescido. Uma outra forma de mandar as páginas mais cedo para o \textit{swap}, é aumentar o valor do \texttt{min\_free\_kbytes}. Durante os testes, foram utilizados valores diferentes desses dois parâmetros em cada cenário.\\
-
-Existem outros parâmetros que também devem ser ajustados, mas que não fazem parte do \textit{kernel} padrão. São os parâmetros que configuram o tamanho do Cache Comprimido para as páginas anônimas e as páginas do page-cache. Os parâmetros são os seguintes:
-
-\begin{itemize}
- \item \texttt{max\_fs\_backed\_cc\_size:} este parâmetro é utilizado para configurar o tamanho máximo do Cache Comprimido para páginas que pertencem ao page-cache.
-\item \texttt{max\_anon\_cc\_size:} este parâmetro é encarregado de configurar o tamanho máximo do Cache Comprimido para pa?inas anônimas.
-\end{itemize}
-
-Vale ressaltar que os valores que devem se escritos nesses parâmetros estão na unidade de quantidade de páginas de memória (\texttt{4KB}).
-
-\subsection{Testes do Comportamento do Consumo de Memória}
-\label{sec:mem_behavior}
-
-O principal objetivo deste tipo de testes é visualizar como a memória é consumida ao longo do tempo, quando várias aplicações são executadas pelo usuário. Para realizar estes testes, foram utilizados cenários que simulasse a interação do usuário.\\
-
-Usando um \textit{bash script} com o XAutomation \cite{xauto07}, foi possível interagir com o servidor gráfico. Enquanto as aplicações eram executadas, um outro programa fazia leituras no \texttt{procfs}, coletando informações sobre a memória.\\
-
-A Figura \ref{fig:memtest01} mostra o consumo de memória através do tempo com o \texttt{max\_anon\_cc\_size} configurado para 1024 páginas (ou 4MB de tamanho).
-
-\begin{figure}[tb]
-	\centering
-	\includegraphics[width=\columnwidth,scale=0.26]{mem_behavior01}
-	\caption{Tamanho do Comp. Cache x tempo: max\_anon\_cc\_size = 1024, Mem = 128M}
-	\label{fig:memtest01}
-\end{figure}
-
-Como pode-se notar na Figura \ref{fig:memtest01}, o consumo da área reservada para as páginas comprimidas foi baixo. Isso se deve ao fato do \textit{kernel} estar configurado para reter mais páginas na memória, ou seja, na área descomprimida antes de enviá-las ao \textit{swap}. Lembrando que a implementação atual do Cache Comprimido se aproveita do sistema de \textit{swap} para comprimir as páginas, se o \textit{swap} estiver configurado para não ser muito utilizado, isso reflete no consumo do Cache Comprimido. Na Figura \ref{fig:memtest02}, a memória RAM foi limitada para somente 100 MB, ao invés de 128 MB. Pode-se notar que o OOM \textit{killer} foi invocada no tempo 600 ms. O Cache Comprimido nem teve tempo suficiente para reagir à rápida alocação do sistema.
-
-\begin{figure}[tb]
-	\centering
-	\includegraphics[width=\columnwidth,scale=0.32]{mem_behavior02}
-	\caption{Cache Comprimido x tempo: max\_anon\_cc\_size = 1024, Mem = 100M}
-	\label{fig:memtest02}
-\end{figure}
-
-Usando o mesmo teste, mas com \texttt{swappiness = 60} e \texttt{min\_free\_kbytes = 3072}, o OOM \textit{killer} não foi invocado e o Cache Comprimido finalmente foi bastante utilizado. Veja na Figura \ref{fig:memtest03}.
-
-\begin{figure}[tb]
-	\centering
-	\includegraphics[width=\columnwidth,scale=0.33]{mem_behavior03}
-	\caption{Cache Comprimido x tempo: swappiness = 60, min\_free\_kbytes = 3072}
-	\label{fig:memtest03}
-\end{figure}
-
-A Figura \ref{fig:memtest03} mostra que o Cache Comprimido não é suficiente para a carga de memória imposta pelo teste. Seria necessário aumentar o tamanho do Cache Comprimido, porém, tem-se um problema aqui: se o tamanho do Cache Comprimido foi muito grande, não restará muita memória livre para as outras operações do \textit{kernel}, uma vez que o Cache Comprimido utiliza páginas da memória RAM para a área de \textit{swap} virtual. Uma das possíveis soluções para este problema é a implementação de um esquema de adaptabilidade do tamanho do Cache Comprimido \cite{castro03, irina05}.\\
-
-Durante os testes, o tamanho das páginas comprimidas foi coletado afim de verificar qual é o tamanho médio de uma página depois de comprimida. Como pode-se ver na Figura \ref{fig:cc_dist}, a maioria das páginas ficam com metade do tamanho original depois de comprimidas. Mais ou menos 42\% das páginas ficam com tamanho entre 1 Kb e 2 Kb, depois da compressão.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=\columnwidth,scale=0.46]{cc_distribution}
-	\caption{Distribuição do tamanho das páginas comprimidas}
-	\label{fig:cc_dist}
-\end{figure}
-
-Os resultados destes testes indicam que tem-se um ganho na memória disponível para as aplicações quando o Cache Comprimido é utilizado. Com a fragmentação controlada através da abordagem de \textit{chunks}, e com a maioria das páginas comprimidas ficando com o tamanho entre 1 Kb e 2 Kb, pode-se chegar à conclusão que o Cache Comprimido aumenta em 100\% a memória disponível para as aplicações, através do \textit{swap} virtual. Esta é uma vantagem importante pois, aplicações que antes não puderam ser executadas por falta de memória, agora podem se beneficiar de uma memória virtualmente maior.\\
-
-Um dos problemas encontrados é que o \textit{kernel} deve ser bem ajustado para o uso do Cache Comprimido. Se isso não acontecer, o \textit{swap} virtual não é utilizado e as páginas não são comprimidas. Como as páginas reservadas ao Cache Comprimido nunca são liberadas pelo PFRA, seu tamanho pode diminuir a memória disponível para as aplicações, acarretando em constantes invocações do OOM \textit{killer}.
-
-\subsection{Testes de Performance}
-
-Nos testes de performance foram utilizados os \textit{bechmarks} sintéticos para avaliar alguns \textit{overheads} impostos pelo Cache Comprimido: overhead de compressão, overhead das listas de \textit{chunks} e overhead de compressão das páginas. Através dessa análise, espera-se que o Cache Comprimido seja mais rápido do que utilizar um \textit{swap} real em um dispositivo de armazenamento secundário, como um cartão MMC.\\
-
-Somente as páginas que podem ir para o \textit{swap} estão sendo consideradas aqui, ou seja, somente as páginas anônimas. Na Table \ref{tab:tab01} estão os resultados do tempo de execução do \texttt{fillmem} alocando 70 MB de memória (\texttt{swappiness = 60, min\_free\_kbytes = 1024KB, max\_cc\_anon\_size = 1280 páginas}).
-
-\begin{table}[tbph]
-\footnotesize
-\centering
- \begin{tabular}{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
- \hline
- \bfseries Teste & Sem-CCache & CCache WKdm & CCache WK4x4 & CCache LZO \\
- \hline
- \bfseries Tempo(s) & 14.68 & 4.64 & -- & 4.25 \\
- \hline 
- \end{tabular}
-\normalsize
-\caption{fillmem(70): Tempo usando Cache Comprimido x Tempo usando swap real}
-\label{tab:tab01}
-\end{table}
-
-O teste que utilizou o algoritmo de compressão \texttt{WK4x4} invocou o OOM \textit{killer} e não pôde ser finalizado. Mas, analisando os outros valores, pode-se concluir que a operação de \textit{swap} utilizando o Cache Comprimido é cerca de 3 vezes mais rápida do que utilizando um cartão MMC. Mas, e o OOM \textit{killer}?\\
-
-Como discutido anteriormente, o Cache Comprimido não possui a adaptabilidade para dimensionar o próprio tamanho da área comprimida utilizada. Assim, em algumas ocasiões o Cache Comprimido afeta o tamanho da memória livre e as aplicações acabam sendo terminadas pelo OOM \textit{killer}. Para um melhor desempenho do Cache Comprimido, é necessário que o sistema de \textit{swap} do \textit{kernel} seja bem configurado, como mostrado nas seções anteriores.
-
-\subsection{Testes de Consumo de Potência}
-
-Neste teste, a bateria do aparelho foi substituída por uma fonte de alimentação mensurável e variável. Com este equipamento, foi medida a potência total necessária pelo aparelho. Note que não foi avaliada a energia gasta no processador, seria um processo bastante complexo e intrusivo. A Figura \ref{fig:pm_test} mostra o consumo de potência ao longo de um dos testes realizados na seção \ref{sec:mem_behavior}.
-
-\begin{figure}[htb]
-	\centering
-	\includegraphics[width=\columnwidth,scale=0.47]{pm_table}
-	\label{fig:pm_table}
-\end{figure}
-\begin{figure}[htb]
-	\centering
-	\includegraphics[width=\columnwidth,scale=0.47]{pm_test01}
-	\caption{Power Consumption tests using CCache}
-	\label{fig:pm_test}
-\end{figure}
-
-Nos passo 1 a 5, o consumo de potência é padrão pois o Cache Comprimido estava ativo mas não utilizado. Os passos mais importantes são de 5 a 8. Nestes passos o Cache Comprimido começou a ser utilizado e podemos ver uma leve diferença no consumo de potência quando se usa o Cache Comprimido e quando não se usa. Nota-se que, quando o Cache Comprimido é utilizado, ao invés do \textit{swap} real, há um ganho de 3\% no consumo de potência. Acredita-se que isso se deve ao fato do \textit{kernel} fazer menos requisições de I/O, não necessitando assim acessar o controlador do cartão MMC.
-
-\chapter{Redes Neurais e Mapas Auto-organizáveis}
-\section{Redes Neurais e Mapas Auto-organizáveis}
-\label{sec:redes_artificiais}
-
-As \textit{redes neurais artificiais} consistem em um método para solucionar problemas de inteligência artificial, armazenando um conhecimento experimental do problema atrav\'{e}s de t\'{e}cnicas de treinamento, como discutido anteriormente.\\
-
-As redes neurais podem ser definidas como um grupo interconectado de neurônios artificiais que usa um modelo matemático ou computacional baseado no comportamento do cérebro humano para processamento de informações \cite{Christos, Smith, Haykin:99, Tatibana}. Uma rede neural é capaz de extrair regras básicas a partir de dados reais, ou seja, a sistemática do problema, diferindo assim da computação programada, onde é necessário um conjunto de regras rígidas pré-fixadas e algoritmos \cite{Haykin:99}. \\
-
-Existem duas abordagens de treinamentos para as redes neurais: o supervisionado e o não-supervisionado.
-
-\subsection{Treinando a rede neural}
-
-Independente do tipo de aprendizagem ou treinamento selecionado, toda rede é alimentada por uma seqüência de valores $x_{1}, x_{2}, \cdots, x_{n}$ na entrada e os pesos são ajustados de acordo com um modelo matemático durante a fase de treinamento. O processo de treinamento pode ser organizado nas etapas abaixo.
-
-\begin{enumerate}
-	\item O primeiro padrão de entrada é apresentado para a rede.
-	\item Os pesos são ajustados para capacitar a rede de reconhecer o padrão fornecido.
-	\item O segundo padrão de entrada é apresentado para a rede e a etapa 2 é efetuada novamente.
-	\item O mesmo é aplicado para todos os outros padrões.
-	\item O procedimento de 1 até 4 é executado novamente centenas ou milhares de vezes até encontrar uma configuração de pesos sinápticos capaz de reconhecer todos os padrões fornecidos no treinamento.
-\end{enumerate}
-
-\subsection{Mapas Auto-Organizáveis}
-\label{sec:som}
-
-\textit{Mapas Auto-Organizáveis} ou simplesmente \textit{SOM (do inglês Self Organizing Maps)} é uma rede neural artificial auto-organizável, de aprendizagem não supervisionada, baseada em grades de neurônios artificiais onde os pesos são adaptados em conformidade com os vetores de entrada fornecidos durante o treinamento. Foi desenvolvido pelo professor Teuvo Kohonen e as vezes é chamado de mapa de Kohonen \cite{Germano:99, Junkie, Honkela:98, Borgelt:00}.\\
-
-No SOM, os neurônios estão colocados em nós de uma grade unidimensional ou bidimensional, outras dimensões tamb\'{e}m s\~{a}o possíveis, embora n\~{a}o sejam t\~{a}o comuns. Os neurônios são seletivamente sintonizados a vários padrões de entrada ou classes de padrões de entrada no decorrer de um processo de aprendizagem ou treinamento.\\
-
-As localizações dos neurônios assim sintonizados se tornam ordenadas entre si de modo que um sistema de coordenadas significativas para características diferentes de entrada é criado sobre a grade. Portanto um mapa auto-organizável é caracterizado pela formação de uma mapa topográfico dos padrões de entrada, baseado nas características estatísticas intrínsecas contidas nos padrões de entrada, por isso o nome \textit{mapa auto-organizável} \cite{Haykin:99}.
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.30\textwidth]{training}
-	\caption{Exemplo de rede n\~{a}o treinada.}
-	\label{fig:training}
-\end{figure}
-
-Um exemplo comum usado para mostrar os princípios de SOM é o mapeamento de cores a partir de seus 3 componentes: vermelho, verde e azul ou RGB (red, green and blue) em um espaço bidimensional. A Figura \ref{fig:som_demo} ilustra um exemplo de SOM treinado para reconhecer padrões de cores RGB. As cores são fornecidas para a rede como vetores de 3 dimensões, uma dimensão para cada componente de cor, e a rede foi treinada para representá-los em um espaço de 2 dimensões. Observe que além do agrupamento de cores em regiões distintas, as regiões de propriedades similares estão localizadas de forma adjacente.
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.30\textwidth]{som_demo}
-	\caption{Um exemplo de SOM treinado para classificação de cores.}
-	\label{fig:som_demo}
-\end{figure}
-
-A rede SOM ilustrada na Figura \ref{fig:som_demo} apresenta uma grade de tamanho $40 \times 40$. Cada nó da grade possui 3 pesos, cada um representando um componente RGB. Além disso, cada nó é representado por uma célula retangular, quando desenhado na interface gráfica do aplicativo.\\
-
-Cada nó da grade tem uma posição topológica específica representada por uma coordenada $(x, y)$ e contém um vetor de pesos sinápticos de dimensão igual ao vetor de entrada. Ou seja, caso os dados de treinamento consistem de vetores $x$ de dimensão $n$:\[ x = [x_{1}, x_{2}, x_{3}, ..., x_{n}] \] Então cada nó ou neurônio $j$ da grade contém um vetor correspondente de peso $w_{j}$ com a mesma dimensão $n$:
-
-\[ w_{j} = [w_{j1}, w_{j2}, w_{j3}, ..., w_{jn}] \]
-
-A formação do SOM \'{e} feita primeiramente inicializando os pesos sinápticos da grade, com valores obtidos de um gerador de números randômicos. Assim, nenhuma organização prévia é imposta ao mapa de características (veja figura \ref{fig:training}. Depois que a grade \'{e} feita, s\~{a}o executados 6 processos importantes\cite{Haykin:99}:
-
-\begin{description}
-	\item[Inicialização:] Cada neurônio tem os seus pesos sinápticos inicializados aleatoriamente. Geralmente os pesos são inicializados entre 0 e 1, ou seja, $0 < w < 1$.
-	\item[Seleção de Vetor de Entrada:] Um vetor de entrada é escolhido do conjunto de dados de treinamento e apresentado para a grade de neurônios.
-	\item[Competição de Neurônios:] Todos os pesos de todos os neurônios são calculados para determinar o neurônio mais semelhante em relação vetor de entrada. O neurônio mais semelhante \'{e} selecionado e é considerado como o neurônio vencedor e chamado de \textit{Unidade de Melhor Casamento ou BMU (do inglês Best Matching Unit)}.
-	\item[Cooperação de Neurônios:] O \textit{raio da vizinhança topológica} do BMU é calculado. O valor do raio assume inicialmente um valor elevado, geralmente tem o mesmo o raio da grade, mas diminui a cada iteração do treinamento. Os neurônios localizados dentro deste raio são considerados os vizinhos do BMU.
-	\item[Adaptação Sináptica:] Os pesos sinápticos de cada neurônio vizinho do BMU são ajustados para torná-los similares ao vetor de entrada. Os neurônios vizinhos mais próximos do BMU têm os seus pesos alterados de modo mais significativo.
-	\item[Repetição:] O segundo passo é retomado novamente selecionando um novo vetor de entrada e os passos subseqüentes são então executados.
-\end{description}
-
-A forma para determinar o BMU é acessar todos os neurônios da grade e calcular a \textit{distância Euclidiana} entre o vetor peso de cada neurônio e o vetor de entrada atual. O neurônio de vetor peso mais próximo do vetor de entrada (menor distância Euclidiana), é considerado como o neurônio vencedor ou BMU. Neste caso a distância Euclidiana é a função discriminante neste processo competitivo de neurônios e calculado como ilustra a Equação \ref{eq:euclidean}.
-
-\begin{equation}
-dist_{j} = \sqrt{\sum_{i=1}^n (x_{i}-w_{i})^2}
-\label{eq:euclidean}
-\end{equation}
-
-A cada iteração do treinamento, após o BMU ter sido determinado, o passo seguinte consiste em calcular quais são os neurônios localizados na vizinhança topológica do BMU. Tais neurônios terão os seus pesos sinápticos alterados posteriormente durante o processo de adaptação sináptica. A figura \ref{fig:bmu} ilustra um exemplo de vizinhança topológica determinada no início do treinamento da rede.
-
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.30\textwidth]{bmu}
-	\caption{Vizinhança topológica de um BMU representada pela área sombreada.}
-	\label{fig:bmu}
-\end{figure}
-
-Uma característica da rede SOM é que a área da vizinhança topológica diminui ao longo do treinamento da rede.  A cada iteração $t$, a função de decaimento exponencial é calculada para permitir o reajuste do tamanho da vizinhança do BMU como mostrada na Equação \ref{eq:decay}:
-
-\begin{equation}
-\sigma(t) = \sigma_{0} e^{(-\frac{t}{\lambda})}
-\label{eq:decay}
-\end{equation}
-
-onde $\sigma_{0}$ representa o raio $\sigma$ no tempo $t_{0}$ que tem o mesmo valor do raio da grade, e $\lambda$ é uma constante de tempo. A variável $t$ representa um dado instante do treinamento, ou melhor, um passo de tempo da iteração.
-
-\subsection{Classificação de Padrões de Consumo de Memória baseado em Redes Neurais Auto-Organizáveis}
-\label{sec:classe_rede}
-
-Ainda baseado em \cite{Mlin:06}, essa seç\~{a}o mostrará um pouco dos testes realizados afim de classificar padrões de consumo de memória utilizando um SOM.
-Os testes consistem em executar casos de uso de aplicações afim de realizar algumas medições do consumo de memória das aplicações envolvidas. Os casos de uso foram executados no sistema operacional Linux.
-Após a execuç\~{a}o de alguns casos de uso, foram observadas várias variáveis afim de compor os dados de entrada para o algoritmo de SOM. A seguinte estrutura foi escolhida para representar os dados de entradas:
-
-\begin{itemize}
-\item quantidade de páginas físicas alocadas que representa a \textit{quantidade de memória física consumida};
-
-\item \textit{variação do consumo de memória (VCM)} que é utilizada para indicar o ritmo em que o consumo de memória está aumentando ou diminuindo. Esta variação é calculada através da razão entre a diferença da quantidade de memória física consumida e o intervalo de tempo decorrido, conforme a Equação \ref{eq:velocidade};
-
-\begin{equation}
-VCM = \frac{mem_{2} - mem_{1}}{t_{2} - t_{1}}
-\label{eq:velocidade}
-\end{equation}
-
-\item \textit{taxa de variação do consumo de memória (TVCM)} que é utilizada para indicar o ritmo em que a variação de consumo de memória está aumentando ou diminuindo. Esta taxa é calculada através da razão entre a diferença da variação do consumo de memória e o intervalo de tempo decorrido, conforme a Equação \ref{eq:aceleracao}.
-\end{itemize}
-
-\begin{equation}
-TVCM = \frac{vcm_{2} - vcm_{1}}{t_{2} - t_{1}}
-\label{eq:aceleracao}
-\end{equation}
-
-Os seguintes estados podem ser atribuídos para cada propriedade apresentada: Low (L), Medium (M) e High (H). Os estados L, M e H representam respectivamente um conjunto de números pequenos, médios e grandes em um intervalo de valores estabelecidos. A definição de L, M e H são usadas para representar o comportamento de uma determinada propriedade de uma forma simples e abstrata.\\
-
-Assumindo que os valores para uma determinada propriedade está em um intervalo positivo $[limite_{minimo}, limite_{maximo}]$, então o mesmo pode ser dividido em 3 subintervalos que representam os estados \textit{L}, \textit{M} e \textit{H}, como ilustrado na Figura \ref{fig:lmh}. Observe que os valores de L, M e H são dependentes do limite mínimo e máximo de um intervalo estabelecido.
-
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.40\textwidth]{lmh}
-	\caption{Subintervalos que representam os estados \textit{Low (L)}, \textit{Medium (M)} e\textit{ High (H)}.}
-	\label{fig:lmh}
-\end{figure}
-
-A quantidade de memória consumida está localizada em um desses subintervalos, assumindo um dos três estados $\{Low, Medium, High\}$ apresentados. Sendo assim a quantidade de memória consumida é classificada como \textit{baixo consumo} de memória quando o seu valor está no estado L, \textit{médio consumo} de memória quando o seu valor está no estado M e \textit{alto consumo} de memória quando localizado no estado H. A quantidade de memória consumida abrange somente valores inteiros positivos, visto que consumo de memória de valor negativo é logicamente inexistente no mundo real. A mesma analogia \'{e} utilizada para os valores de VCM e TVCM.\\
-
-A tripla <memória,vcm,tvcm> pode ser mapeada facilmente para uma estrutura de dados que seja aceita algoritmo do SOM. Já que o SOM utiliza vetores tridimensionais como valores de entrada, a tripla pode facilmente ser calculada contendo cada valor como sendo uma dimens\~{a}o desse vetor.\\
-
-Cada vetor no espaço tridimensional é uma instância específica da tripla que é mapeado na grade de neurônios do SOM. Cada célula da grade de neurônios armazena então um vetor tridimensional do tipo [memória, vcm, tvcm], conforme a Figura \ref{fig:mapeia}.
-
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.45\textwidth]{mapeia}
-	\caption{Os vetores são mapeados em um espaço bidimensional representado pela grade de neurônios.}
-	\label{fig:mapeia}
-\end{figure}
-
-A idéia de utilizar o mapa de neurônios auto-organizáveis é agrupar topologicamente as classes apresentadas de consumo de memória em áreas ou regiões distintas. Dessa forma, cada região representa uma configuração ou conjunto de configurações similares capaz de representar o estado do consumo de memória em um determinado instante.\\
-
-Para treinar a rede, utilizou-se um caso de uso que tentava reproduzir o uso normal de um computador. Neste caso de uso foram utilizadas v\'{a}rias aplicações gr\'{a}ficas como: browsers, leitores de pdf, video players e editores de texto.
-
-%\newpage
 \section{Cronograma}
 \label{sec:cronograma}
-O trabalho aqui proposto será dividido em etapas distintas conforme detalhadas nos itens seguintes:
+O trabalho aqui proposto é dividido em etapas distintas conforme detalhadas nos itens seguintes. O cronograma apresentado possui informações para as etapas passadas e futuras do projeto.\\
+
+\textbf{Cronograma de 2007:}
 \begin{enumerate}
-
 \item Levantamento Bibliográfico - Coleta, organização e análise da literatura técnica relacionada com os assuntos abordados no trabalho.
-
-\item Etapa01 - 
-\item Etapa02 - 
-\item Etapa03 - 
-\item Etapa04 - 
-\item Etapa05 - 
+\item Implementação do Cache Comprimido sem adaptatividade - Implementação do Cache Comprimido para Linux embarcado. \cite{ccache06}.
+\item Testes com o CC atual - Preparação do dispositivo móvel e da suite de testes.
+\item Artigo para OLS2007 - Escrita do artigo com detalhes de implementação e dos testes para o Linux Symposium 2007.
+\item Preparação da proposta - Revisão da bibliografia e dos trabalhos relacionados.
 \end{enumerate}
 
 \vspace{\baselineskip}
@@ -540,22 +155,551 @@ O trabalho aqui proposto será dividido em etapas distintas conforme detalhadas n
 \multicolumn{1}{c|}{Dez} \\
 \hline
 \hline
-Levantamento Bibliográfico &\pl{5} & & & & & & & &\pl{1} & & &  \\
+Levantamento Bibliográfico &\pl{5} & & & & & & & &\pl{3} & & &  \\
 \hline
-Etapa01 &\pl{3} & & & & & & & & & & &\\
+Implementação do CC s/ adapt. & & & &\pl{5} & & & & & & & &\\
 \hline
-Etapa02 & & &\pl{3} & & & & & & & & & \\
+Testes com o CC atual & & &\pl{3} & & & & & & & & & \\
 \hline
-Etapa03 & & & & &\pl{5} & & & & & & & \\
+Artigo para OLS2007 & & &\pl{4} & & & & & & & & & \\
 \hline
-Etapa04 & & & & & & & & &\pl{3} & & &\\
-\hline
-Etapa05 & \pl{12} & & & & & & & & & & &\\
+Preparação da proposta & & & & & & & & & & &\pl{2} &\\
 \hline
 \end{tabular}
-    \caption{Cronograma de trabalho.}
+    \caption{Cronograma de trabalho em 2007.}
     \label{tab:cronograma}
 \end{table}
+
+\textbf{Cronograma para 2008:}
+\begin{enumerate}
+\item Preparação da proposta - Revisão da bibliografia, dos trabalhos relacionados e escrita da proposta.
+\item Testes com SOM - Baseado em \cite{Mlin:06, Alecrim:07}, fazer os testes e obter os primeiros resultados utilizando a última versão do Linux embarcado para o dispositivo móvel alvo.
+\item Avaliação dos testes com SOM - Verificar os perfis de consumo de memória coletados no item anterior.
+\item Implementação do CC com adaptatividade - Implementação de modificações na versão atual do CC para a utilização de adaptatividade.
+\item Integração SOM e CC - Implementação de uma ferramenta que avalie os mapas resultantes da avaliação dos vários perfis de memória, e o Cache Comprimido. A idéia é utilizar a saída dessa ferramenta como entrada para a heurística de adaptatividade do CC.
+\item Testes Finais - Testes com a versão do CC com adaptatividade utilizando SOM's.
+\item Confecção da dissertação - Escrita da dissertação de mestrado.
+\item Revisão Final - Revisão da implementação e da dissertação.
+\end{enumerate}
+
+\begin{table}[ht]
+    \centering
+\begin{tabular}{|l|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|p{\constlen}|}
+\hline
+\makebox[5cm]{Tarefas} &
+\multicolumn{1}{c|}{Jan} &
+\multicolumn{1}{c|}{Fev} &
+\multicolumn{1}{c|}{Mar} &
+\multicolumn{1}{c|}{Abr} &
+\multicolumn{1}{c|}{Mai} &
+\multicolumn{1}{c|}{Jun} &
+\multicolumn{1}{c|}{Jul} &
+\multicolumn{1}{c|}{Ago} &
+\multicolumn{1}{c|}{Set} &
+\multicolumn{1}{c|}{Out} &
+\multicolumn{1}{c|}{Nov} &
+\multicolumn{1}{c|}{Dez} \\
+\hline
+\hline
+Preparação da Proposta &\pl{2} & & & & & & & & & & &  \\
+\hline
+Testes com SOM & & &\pl{2} & & & & & & & & &\\
+\hline
+Avaliação dos testes & & &\pl{1} & & & & & & & & & \\
+\hline
+Implementação do CC com adaptatividade & & & &\pl{3} & & & & & & & & \\
+\hline
+Integração SOM e CC & & & & &\pl{3} & & & & & & &\\
+\hline
+Testes Finais & & & & & &\pl{2} & & & & & &\\
+\hline
+Confecção da dissertação & & & & & & &\pl{4} & & & & &\\
+\hline
+Revisão Final & & & & & & & & & & &\pl{2} &\\
+\hline
+\end{tabular}
+    \caption{Cronograma de trabalho para 2008.}
+    \label{tab:cronograma}
+\end{table}
+
+\section{Organização da dissertação}
+
+O Capítulo 1 trata da introdução, motivação e objetivos desse trabalho. Neste capítulo o leitor será apresentado ao problema e à solução proposta pelo autor.\\
+
+O Capítulo 2 descreve o estado atual da implementação do Cache Comprimido utilizada neste trabalho. Detalhes de implementação e testes também são descritos e discutidos.\\
+
+O Capítulo 3 apresenta o trabalho realizado em \cite{Mlin:06} e \cite{Alecrim:07}. Estes trabalhos propõem uma classificação de padrões de consumo de memória utilizando redes neurais e mapas auto-organizáveis.\\
+
+O Capítulo 4 apresenta a solução proposta de um Cache Comprimido Adaptativo que utilize SOM's para classificar os padrões de consumo de memória das aplicações. Neste capítulo o leitor encontrará detalhes de como a heurística de adaptatividade funciona com os dados providos pelas redes treinadas do SOM. Testes e resultados também são apresentados.\\
+
+No Capítulo 5 os testes realizados no capítulo 4 são discutidos e analisados. Os impactos e as melhorias da solução proposta são criticados e comparados com resultados de trabalhos relacionados.\\
+
+No Capítulo 6 são apresentadas as conclusões com base nos resultados dos capítulos anteriores. Também são apresentados alguns trabalhos futuros e propostas de melhorias para a versão do Cache Comprimido implementada neste trabalho.
+
+\chapter{Cache Comprimido}
+\section{Estado Atual da Pesquisa}
+\label{sec:pesquisa}
+
+Esta seção tem o propósito de apresentar os estudos e as pesquisas realizadas até o momento, que são requisitos relevantes para o desenvolvimento da proposta descrita na Seção \ref{sec:objetivos}.\\
+
+Inicialmente é apresentado o estado da arte, onde alguns trabalhos relacionados são analisados. Em seguida, a atual implementação do CC é discutida, para a versão 2.6.x do \textit{kernel} do Linux encontrada em \cite{ccache06}. Também são exibidos e descritos alguns testes realizados com essa versão e apresentados em \cite{briglia07}. Por fim, é demonstrado o esquema de classificação de padrões de consumo de memória apresentado em \cite{Mlin:06} e como essa metodologia poderá ajudar na implementação da adaptatividade do tamanho do Cache Comprimido proposto neste trabalho.
+
+\subsection{A memória virtual do Linux}
+
+Páginas físicas são a unidade básica do gerenciamento de memória \cite{love05kerneldevel} e o MMU (\textit{Memory Management Unit} é o hardware responsável por traduzir endereços virtuais em reais das páginas de memória, e vice-versa. \\
+
+No gerenciamento da memória virtual, duas listas do tipo LRU (\textit{Last Recently Used}) são utilizadas afim de classificar as páginas: LRU para páginas ativas e uma LRU para páginas inativas. Quando o sistema precisa alocar novas páginas, elas são inicialmente retiradas da lista LRU de páginas inativas. O algoritmo responsável por selecionar e liberar as páginas é chamado de \textit{Page Frame Reclaiming Algorithm} - PFRA.\\
+
+Afim de identificar cada tipo de página, \textit{flags} são utilizadas na estrutura de dados que implementam as páginas. Para diferenciar as páginas comprimidas das páginas comuns, a implementação atual do Cache Comprimido adiciona uma \textit{flag} na estrutura de dados da página.\\
+
+Quando o sistema está sob pressão de memória, ou seja, há pouca memória disponível que o necessário, o PFRA libera as páginas de acordo com a sua classificação:
+
+\begin{itemize}
+\item Páginas do \textit{Swap-cache} são escritas na área de \textit{swap} disponível.
+
+\item Páginas "sujas" do \textit{Page cache} são escritas no \textit{filesystem} utilizando o procedimento específico de escrita.
+
+\item Páginas "limpas" do \textit{Page Cache} são simplesmente liberadas da memória, e ficam disponíveis para serem utilizadas novamente por outros processos.
+\end{itemize}
+
+\subsubsection{O Swap Cache}
+
+Este é o cache para páginas anônimas. Toda as páginas do \textit{swap cache} são parte de um único \textbf{swapper\_space}, a estrutura que agrupa todas as páginas que podem ir para a área de \textit{swap}. Uma outra estrutura de dados, chamada \textit{radix tree} é utilizada para manter todas as páginas do \textit{swap cache} e torna a busca por páginas muito mais eficiente. O campo \textbf{swp\_entry\_t} da estrutura de dados da área de \textit{swap} é utilizado como chave-de-busca quando uma página do \textit{swap cache} é procurada. Esta estrutura é usada para identificar onde a página requisitada se encontra no dispositivo de bloco utilizado pelo seu \textit{swap}.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.7]{swp_entry}
+	\caption{Campos da estrutura \texttt{swp\_entry\_t}}
+	\label{fig:swp_entry_fields}
+\end{figure}
+Não esqueça que o time de Core está sempre de
+Na figura \ref{fig:swp_entry_fields}, \textbf{`type'} identifica em qual área de \textit{swap} a página de se encontra. No sistema operacional Linux, podem haver até 32 \textit{swaps} simultâneos.
+
+\subsubsection{O Page Cache}
+Este é o cache utilizado para armazenar as páginas do \textit{filesystem}. Ou seja, todo arquivo aberto pelas aplicações, possuem páginas de memória alocadas e armazenadas no \textit{Page Cache}. Assim como o \textit{Swap Cache}, este \textit{cache} também possui uma \textit{radix tree} que armazena as referências, ou melhor, os ponteiros para as páginas de um determinado arquivo presente no sistemas de arquivos, que esteja sendo utilizado. O valor de \textit{offset} dentro do arquivo é utilizado como chave-de-busca para localizar as páginas. Cada arquivo aberto possui uma \textit{radix tree} própria, com os nodos da árvore apontando para as páginas pertencentes ao arquivo.
+
+\subsection{Cache Comprimido}
+Em um sistema com cache comprimido, a memória é dividida em duas grandes porções: memória comprimida e não-comprimida \cite{douglis93, kaplan99compressed, castro03-2}. A área de memória comprimida geralmente é alocada onde antes existia memória não-comprimida. A relação dos tamanhos da memória comprimida e não-comprimida deve ser avaliada pois os dois tamanhos interferem em como cada porção de memória se comporta, dependendo do \textit{workload} imposto pelas aplicações.\\
+
+Muitos pesquisadores \cite{irina05, kaplan99compressed} têm investigado o uso de compressão para reduzir as operações de \textit{paging}, introduzindo um novo nível na hierarquia de memória. Armazenar as páginas de memória em uma área comprimida, naturalmente aumenta o tamanho efetivo da memória e também diminui o acesso à dispositivos de memória secundária \cite{castro03}, que é muito mais lenta que a principal. Apesar dessa diferença de velocidade entre a memória principal e a memória secundária ser grande, quando se leva em conta os sistemas embarcados, não tem-se uma diferença muito grande. Geralmente os sistemas embarcados não possuem memória secundária armazenada em um disco rígido, outros dispositivos são utilizados nesse caso. Memórias do tipo \textit{compact flash}, cartões MMC, são os principais dispositivos encontrados hoje no mercado, que são utilizados como memória secundária em dispositivos móveis \footnote{A velocidade de leitura de um cartão MMC comum, chega à taxa de 416 Mbits/seg \cite{mmca}. A velocidade das memórias RAM's variam, mas as mais comuns possuem um tempo de acesso de 80-90 ns.}. Mesmo tendo a diferença de velocidade de acesso entre a memória principal e a secundária menor, os sistemas embarcados possuem um grande requisito relacionado ao tamanho dessa memória. Assim, o uso de compressão é justificado pois, como será discutido posteriormente, é capaz de aumentar o tamanho efetivo da memória disponível para as aplicações.\\
+
+As abordagens de cache comprimido baseadas em \textit{software}, ou seja, aquelas que não propõem alteração de \textit{hardware}, podem ser estáticas ou dinâmicas. As abordagens estáticas \cite{crames05, swapcc99, wilson99} são caracterizadas por não possuírem uma heurística de redimensionamento do cache comprimido, diferente das abordagens dinâmicas. Nesse segundo tipo, existe um algoritmo que determina quando o cache comprimido deve alterar seu próprio tamanho, geralmente baseado no \textit{workload} da memória.\\
+
+Os primeiros estudos que utilizavam cache comprimido para reduzir a paginação em disco, ou seja, a quantidade de acessos de leitura/escrita, foram feitos por Appel e Li \cite{li91} e Paul R. Wilson \cite{wilson91}, em 1991. Outro pesquisador, chamado Douglis\cite{douglis93}, obteve algumas melhorias na performance do sistema, usando uma implementação de cache comprimido adaptativo no sistema operacional Sprite. Porém, Douglis não conseguiu concluir se o uso de cache comprimido é útil ou não pois seus testes apresentaram resultados divergentes, com melhorias em alguns casos e pioras em outros.\\
+
+Tendo o trabalho de Douglis ser inconclusivo, muitos outros pesquisadores se ocuparam em estudar o caso. Em 1999, Kaplan\cite{kaplan99compressed} chegou à conclusão que a compressão do cache pode reduzir os custos das operações de \textit{paging}. Kaplan ainda confirmou o que Douglis\cite{douglis93} verificou anteriormente: cache comprimido estático beneficia menos do que um cache comprimido com adaptatividade. Alguns trabalhos correlatos também foram desenvolvidos em 1999. Como apresentado em \cite{swapcc99}, não se trata especificamente da memória cache comprimida, mas sim da compressão da área de \textit{swap} do sistema. Neste trabalho é apresentada uma versão de compressão da memória voltada às páginas que podem ser selecionadas para o \textit{swap}, salvando algum espaço no disco e diminuindo as operações de E/S no \textit{swap}. Testes concluíram que a compressão da área de \textit{swap} pode aumentar a velocidade das aplicações em 20\%. Outros trabalhos também apontaram ganhos na performance de aplicações, como apresentado em \cite{irina05}, no quais a compressão da memória melhorou a performance de aplicações reais, com índices de 1.3 a 55. Nos testes com \textit{benchmarks} e algumas aplicações de simulação, como o NS2 (\textit{Network Simulator}, foi verificado que um nível de memória comprimida adicionada ao sistema, garante que aplicações que necessitam de um \textit{working set} maior que a memória física disponível, possam ser executadas.\\
+
+Um dos últimos trabalho sobre Cache Comprimido foi implementado por Rodrigo Castro \cite{castro03, castro03-2}. Utilizando a versão 2.4.x do Linux \textit{kernel}, vários testes foram realizados, com adaptatividade e sem. Os resultados mostraram que os ganhos são maiores quando existe alguma heurística de adaptatividade presente no CC. Como dito anteriormente, um dos objetivos deste trabalho também é propor uma heurística de adaptatividade para o CC. Porém, pretende-se usar um método mais científico e menos empírico. Através dos SOM's e da classificação de padrões de consumo de memória proposta em \cite{Mlin:06}, espera-se traçar um "perfil" de consumo de cada aplicação e usá-lo para definir uma heurística de adaptatividade do CC.\\
+
+A maioria trabalhos discutidos anteriormente, são antigos e foram implementados em sistemas operacionais antigos, ou versões anteriores do \textit{kernel} dp Linux. Daquela época para os dias atuais, o \textit{kernel} do Linux sofreu muitas melhorias e o esquema utilizado para o CC na versão usada nesse trabalho, do \textit{kernel} é diferente. Por essa razão, as próximas seções fazem um \textit{overview} da versão do cache comprimido para o \textit{kernel} 2.6.x, implementada por Nitin Gupta \cite{ccache06} e apresentada em \cite{briglia07}.
+
+\subsection{Cache Comprimido para Linux \textit{kernel} 2.6.x}
+
+Dados experimentais\cite{briglia07} avaliados em um sistema utilizando Cache Comprimido, mostram que nós podemos não só melhorar as taxas de E/S (Entrada e Saída), como também todo o comportamento do sistema, especialmente em situações de memória crítica, como por exemplo, adiando a chamada do \textit{out-of-memory killer} -- OOM.\\
+
+A implementação atual do Cache Comprimido tira vantagem do sistema de \textit{swap}, adicionando uma área de \textit{swap} virtual como área de estocagem das páginas de memória comprimida. Usando um algoritmo de compressão baseado em dicionários, páginas do \textit{page cache}, ou seja, do \textit{filesystem} e páginas anônimas são comprimidas e distribuídas em porções de memória de tamanho variável - \textit{\textbf{chunks}} \cite{irina05}. Com essa abordagem, tem-se o mínimo de fragmentação e uma rápida recuperação das páginas, quando estas são requisitadas pelo sistema. O tamanho do Cache Comprimido pode ser ajustado separadamente para páginas do \textit{page cache} e páginas anônimas. Este ajuste é efetuado através de escritas em variáveis exportadas no \texttt{procfs}, dando maior flexibidade ao usuário em relação aos casos de uso da memória.
+
+\subsubsection{Design da Implementação}
+
+Quando uma página está para ser comprimida, o nodo da árvore radix que está apontando para a página tem sua referência trocada, apontando para um \textit{chunk\_head}. Por sua vez, a estrutura \textit{chunk\_head} possui todas as informações para encontrar os outros \textit{chunks} e assim recuperar a página comprimida: tamanho da página comprimida, algoritmo usado na compressão, localização do primeiro \textit{chunk}, etc.\\
+
+Um dos problemas encontrados com essa abordagem é o tamanho dos metadados, ou seja, das estruturas responsáveis por todo o manuseio de \textit{chunks} e páginas comprimidas. Uma página comprimida que esteja dividida em 3 \textit{chunks}, ocupa 84 bytes de memória com os metadados\footnote{Fazendo as contas: 3 \textit{chunks} necessitam de \texttt{sizeof(chunk\_head) + 3 * sizeof(chunk)}.}. Isso é bastante espaço, levando em consideração que estamos falando em 1 página comprimida. Um outro problema é que o princípio de localidade não é obedecido quando uma página comprimida é extraída. Isso leva a um \textit{overhead} de leitura da página, já que ela pode ser recuperada de várias páginas físicas (ou \textit{page frames}).\\
+
+Quando uma página é requisitada, uma operação de \textit{lookup} é realizada na árvore radix do page-cache. Se esta operação retornar um \textit{chunk\_head}, significa que a página é comprimida e está dividida em vários \textit{chunks} de tamanho menor que \texttt{PAGE\_SIZE}. Como o \textit{chunk\_head} possui um ponteiro para o primeiro \textit{chunk} da lista de \textit{chunks} da página, é possível recuperar todos os \textit{chunks}, pois os mesmos fazem parte de uma lista encadeada. Após todos os \textit{chunks} serem recuperados, a página pode ser descomprimida e um ponteiro para ela é passado à função de \textit{lookup}. Esta sequência de operações será detalhada nas seções posteriores deste trabalho.
+
+\subsubsection{Armazenamento das Páginas Comprimidas}
+
+A idéia básica é armazenar as páginas comprimidas em blocos de memória de tamanho variável, chamados \textit{chunks}. Uma página comprimida é armazenada em vários \textit{chunks}. O espaço em memória para os \textit{chunks} é obtido se fazendo alocações de páginas da memória, o espaço alocado é gerenciado e dividido em tamanhos menores. Todos os chunks são conectados em uma lista duplamente encadeada chamada \textit{master chunks list}. Além desta lista, os \textit{chunks} do mesmo tipo, por exemplo, todos os \textit{chunks} livres ou todos os \textit{chunks} pertencentes à mesma página comprimida, também são conectados através de uma lista encadeada.
+
+\begin{figure}[tb]
+	\centering
+	\includegraphics[scale=0.6]{chunks}
+	\caption{Um exemplo de uma página comprimida dividida em vários \textit{chunks}. Blocos de mesma cor significam que os \textit{chunks} pertencem à mesma página. A cor branca indica \textit{chunks} livres, ou seja, que não pertencem a nenhuma página comprimida.}
+	\label{fig:comp_storage_structure}
+\end{figure}
+
+Note que:
+\begin{itemize}
+	\item Um \textit{chunk} não pode ultrapassar os limites de uma página física (ou \textit{page frame}), como mostrado na figura \ref{fig:comp_storage_structure}. Um \textit{chunk} é separado nesses casos. O tamanho máximo de um \textit{chunk} é \texttt{PAGE\_SIZE}.
+	\item Esta estrutura reduz a fragmentação ao máximo, pois todo espaço livre é aproveitado. Porém, existe o problema de que cada página comprimida é "espalhada" em várias páginas físicas, adicionando assim um \textit{overhead} quando a página comprimida é requisitada pelo sistema.
+	\item Quando uma página comprimida é retirada, seus \textit{chunks} são liberados e adicionados à lista de \textit{chunks} livres. \textit{Chunks} livres adjacentes são mesclados, respeitando o limite do \textit{slot} da página. Se um \textit{chunk} livre tiver o mesmo tamanho de uma página, ou seja, \texttt{PAGE\_SIZE}, a página inteira é liberada.
+\end{itemize}
+
+O tamanho do Cache Comprimido se inicia com uma única página de memória (\texttt{PAGE\_SIZE}), e se expande à medida que novas páginas são comprimidas e armazenadas.\\
+
+Uma lista LRU - \textit{Least Recently Used} é mantida para todos os \textit{chunks}, na medida que estes são criados. O último \textit{chunk} da lista é o mais antigo. Esta lista é utilizada na liberação dos \textit{chunks}, os mais antigos possuem prioridade para serem liberados.
+
+\subsubsection{Operações de Inserção e Remoção das Páginas}
+
+\textbf{Adição de páginas no Cache Comprimido:} a página descomprimida é primeiramente comprimida numa página de \textit{buffer}. O algoritmo de compressão a ser utilizado pode ser configurado pelo usuário. Existem 3 opções de algoritmos: LZO \cite{ZivLem77, obe05lzo}, WKdm \cite{kaplan99compressed} e WK4x4\cite{kaplan99compressed, wilson99}.  Após a compressão, o número de \textit{chunks} livres equivalentes ao tamanho da página comprimida, são pegos da lista de \textit{chunks} livres, ou uma nova página é alocada e utilizada para o \textit{chunk}, de acordo com o tamanho da página comprimida. Os \textit{chunks} pertencentes à mesma página comprimida são conectados numa mesma lista. O espaço livre remanescente do último \textit{chunk} é inserido na lista de \textit{chunks} livres. O ponteiro para a página presente na árvore \textit{radix} do page-cache é substituído para apontar o \textit{chunk\_head} da página recém comprimida. Páginas que aumentam seu tamanho ou que não podem ser comprimidas, nunca são adicionadas ao Cache Comprimido. Elas são tratadas de forma padrão pelo PFRA.\\
+
+\textbf{Remoção de páginas do Cache Comprimido:} quando uma página é armazenada na memória, geralmente é utilizada uma estrutura de dados do tipo \texttt{page} correspondente à página física da memória. Mas, se uma página foi comprimida, temos uma estrutura chamada \textit{chunk\_head}, ao invés da estrutura padrão de página (Veja Figuras \ref{fig:radix-tree}, \ref{fig:radix-tree-chunks}. A \textit{flag} \texttt{PG\_COMPRESSED} é utilizada para identificar o nodo da árvore \textit{radix} que possui um ponteiro para uma página comprimida (um \textit{chunk\_head}). Como todos os \textit{chunks} de uma página comprimida são conectados numa lista, para descomprimir somente é necessário agrupá-los e descomprimi-los numa página de \textit{buffer}. Após isso, passa-se o ponteiro da página de \textit{buffer} para a árvore \textit{radix}, retornando assim a página descomprimida.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.6]{radix_tree}
+	\caption{Radix tree padrão, antes da compressão da página.}
+	\label{fig:radix-tree}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.6]{radix_tree_chunk}
+	\caption{Radix tree após compressão da página: note que o ponteiro para \textit{page} foi substituído por um que aponta para chunk\_head.}
+	\label{fig:radix-tree-chunks}
+\end{figure}
+
+\section{Experimentos}
+
+Nesta seção são apresentados os testes que foram executados utilizando Cache Comprimido em um sistema embarcado. O principal objetivo dos testes é avaliar os impactos e as características do consumo de memória, quando temos uma área comprimida adicionada ao sistema.\\
+
+Como dito anteriormente, a atual implementação do Cache Comprimido trata dois tipos de páginas: páginas anônimas e páginas do page-cache. O primeiro tipo de páginas foi utilizado como referência pois pode ser feito \textit{swap}, facilitando a obtenção de dados para os gráficos.\\
+
+Foram realizados testes com e sem um \textit{swap} real, utilizando uma partição em um cartão MMC\footnote{Os cartões MMC são utilizados como memória secundária de dispositivos móveis, câmeras fotográficas, etc. Cartões MMC possuem uma taxa de transferência de até 52 MB/seg. A capacidade de armazenamento varia de alguns \textit{megabytes} até cartões com mais espaço de armazenamento, na ordem de \textit{gigabytes}.}. A utilização de um \textit{swap} real se justifica pois é importante comparar o \textit{swap} virtual com o real. Como medidas desta comparação, foram considerados os seguintes itens:
+
+\begin{itemize}
+	\item  Quantas páginas são mantidas no Cache Comprimido e não vão para o \textit{swap} real, evitando assim um maior \textit{overhead} por causa das operações de E/S.
+	\item Mudanças no consumo de potência do equipamento.
+	\item Comparação entre os diferentes algoritmos de compressão utilizados.
+\end{itemize}
+
+\subsection{Suite de Testes e Metodologia}
+
+Utilizou-se um dispositivo móvel, parecido com um PDA que possui Linux embarcado como sistema operacional nativo. O Nokia Internet Tablet N800 tem um processador ARM1136 com 330Mhz, 128MB de memória RAM e 256MB de memória \textit{flash}, utilizada como armazenamento secundário. Ainda possui acelerador gráfico 2D/3D e dois leitores de cartão MMC/SD.\\
+
+Nota-se que este dispositivo, como muitos outros, foi projetado para aplicações multimídia \cite{nokiaN800}. Este tipo de aplicação demanda muito poder de processamento e quantidade de memória razoável para as aplicações. Levando isso em consideração, os testes foram realizados afim de verificar o comportamento de todo o sistema e das aplicações multimídia, quando a quantidade de memória livre disponível é muito baixa. A idéia principal é verifica a performance de todo o sistema, quando se realizam operações de compressão e recuperação das páginas comprimidas.\\
+
+Os casos de uso dos testes podem ser divididos em duas partes: testes que utilizam \textit{benchmarks} sintéticos e testes que simulam a utilização real do aparelho. No primeiro grupo, existe um maior controle do consumo de memória e assim, pode-se avaliar o comportamento do Cache Comprimido quando é submetido à pressões por falta de memória. No segundo grupo, foi verificado se o Cache Comprimido exerce um \textit{overhead} muito grande no sistema, afetando assim a performance das aplicações que o usuário pode executar. Espera-se que a performance das aplicações melhore, visto que o número de E/S resultantes de acessos à um dispositivo de \textit{swap} real (um \textit{block device)}, é diminuído pois mais páginas se encontram na memória principal.\\
+
+Os testes utilizando aplicações, consistem em:
+
+\begin{itemize}
+
+\item Executar 8 ou 9 instâncias do navegador WEB, simultaneamente, acessando páginas na Internet através de uma conexão de rede sem-fio.
+
+\item Tocar um arquivo de vídeo de 7,5MB.
+
+\item Abrir um documento em formato PDF.
+\end{itemize}
+
+Para fazer a interação entre o X system e as aplicações, foi utilizado uma ferramenta chamada Xautomation \cite{xauto07}. Com esta ferramenta foi possível controlar toda a movimentação do cursor na tela e os cliques. Enquanto as aplicações eram executadas, outros programas ficam responsáveis de fazer a coleta das informações referentes ao consumo de memória, através de leituras das estatísticas exportadas pelo \texttt{procfs}. É com base nesses dados que alguns gráficos foram plotados e discutidos nas seções posteriores deste trabalho.\\
+
+Os testes utilizando \textit{benchmarks} sintéticos, foram executados usando um conjunto de utilitários chamado MemTest \cite{memtest06}. MemTest foi implementado para avaliar a estabilidade e consistência do sistema de gerência de memória do Linux \textit{kernel}. Do MemTest foi utilizado um utilitário chamado \texttt{fillmem}. Este utilitário faz várias alocações de memória, ou seja, de páginas de memória, disparando a necessidade de mandar algumas páginas para o \textit{swap}. É nesse momento que foram realizadas as medições referentes às páginas comprimidas, tais como, tamanho da página após a compressão, memória livre, se o Out-of-memory killer foi invocado, etc.\\
+
+Ambos os tipos de testes, utilizaram cenários pré-definidos, dependendo do que se queria medir. Basicamente, os cenários apresentavam diferentes tamanhos da memória principal, se possuíam uma área de \textit{swap} real ou não, ou se estavam com o Cache Comprimido sendo executado ou não.\\
+
+Os testes de comportamento do consumo de memória visam avaliar como a memória é consumida ao longo do tempo de duração do teste. Assim, espera-se identificar os pontos de falta de memória e a atuação do Out-of-memory killer. Como o Cache Comprimido se utiliza da memória principal para armazenar as páginas, a quantidade de memória não-comprimida disponível para as aplicações é decrescida, e isso pode levar a uma chamada precoce do OOM killer. Por fim, os testes de consumo de potência foram realizados com o propósito de avaliar e medir os impactos da compressão de memória no consumo da bateria do aparelho, visto que esse é um ponto crucial quando se está desenvolvendo aplicações para sistemas embarcados.
+
+\subsubsection{Ajustando o kernel}
+
+Antes dos testes serem iniciados, alguns parâmetros do gerenciamento de memória do \textit{kernel} devem ser ajustados, afim de garantir que os testes sejam executados com sucesso.\\
+
+O sistema de \textit{swap} do \textit{kernel} possui alguns parâmetros que podem interferir nos valores medidos, e até na execução das aplicações. Durante os testes, foram alterados dois parâmetros:
+
+\begin{itemize}
+\item \textbf{swappiness} \cite{love05kerneldevel} é um parâmetro que configura um fator de balanço que o \textit{kernel} utiliza para manter mais ou menos páginas no page-cache antes de mandar para a área de \textit{swap}. Seu valor \textit{default} é 60.
+\item \textbf{min\_free\_kbytes} \cite{love05kerneldevel} é usado como um limite mínimo de memória livre para que o sistema de gerenciamento de memória virtual do \textit{kernel} comece a mandar páginas para o \textit{swap}.
+\end{itemize}
+
+Se o usuário quer que o \textit{kernel} mande mais páginas para o \textit{swap}, o que significa em mais páginas comprimidas, o parâmetro \texttt{swappiness} deve ser acrescido. Uma outra forma de mandar as páginas mais cedo para o \textit{swap}, é aumentar o valor do \texttt{min\_free\_kbytes}. Durante os testes, foram utilizados valores diferentes desses dois parâmetros em cada cenário.\\
+
+Existem outros parâmetros que também devem ser ajustados, mas que não fazem parte do \textit{kernel} padrão. São os parâmetros que configuram o tamanho do Cache Comprimido para as páginas anônimas e as páginas do page-cache. Os parâmetros são os seguintes:
+
+\begin{itemize}
+ \item \texttt{max\_fs\_backed\_cc\_size:} este parâmetro é utilizado para configurar o tamanho máximo do Cache Comprimido para páginas que pertencem ao page-cache.
+\item \texttt{max\_anon\_cc\_size:} este parâmetro é encarregado de configurar o tamanho máximo do Cache Comprimido para páginas anônimas.
+\end{itemize}
+
+Vale ressaltar que os valores que devem se escritos nesses parâmetros estão na unidade de quantidade de páginas de memória, neste trabalho é utilizado o tamanho padrão de \texttt{PAGE\_SIZE = 4KB}.
+
+\subsection{Testes do Comportamento do Consumo de Memória}
+\label{sec:mem_behavior}
+
+O principal objetivo deste tipo de testes é visualizar como a memória é consumida ao longo do tempo, quando várias aplicações são executadas pelo usuário. Para realizar estes testes, foram utilizados cenários que simulassem a interação do usuário no ambiente gráfico.\\
+
+Usando um \textit{bash script} com o XAutomation \cite{xauto07}, foi possível interagir com o servidor gráfico. Enquanto as aplicações eram executadas, um outro programa fazia leituras no \texttt{procfs}, coletando informações sobre a memória.\\
+
+A Figura \ref{fig:memtest01} mostra o consumo de memória através do tempo com o \texttt{max\_anon\_cc\_size} configurado para 1024 páginas (ou 4MB de tamanho).
+
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.26]{mem_behavior01}
+	\caption{Tamanho do Comp. Cache x tempo: max\_anon\_cc\_size = 1024, Mem = 128M}
+	\label{fig:memtest01}
+\end{figure}
+
+Como pode-se notar na Figura \ref{fig:memtest01}, o consumo da área reservada para as páginas comprimidas foi inexistente. Nota-se pela linha de cor verde paralela ao eixo $X$ do gráfico, que representa o consumo do CC ao longo do tempo. O tamanho do CC manteve estável ao longo do tempo, mostrando que nenhuma página foi comprimida. Isso se deve ao fato do \textit{kernel} estar configurado para reter mais páginas na memória, ou seja, na área descomprimida antes de enviá-las ao \textit{swap}. Esta implementação do CC \cite{ccache06, briglia07} se aproveita do sistema de \textit{swap} para comprimir as páginas, armazenandos-as em uma área de \textit{swap} virtual. Se o \textit{kernel} estiver configurado com parâmetros para diminuir a utilização das áreas de \textit{swap}, é evidente que afetará a utilização do CC, já que o mesmo segue configurações passadas para o \textit{kernel}. Na Figura \ref{fig:memtest02}, a memória RAM foi limitada para somente 100 MB, ao invés de 128 MB. Este valor de 100MB foi calculado com base em alguns testes empíricos. O tamanho da memória RAM total afeta os testes pois está diretamente aliada às condições de falta de memória. A memória total foi alterada para que a utilização do CC fosse maior. Porém, na Figura \ref{fig:memtest02}, pode-se notar que o OOM \textit{killer} foi invocado no tempo 600 ms. O CC foi utilizado (linha verde do gráfico), porém não teve tamanho suficiente para alocar uma quantidade de páginas comprimidas que satisfizessem a rápida alocação de memória imposta pelo teste. Dessa forma, a memória livre total (\textit{MemFree}, linha vermelha no gráfico), chegou à zero e o OOM \textit{killer} foi chamado para terminar algumas aplicações, liberando assim memória para o sistema (note que a linha vermelha de \textit{MemFree} sobe consideravelmente após a chamada do OOM).
+
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.32]{mem_behavior02}
+	\caption{Cache Comprimido x tempo: max\_anon\_cc\_size = 1024, Mem = 100M}
+	\label{fig:memtest02}
+\end{figure}
+
+Usando o mesmo teste, mas com \texttt{swappiness = 60} e \texttt{min\_free\_kbytes = 3072}, o OOM \textit{killer} não foi invocado e o Cache Comprimido finalmente foi bastante utilizado. Veja na Figura \ref{fig:memtest03}.
+
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.33]{mem_behavior03}
+	\caption{Cache Comprimido x tempo: swappiness = 60, min\_free\_kbytes = 3072}
+	\label{fig:memtest03}
+\end{figure}
+
+A Figura \ref{fig:memtest03} mostra que o CC não é suficiente para a carga de memória imposta pelo teste. Seria necessário aumentar o seu tamanho, porém, tem-se um problema aqui: se o tamanho do Cache Comprimido foi muito grande, não restará muita memória livre para as outras operações do \textit{kernel}, uma vez que o Cache Comprimido utiliza páginas da memória RAM total disponível para a área do \textit{swap} virtual. Uma das possíveis soluções para este problema é a implementação de um esquema de adaptabilidade do tamanho do Cache Comprimido \cite{castro03, irina05}.\\
+
+Durante os testes, o tamanho das páginas comprimidas foi coletado afim de verificar qual é o tamanho médio de uma página depois de comprimida. Como pode-se ver na Figura \ref{fig:cc_dist}, a maioria das páginas ficam com metade do tamanho original depois de comprimidas. Mais ou menos 42\% das páginas ficam com tamanho entre 1 Kb e 2 Kb, depois da compressão. Esses valores dependem do algoritmo de compressão utilizado. Neste teste foi utilizado o algoritmo WK4x4, proposto em \cite{wilson99, kaplan99compressed}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.46]{cc_distribution}
+	\caption{Distribuição do tamanho das páginas comprimidas}
+	\label{fig:cc_dist}
+\end{figure}
+
+Os resultados destes testes indicam que tem-se um ganho na memória disponível para as aplicações quando o CC é utilizado. Com a fragmentação controlada através da abordagem de \textit{chunks}, e com a maioria das páginas comprimidas ficando com o tamanho entre 1 Kb e 2 Kb, pode-se chegar à conclusão que o CC aumenta em 100\% a memória disponível para as aplicações, através da compressão e utilização do \textit{swap} virtual. Esta é uma vantagem importante pois aplicações que antes não poderiam ser executadas por falta de memória, agora podem se beneficiar de uma memória virtualmente maior. Uma conclusão idêntica foi encontrada em \cite{irina05}, utilizando outra versão de Cache Comprimido.\\
+
+Um dos problemas encontrados é que o \textit{kernel} deve ser bem ajustado para o uso do Cache Comprimido. Se isso não acontecer, o \textit{swap} virtual não é utilizado e as páginas não são comprimidas. Como as páginas reservadas ao Cache Comprimido nunca são liberadas pelo PFRA, seu tamanho pode diminuir a memória disponível para as aplicações, acarretando em constantes invocações do OOM \textit{killer}.
+
+\subsection{Testes de Performance}
+
+Nos testes de performance foram utilizados os \textit{bechmarks} sintéticos para avaliar alguns \textit{overheads} impostos pelo Cache Comprimido: overhead de compressão, overhead das listas de \textit{chunks} e overhead de compressão das páginas. Através dessa análise, espera-se que o Cache Comprimido seja mais rápido do que utilizar um \textit{swap} real em um dispositivo de armazenamento secundário, como um cartão MMC.\\
+
+Somente as páginas que podem ir para o \textit{swap} estão sendo consideradas aqui, ou seja, somente as páginas anônimas. Na Table \ref{tab:tab01} estão os resultados do tempo de execução do \texttt{fillmem} alocando 70 MB de memória (\texttt{swappiness = 60, min\_free\_kbytes = 1024KB, max\_cc\_anon\_size = 1280 páginas}).
+
+\begin{table}[tbph]
+\footnotesize
+\centering
+ \begin{tabular}{|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|}
+ \hline
+ \bfseries Teste & Sem-CCache & CCache WKdm & CCache WK4x4 & CCache LZO \\
+ \hline
+ \bfseries Tempo(s) & 14.68 & 4.64 & -- & 4.25 \\
+ \hline 
+ \end{tabular}
+\normalsize
+\caption{fillmem(70): Tempo usando Cache Comprimido x Tempo usando swap real}
+\label{tab:tab01}
+\end{table}
+
+O teste que utilizou o algoritmo de compressão \texttt{WK4x4} invocou o OOM \textit{killer} e não pôde ser finalizado. Mas, analisando os outros valores, pode-se concluir que a operação de \textit{swap} utilizando o Cache Comprimido é cerca de 3 vezes mais rápida do que utilizando um cartão MMC. Isso se deve ao fato de que o \textit{swap} virtual é uma área da memória RAM, com tempo de acesso bem maior do que o da área de \textit{swap} no cartão MMC. Porém, com os testes utilizando o CC, o OOM \textit{killer} foi chamado. O problema está que aplicações importantes podem ser terminadas bruscamente peor este dispositivo.
+
+Como discutido anteriormente, o CC utilizado neste trabalho não possui a adaptabilidade para dimensionar o próprio tamanho da área comprimida utilizada. Assim, em algumas ocasiões o Cache Comprimido afeta o tamanho da memória livre e as aplicações acabam sendo terminadas pelo OOM \textit{killer}. Para um melhor desempenho do Cache Comprimido, é necessário que o sistema de \textit{swap} do \textit{kernel} seja bem configurado, como mostrado nas seções anteriores. Utilizando parâmetros de configuração do \textit{kernel} como \textit{swappiness} e \textit{min\_free\_kbytes}, pode-se aumentar o uso das áreas de \textit{swap}, aumentando também o uso do \textit{swap} virtual do CC, comprimindo mais páginas.
+
+\subsection{Testes de Consumo de Potência}
+
+Neste teste, a bateria do aparelho foi substituída por uma fonte de alimentação mensurável e variável. Com este equipamento, foi medida a potência total necessária pelo aparelho. Note que não foi avaliada a energia gasta no processador, seria um processo bastante complexo e intrusivo. A Figura \ref{fig:pm_test} mostra o consumo de potência ao longo de um dos testes realizados na seção \ref{sec:mem_behavior}.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.47]{pm_table}
+	\label{fig:pm_table}
+\end{figure}
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=\columnwidth,scale=0.47]{pm_test01}
+	\caption{Power Consumption tests using CCache}
+	\label{fig:pm_test}
+\end{figure}
+
+Nos passo 1 a 5, o consumo de potência é padrão pois o Cache Comprimido estava ativo mas não utilizado. Os passos mais importantes são de 5 a 8. Nestes passos o Cache Comprimido começou a ser utilizado e podemos ver uma leve diferença no consumo de potência quando se usa o Cache Comprimido e quando não se usa. Nota-se que, quando o Cache Comprimido é utilizado, ao invés do \textit{swap} real, há um ganho de 3\% no consumo de potência. Acredita-se que isso se deve ao fato do \textit{kernel} fazer menos requisições de E/S, não necessitando assim acessar o controlador do cartão MMC.
+
+\chapter{Redes Neurais e Mapas Auto-organizáveis}
+\section{Redes Neurais e Mapas Auto-organizáveis}
+\label{sec:redes_artificiais}
+
+As \textit{redes neurais artificiais} consistem em um método para solucionar problemas de inteligência artificial, armazenando um conhecimento experimental do problema atrav\'{e}s de t\'{e}cnicas de treinamento.\\
+
+As redes neurais podem ser definidas como um grupo interconectado de neurônios artificiais que usa um modelo matemático ou computacional baseado no comportamento do cérebro humano para processamento de informações \cite{Christos, Haykin:99, Tatibana}. Uma rede neural é capaz de extrair regras básicas a partir de dados reais, ou seja, a sistemática do problema, diferindo assim da computação programada, onde é necessário um conjunto de regras rígidas pré-fixadas e algoritmos \cite{Haykin:99}. \\
+
+Existem duas abordagens de treinamento para as redes neurais: o supervisionado e o não-supervisionado \cite{Haykin:99}.
+
+Independente do tipo de aprendizagem ou treinamento selecionado, toda rede é alimentada por uma seqüência de valores $x_{1}, x_{2}, \cdots, x_{n}$ na entrada e os pesos são ajustados de acordo com um modelo matemático durante a fase de treinamento. O processo de treinamento pode ser organizado nas etapas seguintes \cite{Haykin:99}:
+
+\begin{enumerate}
+	\item O primeiro padrão de entrada é apresentado para a rede.
+	\item Os pesos são ajustados para capacitar a rede de reconhecer o padrão fornecido.
+	\item O segundo padrão de entrada é apresentado para a rede e a etapa 2 é efetuada novamente.
+	\item O mesmo é aplicado para todos os outros padrões.
+	\item O procedimento de 1 até 4 é executado novamente centenas ou milhares de vezes até encontrar uma configuração de pesos sinápticos capaz de reconhecer todos os padrões fornecidos no treinamento.
+\end{enumerate}
+
+\subsection{Mapas Auto-Organizáveis}
+\label{sec:som}
+
+\textit{Mapas Auto-Organizáveis} ou simplesmente \textit{SOM (do inglês Self Organizing Maps)} é uma rede neural artificial auto-organizável, de aprendizagem não supervisionada, baseada em grades de neurônios artificiais onde os pesos são adaptados em conformidade com os vetores de entrada fornecidos durante o treinamento. Foi desenvolvido pelo professor Teuvo Kohonen e às vezes é chamado de mapa de Kohonen \cite{Koh88, Germano:99, Junkie, Honkela:98, Borgelt:00}.\\
+
+No SOM, os neurônios estão colocados em nós de uma grade unidimensional ou bidimensional, outras dimensões tamb\'{e}m s\~{a}o possíveis, embora n\~{a}o sejam t\~{a}o comuns. Os neurônios são seletivamente sintonizados a vários padrões de entrada ou classes de padrões de entrada no decorrer de um processo de aprendizagem ou treinamento.\\
+
+As localizações dos neurônios assim sintonizados se tornam ordenadas entre si de modo que um sistema de coordenadas significativas para características diferentes de entrada é criado sobre a grade. Portanto um mapa auto-organizável é caracterizado pela formação de uma mapa topográfico dos padrões de entrada, baseado nas características estatísticas intrínsecas contidas nos padrões de entrada, por isso o nome \textit{mapa auto-organizável} \cite{Haykin:99}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.30\textwidth]{training}
+	\caption{Exemplo de rede n\~{a}o treinada.\cite{Mlin:06}}
+	\label{fig:training}
+\end{figure}
+
+Um exemplo comum usado para mostrar os princípios de SOM é o mapeamento de cores a partir de seus 3 componentes: vermelho, verde e azul ou RGB (\textit{red, green and blue}) em um espaço bidimensional. A Figura \ref{fig:som_demo} ilustra um exemplo de SOM treinado para reconhecer padrões de cores RGB. As cores são fornecidas para a rede como vetores de 3 dimensões, uma dimensão para cada componente de cor, e a rede foi treinada para representá-los em um espaço de 2 dimensões. Observe que além do agrupamento de cores em regiões distintas, as regiões de propriedades similares estão localizadas de forma adjacente.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.30\textwidth]{som_demo}
+	\caption{Um exemplo de SOM treinado para classificação de cores.\cite{Mlin:06}}
+	\label{fig:som_demo}
+\end{figure}
+
+A rede SOM ilustrada na Figura \ref{fig:som_demo} apresenta uma grade de tamanho $40 \times 40$. Cada nó da grade possui 3 pesos, cada um representando um componente RGB. Além disso, cada nó é representado por uma célula retangular, quando desenhado na interface gráfica do aplicativo.\\
+
+Cada nó da grade tem uma posição topológica específica representada por uma coordenada $(x, y)$ e contém um vetor de pesos sinápticos de dimensão igual ao vetor de entrada. Ou seja, caso os dados de treinamento consistem de vetores $x$ de dimensão $n$:\[ x = [x_{1}, x_{2}, x_{3}, ..., x_{n}] \] Então cada nó ou neurônio $j$ da grade contém um vetor correspondente de peso $w_{j}$ com a mesma dimensão $n$:
+
+\[ w_{j} = [w_{j1}, w_{j2}, w_{j3}, ..., w_{jn}] \]
+
+A formação do SOM \'{e} feita primeiramente inicializando os pesos sinápticos da grade, com valores obtidos de um gerador de números randômicos. Assim, nenhuma organização prévia é imposta ao mapa de características (veja figura \ref{fig:training}. Depois que a grade \'{e} feita, s\~{a}o executados 6 processos importantes\cite{Haykin:99}:
+
+\begin{description}
+	\item[Inicialização:] Cada neurônio tem os seus pesos sinápticos inicializados aleatoriamente. Geralmente os pesos são inicializados entre 0 e 1, ou seja, $0 < w < 1$.
+	\item[Seleção de Vetor de Entrada:] Um vetor de entrada é escolhido do conjunto de dados de treinamento e apresentado para a grade de neurônios.
+	\item[Competição de Neurônios:] Todos os pesos de todos os neurônios são calculados para determinar o neurônio mais semelhante em relação ao vetor de entrada. O neurônio mais semelhante \'{e} selecionado e é considerado como o neurônio vencedor e chamado de \textit{Unidade de Melhor Casamento ou BMU (do inglês Best Matching Unit)}.
+	\item[Cooperação de Neurônios:] O \textit{raio da vizinhança topológica} do BMU é calculado. O valor do raio assume inicialmente um valor elevado, geralmente tem o mesmo raio da grade, mas diminui a cada iteração do treinamento. Os neurônios localizados dentro deste raio são considerados os vizinhos do BMU.
+	\item[Adaptação Sináptica:] Os pesos sinápticos de cada neurônio vizinho do BMU são ajustados para torná-los similares ao vetor de entrada. Os neurônios vizinhos mais próximos do BMU têm os seus pesos alterados de modo mais significativo.
+	\item[Repetição:] O segundo passo é retomado novamente selecionando um novo vetor de entrada e os passos subseqüentes são então executados.
+\end{description}
+
+A forma para determinar o BMU é acessar todos os neurônios da grade e calcular a \textit{distância Euclidiana} entre o vetor peso de cada neurônio e o vetor de entrada atual. O neurônio de vetor peso mais próximo do vetor de entrada (menor distância Euclidiana), é considerado como o neurônio vencedor ou BMU. Neste caso a distância Euclidiana é a função discriminante neste processo competitivo de neurônios e calculado como ilustra a Equação \ref{eq:euclidean}.
+
+\begin{equation}
+dist_{j} = \sqrt{\sum_{i=1}^n (x_{i}-w_{i})^2}
+\label{eq:euclidean}
+\end{equation}
+
+A cada iteração do treinamento, após o BMU ter sido determinado, o passo seguinte consiste em calcular quais são os neurônios localizados na vizinhança topológica do BMU. Tais neurônios terão os seus pesos sinápticos alterados posteriormente durante o processo de adaptação sináptica. A figura \ref{fig:bmu} ilustra um exemplo de vizinhança topológica determinada no início do treinamento da rede.
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.30\textwidth]{bmu}
+	\caption{Vizinhança topológica de um BMU representada pela área sombreada\cite{Mlin:06}.}
+	\label{fig:bmu}
+\end{figure}
+
+Uma característica da rede SOM é que a área da vizinhança topológica diminui ao longo do treinamento da rede.  A cada iteração $t$, a função de decaimento exponencial é calculada para permitir o reajuste do tamanho da vizinhança do BMU como mostrada na Equação \ref{eq:decay}:
+
+\begin{equation}
+\sigma(t) = \sigma_{0} e^{(-\frac{t}{\lambda})}
+\label{eq:decay}
+\end{equation}
+
+onde $\sigma_{0}$ representa o raio $\sigma$ no tempo $t_{0}$ que tem o mesmo valor do raio da grade, e $\lambda$ é uma constante de tempo. A variável $t$ representa um dado instante do treinamento, ou melhor, um passo de tempo da iteração.
+
+\subsection{Classificação de Padrões de Consumo de Memória baseado em Redes Neurais Auto-Organizáveis}
+\label{sec:classe_rede}
+
+Ainda baseado em \cite{Mlin:06}, essa seç\~{a}o mostra um pouco dos testes realizados afim de classificar padrões de consumo de memória utilizando um SOM.
+Os testes consistem em executar casos de uso de aplicações afim de realizar algumas medições do consumo de memória das aplicações envolvidas. Os casos de uso foram executados no sistema operacional Linux.
+Após a execuç\~{a}o de alguns casos de uso, foram observadas várias variáveis afim de compor os dados de entrada para o algoritmo de SOM. A seguinte estrutura foi escolhida para representar os dados de entradas:
+
+\begin{itemize}
+\item quantidade de páginas físicas alocadas que representa a \textit{quantidade de memória física consumida};
+
+\item \textit{variação do consumo de memória (VCM)} que é utilizada para indicar o ritmo em que o consumo de memória está aumentando ou diminuindo. Esta variação é calculada através da razão entre a diferença da quantidade de memória física consumida e o intervalo de tempo decorrido, conforme a Equação \ref{eq:velocidade};
+
+\begin{equation}
+VCM = \frac{mem_{2} - mem_{1}}{t_{2} - t_{1}}
+\label{eq:velocidade}
+\end{equation}
+
+\item \textit{taxa de variação do consumo de memória (TVCM)} que é utilizada para indicar o ritmo em que a variação de consumo de memória está aumentando ou diminuindo. Esta taxa é calculada através da razão entre a diferença da variação do consumo de memória e o intervalo de tempo decorrido, conforme a Equação \ref{eq:aceleracao}.
+\end{itemize}
+
+\begin{equation}
+TVCM = \frac{vcm_{2} - vcm_{1}}{t_{2} - t_{1}}
+\label{eq:aceleracao}
+\end{equation}
+
+Os seguintes estados podem ser atribuídos para cada propriedade apresentada: Low (L), Medium (M) e High (H). Os estados L, M e H representam respectivamente um conjunto de números pequenos, médios e grandes em um intervalo de valores estabelecidos. A definição de L, M e H são usadas para representar o comportamento de uma determinada propriedade de uma forma simples e abstrata.\\
+
+Assumindo que os valores para uma determinada propriedade está em um intervalo positivo $[limite_{minimo}, limite_{maximo}]$, então o mesmo pode ser dividido em 3 subintervalos que representam os estados \textit{L}, \textit{M} e \textit{H}, como ilustrado na Figura \ref{fig:lmh}. Observe que os valores de L, M e H são dependentes do limite mínimo e máximo de um intervalo estabelecido.
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.40\textwidth]{lmh}
+	\caption{Subintervalos que representam os estados \textit{Low (L)}, \textit{Medium (M)} e\textit{ High (H)}.}
+	\label{fig:lmh}
+\end{figure}
+
+A quantidade de memória consumida está localizada em um desses subintervalos, assumindo um dos três estados $\{Low, Medium, High\}$ apresentados. Sendo assim a quantidade de memória consumida é classificada como \textit{baixo consumo} de memória quando o seu valor está no estado L, \textit{médio consumo} de memória quando o seu valor está no estado M e \textit{alto consumo} de memória quando localizado no estado H. A quantidade de memória consumida abrange somente valores inteiros positivos, visto que consumo de memória de valor negativo é logicamente inexistente no mundo real. A mesma analogia \'{e} utilizada para os valores de VCM e TVCM.\\
+
+A tripla $<$memória,vcm,tvcm$>$ pode ser mapeada facilmente para uma estrutura de dados que seja aceita algoritmo do SOM, que foi desenvolvido em \cite{Mlin:06}. Já que o SOM utiliza vetores tridimensionais como valores de entrada, a tripla pode facilmente ser calculada contendo cada valor como sendo uma dimens\~{a}o desse vetor.\\
+
+Cada vetor no espaço tridimensional é uma instância específica da tripla que é mapeado na grade de neurônios do SOM. Cada célula da grade de neurônios armazena então um vetor tridimensional do tipo [memória, vcm, tvcm], conforme a Figura \ref{fig:mapeia}.
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.45\textwidth]{mapeia}
+	\caption{Os vetores são mapeados em um espaço bidimensional representado pela grade de neurônios.}
+	\label{fig:mapeia}
+\end{figure}
+
+A idéia de utilizar o mapa de neurônios auto-organizáveis é agrupar topologicamente as classes apresentadas de consumo de memória em áreas ou regiões distintas. Dessa forma, cada região representa uma configuração ou conjunto de configurações similares capaz de representar o estado do consumo de memória em um determinado instante.\\
+
+Para treinar a rede, utilizou-se um caso de uso que tentava reproduzir o uso normal de um computador. Neste caso de uso foram utilizadas v\'{a}rias aplicações gr\'{a}ficas como: browsers, leitores de pdf, video players e editores de texto.
+
+\section{Resultados obtidos}
+
+Após a rede neural ter sido treinada, o mapa topológico do SOM \'{e} mostrado na figura \ref{fig:som_treinado}:
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.35\textwidth]{som_treinado.png}
+	\caption{Rede Neural Treinada com dados coletados em Linux Embarcado.\cite{Mlin:06}}
+	\label{fig:som_treinado}
+\end{figure}
+
+O treinamento da rede neural foi feito utilizando um caso de uso gen\'{e}rico como dito anteriormente, desenvolvido para Linux embarcado por Francisco Alecrim \cite{Alecrim:07}. Ainda no trabalho desenvolvido em \cite{Alecrim:07}, encontramos uma ferramenta desenvolvida para analisar de uma forma mais intuitiva e melhorada os mapas topográficos das aplicações individualmente. Desta forma, \'{e} possível classificar cada caso de uso em relaç\~{a}o aos valores da tripla [memória consumida, vcm, tvcm].
+
+Na ferramenta desenvolvida, foi adicionado mais um dado referente à freqüência da área que o BMU acessa no mapa do caso de uso geral (Veja figuras \ref{fig:pdf_viewer}, \ref{fig:browser_1} e \ref{fig:browser_2}. O box central da interface, mostra os nós mais acessados pelo caso de uso que está sendo analisado. Quanto mais escuro, mais vezes aquele nó foi visitado, ou seja, escolhido como BMU. Esse \'{e} um dado muito importante pois permite que seja visualizado melhor as características de alocaç\~{a}o de memória do caso de uso. 
+
+No Anexo I, encontra-se exemplos dos mapas topográficos de alguns casos de uso analisados em \cite{Alecrim:07}. Na figura \ref{fig:pdf_viewer}, pode-se notar que o caso de uso executado para a aplicaç\~{a}o \textbf{PDF Viewer} possui um escurecimento mais intenso nas regiões de coloraç\~{a}o azul. A cor azul representa a característica de padr\~{a}o de consumo m\'{e}dio.
+
+\begin{figure}[htbp]
+	\centering
+		\includegraphics[width=0.7\textwidth]{pdf_viewer.png}
+	\caption{Resultados obtidos com o cenário 3 utilizando o aplicativo PDF Viewer.\cite{Alecrim:07}}
+	\label{fig:pdf_viewer}
+\end{figure}
+
+Nas figuras \ref{fig:browser_1} e \ref{fig:browser_2}, encontram-se os mapas para a aplicaç\~{a}o \textbf{Browser}. No cenário 1, onde utilizada uma única aba para a navegaç\~{a}o, o aplicativo alternou entre o padr\~{a}o de consumo alto e m\'{e}dio,com m\'{e}dia variaç\~{a}o de consumo de memória e baixa taxa de variaç\~{a}o de consumo. No cenário 2, onde s\~{a}o utilizadas várias janelas para navegaç\~{a}o, o aplicativo teve padr\~{a}o do consumo alto, com baixa variaç\~{a}o e taxa de variaç\~{a}o.
+
+\begin{figure}[htb]
+	\centering
+		\includegraphics[width=0.7\textwidth]{browser_1.png}
+	\caption{Resultados obtidos com o cenário 1 utilizando o aplicativo Browser.\cite{Alecrim:07}}
+	\label{fig:browser_1}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+		\includegraphics[width=0.7\textwidth]{browser_2.png}
+	\caption{Resultados obtidos com o cenário 2 utilizando o aplicativo Browser.\cite{Alecrim:07}}
+	\label{fig:browser_2}
+\end{figure}
+
+\section{Utilização de SOM na adaptatividade do Cache Comprimido}
+Como proposto nesta dissertação, a utilização da ferramenta desenvolvida em \cite{Mlin:06} e \cite{Alecrim:07}, é bastante útil na implementação da adaptatividade do CC. Utilizando os mapas gerados pela análise de cada aplicação, pode-se avaliar em quais momentos é necessário que o tamanho do CC seja alterado afim de suprir a necessidade de memória livre do sistema.\\
+
+Com a criação de um mapa com casos de uso que simulem a utilização do sistema por um usuário final, é possível determinar quais são as áreas mais acessadas por determinadas aplicações. Nesse caso, é possível verificar qual é o comportamento de consumo de memória para um determinado caso de uso e assim, tomar medidas para que não falte memória. Essas medidas podem ser o aumento ou diminuição do tamanho do CC, a mudança para um algoritmo de compressão mais eficaz (porém mais lento), etc. A tripla $<$memória, vcm, tvcm$>$, pode ser utilizada para "prever" o consumo de memória baseado no consumo anterior e no perfil (mapa) da aplicação analisada. O parâmetro "tvcm" é especialmente importante pois pode ser utilizado como a "velocidade" que uma aplicação aloca mais memória. Muito útil para evitar que situações que o OOM \textit{killer} seja invocado.
+
+\chapter{Conclusão}
+\section{Conclusão}
+Armazenar páginas de memória em formato comprimido pode diminuir o número de acessos à dispositivos de bloco, como por exemplo, discos-rígidos, que são mais lentos que a memória RAM. Os benefícios de um sistema com Cache Comprimido são mais evidentes quando a diferença de velocidade de acesso entre a área de \textit{swap} e a memória RAM são maiores.\\
+
+Utilizando uma área de \textit{swap} na memória mostrou-se uma boa técnica para armazenar mais páginas em menos espaço. Porém, os metadados continuam sendo um problema, assim como a localização de páginas comprimidas. Utilizando a abordagem de \textit{chunks}, a fragmentação é diminuída porém o custo de manter as estruturas para também é alto. Apesar disso, os \textit{overheads} impostos pelo uso do CC mostraram-se menos do que quando temos um sistema sem o CC. Aplicações que possuem um \textit{working set} muito grande, podem ser beneficiadas com o uso da memória comprimida pois a memória é virtualmente incrementada, deixando mais espaço para as aplicações.\\
+
+As Redes Neurais s\~{a}o uma t\'{e}cnica poderosa para a classificaç\~{a}o de padrões. Por\'{e}m, o grande desafio está na representaç\~{a}o dos dados do problema de uma forma que seja possível serem mapeados em um mapa topológico.\\
+
+Uma classificaç\~{a}o dos padrões de consumo de memória das aplicações pode ser muito útil para melhorar a política de alocaç\~{a}o de memória encontrada atualmente no núcleo (ou \textit{kernel}) do Linux. Por\'{e}m, por precisar de um grande volume de dados de entrada, esta t\'{e}cnica \'{e} totalmente inviável para ser utilizada \textit{on-the-fly}, ou seja, durante a execuç\~{a}o do sistema. Como um trabalho futuro, o que pode ser realizado \'{e} a busca de um algoritmo que leve em conta mapas j\'{a} reconhecidos de alguma forma. Desta forma poderia ser possível predizer o comportamento do consumo de memória, e com isso utilizar diferentes políticas afim de garantir a integridade do sistema.\\
+
+%\newpage
 
 \addcontentsline{toc}{section}{Referências}
 %\bibliographystyle{alpha}

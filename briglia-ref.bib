@@ -7,20 +7,71 @@
 %  $Revision: 1.3 $
 %
 
-@book{love05kerneldevel,
- title          = {Linux Kernel Development},
- edition	= {2nd},
- author         = {Robert Love},
- publisher      = {Novell Press},
- year           = {2005},
- note           = {ISBN 0-672-32720-1}, 
+@InProceedings{GRE01,
+  author =	"M. R. Guthaus and J. S. Ringenberg and D. Ernst and T.
+		 M. Austin and T. Mudge and R. B. Brown",
+  title =	"{MiBench}: {A} free, commercially representative
+		 embedded benchmark suite",
+  booktitle =	"Proceedings of the {IEEE} 4th Annual Workshop on
+		 Workload Characterization",
+  month =	dec,
+  year = 	"2001",
+  URL =  	"http://www.eecs.umich.edu/mibench/Publications/MiBench.pdf",
+  id =   	"155",
+  category =	"unknown",
 }
 
-@phdthesis{kaplan99compressed,
- title 		= {Compressed Caching and Modern Virtual Memory Simulation},
- author 	= {S. Kaplan},
- school		= {University of Texas at Austin},
- year 		= {1999},
+@misc{mmca,
+  author 	= {Multimedia Card Association},
+  note 		= {http://www.mmca.org/technology/about/},
+  year 		= {2008}
+}
+
+@misc{nokiaN800,
+ title		= "Device Profile: Nokia N800 Internet Tablet",
+ author		= "LinuxDevices.com",
+ note		= {http://www.linuxdevices.com/articles/AT9561669149.html},
+ year		= "2007"
+}
+
+@Book{love05kerneldevel,
+  author =	"Robert Love",
+  title =	"{Linux} kernel development",
+  publisher =	"Novell Press",
+  address =	"Indianapolis, IN, USA",
+  edition =	"Second",
+  pages =	"xvi + 401",
+  year = 	"2005",
+  ISBN = 	"0-672-32720-1 (paperback)",
+  isbn-13 =	"978-0-672-32720-9 (paperback)",
+  LCCN = 	"QA76.76.O63 L673 2005",
+  bibdate =	"Thu Jul 14 11:58:09 MDT 2005",
+  bibsource =	"z3950.loc.gov:7090/Voyager",
+  acknowledgement = "Nelson H. F. Beebe, University of Utah, Department
+		 of Mathematics, 110 LCB, 155 S 1400 E RM 233, Salt Lake
+		 City, UT 84112-0090, USA, Tel: +1 801 581 5254, FAX: +1
+		 801 581 4148, e-mail: \path|beebe@math.utah.edu|,
+		 \path|beebe@acm.org|, \path|beebe@computer.org|
+		 (Internet), URL:
+		 \path|http://www.math.utah.edu/~beebe/|",
+  subject =	"Linux; Operating systems (Computers)",
+}
+
+@PhdThesis{kaplan99compressed,
+  title =	"Compressed caching and modern virtual memory
+		 simulation",
+  author =	"Scott Frederick Kaplan",
+  year = 	"1999",
+  bibsource =	"OAI-PMH server at alcme.oclc.org",
+  description =  "Vita.; Thesis (Ph. D.)--University of Texas at Austin,
+		 1999.; Includes bibliographical references (leaves
+		 312-319).",
+  oai =  	"oai:xtcat.oclc.org:OCLCNo/ocm46689442",
+  relation =	"Available also in a digital version from Dissertation
+		 Abstracts.",
+  school =	"University of Texas at Austin",
+  subject =	"Cache memory.; Virtual storage (Computer science)",
+  URL =  	"http://wwwlib.umi.com/cr/utexas/main",
 }
 
 @Article{ziv78compression,
@@ -34,26 +85,39 @@
 }
 
 @misc{obe05lzo,
+  title		= {Implementa\'{c}\~{a}o e c\'{o}digo-fonte do algoritmo de compress\~{a}o LZO},
   author 	= {Markus Franz Xaver Johannes Oberhumer},
-  url 		= {http://www.oberhumer.com/opensource/lzo/lzodoc.php},
+  note 		= {http://www.oberhumer.com/opensource/lzo/lzodoc.php},
   year 		= {2005}
+}
+
+@Article{ZivLem77,
+  author =	"Ziv and Lempel",
+  title =	"A Universal Algorithm for Sequential Data
+		 Compression",
+  journal =	"IEEETIT: IEEE Transactions on Information Theory",
+  volume =	"23",
+  year = 	"1977",
 }
 
 @misc{xauto07,
   author	= {Steve Slaven},
-  url		= {http://hoopajoo.net/projects/xautomation.html},
+  title		= {XAutomation},
+  note		= {http://hoopajoo.net/projects/xautomation.html},
   year		= {2006},
 }
 
 @misc{memtest06,
   author	= {Juan Quintela},
-  url		= {http://carpanta.dc.fi.udc.es/~quintela/memtest/},
+  title		= {MemTest},
+  note		= {http://carpanta.dc.fi.udc.es/~quintela/memtest/},
   year		= {2006},
 }
 
 @misc{llcbench07,
   author	= {Philip J. Mucci, Kevin London, John Thurman},
-  url		= {http://icl.cs.utk.edu/projects/llcbench/index.html},
+  title		= {LLCbench - Low Level Architectural Characterization Benchmark Suite},
+  note		= {http://icl.cs.utk.edu/projects/llcbench/index.html},
   year		= {2007},
 }
 
@@ -69,32 +133,76 @@
   year		= {2007},
 }
 
-@Article{castro03,
+@misc{castro03,
  author 	= {Rodrigo Souza de Castro},
  title 		= {Cache comprimido adaptativo: projeto, estudo e implementa\'{c}\~{a}o},
  year		= {2003},
  school		= {Universidade de S\~{a}o Paulo}
+ howpublished	= {Dissertação de Mestrado. Instituto de Matem\'{a}tica e Estat\'{i}stica},
 }
 
-@misc{irina05,
- author		= {Irina Chihaia Tuduce and Thomas Gross},
- title		= {Adaptive Main Memory Compression},
- year		= {2005},
- url		= {http://www.lst.inf.ethz.ch/research/publications/publications/USENIX\_2005/USENIX\_2005.pdf},
+@InProceedings{castro03-2,
+  title =	"Adaptive Compressed Caching: Design and
+		 Implementation",
+  author =	"Rodrigo S. de Castro and Alair Pereira do Lago and
+		 Dilma Da Silva",
+  publisher =	"IEEE Computer Society",
+  year = 	"2003",
+  bibdate =	"2004-02-17",
+  bibsource =	"DBLP,
+		 http://dblp.uni-trier.de/db/conf/sbac-pad/sbac-pad2003.html#CastroLS03",
+  booktitle =	"SBAC-PAD",
+  crossref =	"conf/sbac-pad/2003",
+  ISBN = 	"0-7695-2046-4",
+  pages =	"10--18",
+  URL =  	"http://csdl.computer.org/comp/proceedings/sbac-pad/2003/2046/00/20460010abs.htm",
 }
 
-@misc{douglis93,
- author		= {Douglis F.},
- title		= {The Compression Cache: Using On-line Compression to Extend Physical Memory},
- year		= {1993},
- url		= {http://www.lst.inf.ethz.ch/research/publications/publications/USENIX\_2005/USENIX\_2005.pdf},
+@InProceedings{irina05,
+  title =	"Adaptive Main Memory Compression",
+  author =	"Irina Chihaia Tuduce and Thomas R. Gross",
+  publisher =	"USENIX",
+  year = 	"2005",
+  bibdate =	"2007-02-06",
+  bibsource =	"DBLP,
+		 http://dblp.uni-trier.de/db/conf/usenix/usenix2005g.html#TuduceG05",
+  booktitle =	"USENIX Annual Technical Conference, General Track",
+  crossref =	"conf/usenix/2005g",
+  pages =	"237--250",
+  URL =  	"http://www.usenix.org/events/usenix05/tech/general/tuduce.html",
 }
 
-@misc{crames05,
- author		= {Lei Yang and Robert P. Dick and Haris Lekatsas and Srimat Chakradhar},
- title		= {CRAMES: Compressed RAM for Embedded Systems},
- year		= {2005},
- url		= {http://ziyang.eecs.northwestern.edu/~dickrp/publications/yang05sep.pdf},
+@InProceedings{douglis93,
+  title =	"The Compression Cache: Using On-line Compression to
+		 Extend Physical Memory",
+  author =	"Fred Douglis",
+  year = 	"1993",
+  bibdate =	"2002-01-03",
+  bibsource =	"DBLP,
+		 http://dblp.uni-trier.de/db/conf/usenix/usenix_wi93.html#Douglis93",
+  booktitle =	"USENIX Winter",
+  pages =	"519--529",
+}
+
+@InProceedings{crames05,
+  title =	"{CRAMES}: compressed {RAM} for embedded systems",
+  author =	"Lei Yang and Robert P. Dick and Haris Lekatsas and
+		 Srimat T. Chakradhar",
+  bibdate =	"2006-02-15",
+  bibsource =	"DBLP,
+		 http://dblp.uni-trier.de/db/conf/codes/codes2005.html#YangDLC05",
+  booktitle =	"CODES+ISSS",
+  booktitle =	"Proceedings of the 3rd {IEEE}/{ACM}/{IFIP}
+		 International Conference on Hardware/Software Codesign
+		 and System Synthesis, {CODES}+{ISSS} 2005, Jersey City,
+		 {NJ}, {USA}, September 19-21, 2005",
+  publisher =	"ACM",
+  year = 	"2005",
+  editor =	"Petru Eles and Axel Jantsch and Reinaldo A.
+		 Bergamaschi",
+  ISBN = 	"1-59593-161-9",
+  pages =	"93--98",
+  URL =  	"http://doi.acm.org/10.1145/1084834.1084861",
 }
 
 @misc{ldev07,
@@ -106,15 +214,20 @@
 @misc{ccache06,
  author		= {Nitin Gupta},
  title		= {Compressed Caching for Linux project's site},
- url		= {http://linuxcompressed.sourceforge.net/},
+ note		= {http://linuxcompressed.sourceforge.net/},
  year		= {2006},
 }
 
-@misc{swapcc99,
- author		= {R. Cervera, T. Cortes and Y. Becerra},
- title		= {Improving Application Performance through Swap Compression},
- url		= {http://www.usenix.org/events/usenix99/full_papers/cervera/cervera.pdf},
- year		= {1999},
+@InProceedings{swapcc99,
+  author =	"R. Cervera and T. Cortes and Y. Becerra",
+  title =	"Improving Application Performance through Swap
+		 Compression",
+  booktitle =	"Proceedings of the USENIX Technical Conference
+		 (Freenix track)",
+  organization = "USENIX Association",
+  year = 	"1999",
+  month =	jun,
+  keywords =	"Virtual Memory, Swap Compression, Linux",
 }
 
 @misc{tiomap2420,
@@ -123,32 +236,48 @@
  year		= {2006},
 }
 
-@misc{briglia07,
- author		= {Anderson F. Briglia and Allan Bezerra and Nitin Gupta and Leonid Moiseichuk},
- title		= {Evaluating effects of cache memory compression on embedded systems},
- year		= {2007},
- note		= {http://linuxsymposium.org/2007},
+@InProceedings{briglia07,
+ author		= "Anderson F. Briglia and Allan Bezerra and Nitin Gupta and Leonid Moiseichuk",
+ title		= "Evaluating effects of cache memory compression on embedded systems",
+ booktitle	= "Proceedings of the 2007 Linux Symposium",
+ URL		= "http://ols.108.redhat.com/2007/Reprints/briglia-Reprint.pdf"
+ year		= "2007",
 }
 
-@misc{tuduce05,
- author		= {Tuduce and Gross},
- title		= {Adaptative Main Memory Compression},
- year		= {2005},
- note		= {USENIX 2005},
+@InProceedings{wilson99,
+  author =	"Paul R. Wilson and Scott F. Kaplan and Yannis
+		 Smaragdakis",
+  title =	"The Case for Compressed Caching in Virtual Memory
+		 Systems",
+  booktitle =	"Proceedings of the {USENIX} 1999 Annual Technical
+		 Conference",
+  pages =	"101--116",
+  year = 	"1999",
+  URL =  	"http://www.usenix.org/publications/library/proceedings/usenix99/full_papers/wilson/wilson.pdf",
+  id =   	"359",
+  category =	"memory,compression",
 }
 
-@misc{wilson99,
- author		= {P. R. Wilson and S. F. Kaplan and Y. Smaragdakis.},
- title		= {The case for compressed caching in virtual memory systems.},
- year		= {1999},
- note		= {USENIX 1999},
+@Article{wilson91,
+  author =	"Paul R. Wilson",
+  title =	"Some issues and strategies in heap management and
+		 memory hierarchies",
+  journal =	"SIGPLAN Notices",
+  volume =	"26",
+  number =	"3",
+  pages =	"45--52",
+  year = 	"1991",
 }
 
-@Article{li91,
- author		= {A. W. Appel and K. Li.},
- title		= {Virtual Memory Primitives for User Programs.},
- year		= {1991},
- note		= {Fourth International Conference on Architectural Support for Programming Languages and Operating Systems},
+@InProceedings{li91,
+  title =	"Virtual Memory Primitives for User Programs",
+  author =	"Andrew W. Appel and Kai Li",
+  year = 	"1991",
+  bibdate =	"2002-12-09",
+  bibsource =	"DBLP,
+		 http://dblp.uni-trier.de/db/conf/asplos/asplos91.html#AppelL91",
+  booktitle =	"ASPLOS",
+  pages =	"96--107",
 }
 
 @Book{Rubini:01,
@@ -157,6 +286,14 @@ title = {Linux Device Drivers},
 publisher = {O'Reilly Associates},
 year = {2001},
 edition = {2nd}
+}
+
+@Book{mor00,
+author = {Kaufman Morga},
+title = {Computer as Components},
+publisher = {O'Reilly Associates},
+year = {2000},
+edition = {1st}
 }
 
 @Book{Code:01,
@@ -281,6 +418,15 @@ title = {Kohonen's Self Organizing Feature Maps},
 howpublished = {http://www.ai-junkie.com/ann/som/som1.html}
 }
 
+@Article{Koh88,
+  author =	"Teuvo Kohonen",
+  journal =	"Neural Networks",
+  pages =	"3--16",
+  title =	"An Introduction to Neural Computing",
+  volume =	"1",
+  year = 	"1988",
+}
+
 @Phdthesis{Honkela:98,
 author = {Timo Honkela},
 title = {Self-Organizing Maps in Natural Language Processing},
@@ -357,7 +503,8 @@ note = {http://www.cs.stir.ac.uk/\~{}lss/NNIntro/InvSlides.html}
 author = {Cassia Yuri Tatibana and Deisi Yuki Kaetsu},
 title = {Uma Introduc\~{a}o \`{a}s Redes Neurais},
 organization = {Departamento de Inform\'{a}tica - Universidade Estadual de Maring\'{a}},
-note = {http://www.din.uem.br/ia/neurais/}
+note = {http://www.din.uem.br/ia/neurais/},
+year = {2007}
 }
 
 @Techreport{McNeil:92,

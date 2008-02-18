@@ -1,4 +1,4 @@
-#FIG 3.2  Produced by xfig version 3.2.5-alpha5
+#FIG 3.2  Produced by xfig version 3.2.5
 Landscape
 Center
 Metric
@@ -73,4 +73,4 @@ Single
 2 1 0 1 0 -1 50 -1 -1 0.000 0 0 -1 1 0 2
 	1 1 1.00 60.00 120.00
 	 7650 4410 8235 5040
-4 1 0 50 -1 0 14 0.0000 4 210 2025 7650 4410 4Kb page boundaries\001
+4 1 0 50 -1 0 14 0.0000 4 195 5670 7650 4410 Limites de cada pagina fisica, ou page frame - PAGE_SIZE\001
