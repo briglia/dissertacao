@@ -390,41 +390,41 @@ Na figura \ref{fig:obj-free}, existem campos que apontam para a próximo e o ante
 
 Nesta seção são apresentados os testes que foram executados utilizando Cache Comprimido em um sistema embarcado com Linux. O principal objetivo dos testes é avaliar os impactos e as características do consumo de memória, quando temos uma área comprimida adicionada ao sistema.\\
 
-%Como dito anteriormente, a atual implementação do Cache Comprimido trata dois tipos de páginas: páginas anônimas e páginas do \textit{Page Cache}. O primeiro tipo de páginas foi utilizado como referência pois pode ser feito \textit{swap}, facilitando a obtenção de dados para os gráficos.\\
+Como dito anteriormente, a atual implementação do Cache Comprimido trata dois tipos de páginas: páginas anônimas e páginas do \textit{Page Cache}. O primeiro tipo de páginas foi utilizado como referência pois pode ser feito \textit{swap}, facilitando a obtenção de dados para os gráficos.\\
 
-%Foram realizados testes com e sem um \textit{swap} real, utilizando uma partição em um cartão MMC\footnote{Os cartões MMC são utilizados como memória secundária de dispositivos móveis, câmeras fotográficas, etc. Cartões MMC possuem uma taxa de transferência de até 52 MB/seg. A capacidade de armazenamento varia de alguns \textit{megabytes} até cartões com mais espaço de armazenamento, na ordem de \textit{gigabytes}.}. A utilização de um \textit{swap} real se justifica pois é importante comparar o \textit{swap} virtual com o real. Como medidas desta comparação, foram considerados os seguintes itens:
+Foram realizados testes com e sem um \textit{swap} real, utilizando uma partição em um cartão MMC\footnote{Os cartões MMC são utilizados como memória secundária de dispositivos móveis, câmeras fotográficas, etc. Cartões MMC possuem uma taxa de transferência de até 52 MB/seg. A capacidade de armazenamento varia de alguns \textit{megabytes} até cartões com mais espaço de armazenamento, na ordem de \textit{gigabytes}.}. A utilização de um \textit{swap} real se justifica pois é importante comparar o \textit{swap} virtual com o real. Como medidas desta comparação, foram considerados os seguintes itens:
 
-%\begin{itemize}
-%	\item  Quantas páginas são mantidas no Cache Comprimido e não vão para o \textit{swap} real, evitando assim um maior \textit{overhead} por causa das operações de E/S.
-%	\item Mudanças no consumo de potência do equipamento.
-%\end{itemize}
+\begin{itemize}
+	\item  Quantas páginas são mantidas no Cache Comprimido e não vão para o \textit{swap} real, evitando assim um maior \textit{overhead} por causa das operações de E/S.
+	\item Em quais situações o Cache Comprimido é útil para evitar que o OOM (Out-of-memory killer), seja chamado.
+	\item Qual é a velocidade para que páginas de memória sejam comprimidas e armazenadas no ramzwap.
+\end{itemize}
 
 \subsection{Suite de Testes e Metodologia}
 
-%Utilizou-se um dispositivo móvel, parecido com um PDA que possui Linux embarcado como sistema operacional nativo. O Nokia Internet Tablet N800 tem um processador ARM1136 com 330Mhz, 128MB de memória RAM e 256MB de memória \textit{flash}, utilizada como armazenamento secundário. Ainda possui acelerador gráfico 2D/3D e dois leitores de cartões MMC/SD.\\
+Utilizou-se um dispositivo móvel, parecido com um PDA que possui Linux embarcado como sistema operacional nativo. O Nokia Internet Tablet N810 \cite{nokiaN810} tem um processador ARM1136 com 400Mhz, 128MB de memória RAM e 256MB de memória \textit{flash}, utilizada como armazenamento secundário. Ainda possui acelerador gráfico 2D/3D e dois leitores de cartões MMC/SD.\\
 
-%Nota-se que este dispositivo móvel, como muitos outros, foi projetado para aplicações multimídia \cite{nokiaN800}. Este tipo de aplicação demanda muito poder de processamento e quantidade de memória razoável para as aplicações. Levando isso em consideração, os testes foram realizados afim de verificar o comportamento de todo o sistema e das aplicações multimídia, quando a quantidade de memória livre disponível é muito baixa. O objetivo é verificar a performance de todo o sistema, quando se realizam operações de compressão e recuperação das páginas comprimidas.\\
+Nota-se que este dispositivo móvel, como muitos outros, foi projetado para aplicações multimídia \cite{nokiaN810}. Este tipo de aplicação demanda muito poder de processamento e quantidade de memória razoável para as aplicações. Levando isso em consideração, os testes foram realizados afim de verificar o comportamento de todo o sistema e das aplicações multimídia, quando a quantidade de memória livre disponível é muito baixa. O objetivo é verificar a performance de todo o sistema, quando se realizam operações de compressão e recuperação das páginas comprimidas.\\
 
-%Os casos de uso dos testes podem ser divididos em duas partes: testes que utilizam \textit{benchmarks} sintéticos e testes que simulam a utilização real do aparelho. No primeiro grupo, existe um maior controle do consumo de memória e assim, pode-se avaliar o comportamento do Cache Comprimido quando é submetido à pressões por falta de memória. No segundo grupo, foi verificado se o Cache Comprimido exerce um \textit{overhead} que afeta a performance das aplicações que o usuário pode executar. Espera-se que a performance das aplicações melhore, visto que o número de E/S resultantes de acessos à um dispositivo de \textit{swap} real (dispositivo de bloco), é diminuído pois mais páginas se encontram na memória principal.\\
+Os casos de uso dos testes podem ser divididos em duas partes: testes que utilizam \textit{benchmarks} sintéticos e testes que simulam a utilização real do aparelho. No primeiro grupo, existe um maior controle do consumo de memória e assim, pode-se avaliar o comportamento do Cache Comprimido quando é submetido à pressões por falta de memória. No segundo grupo, foi verificado se o Cache Comprimido exerce um \textit{overhead} que afeta a performance das aplicações que o usuário pode executar. Espera-se que a performance das aplicações melhore, visto que o número de E/S resultantes de acessos à um dispositivo de \textit{swap} real (dispositivo de bloco), é diminuído pois mais páginas se encontram na memória principal, através do \textit{swap} virtual utilizando o ramzswap..\\
 
-%Os testes utilizando aplicações, consistem em:
+Os testes utilizando aplicações, consistem em:
 
-%\begin{itemize}
+\begin{itemize}
 
-%\item Executar 8 ou 9 instâncias do navegador WEB, simultaneamente, acessando páginas na Internet através de uma conexão de rede sem-fio.
+	\item Executar de 8 a 10 instâncias do navegador WEB, simultaneamente, acessando páginas na Internet através de uma conexão de rede sem-fio.
+	\item Tocar um arquivo de vídeo de 7,5MB.
+	\item Realizar operações com mídias: tocar mp3, indexar novos arquivos, abrir fotos, etc.
+	\item Abrir um documento em formato PDF.
+\end{itemize}
 
-%\item Tocar um arquivo de vídeo de 7,5MB.
+Para fazer a interação entre o \textit{X system} e as aplicações, foi utilizado uma ferramenta chamada Xautomation \cite{xauto07}. Com esta ferramenta foi possível controlar toda a movimentação do cursor na tela e os cliques. Enquanto as aplicações são executadas, outros programas ficam responsáveis de fazer a coleta das informações referentes ao consumo de memória, através de leituras das estatísticas exportadas pelo \texttt{procfs}. É com base nesses dados que alguns gráficos foram plotados e discutidos nas seções posteriores deste trabalho.\\
 
-%\item Abrir um documento em formato PDF.
-%\end{itemize}
+Os testes utilizando \textit{benchmarks} sintéticos, foram executados usando um conjunto de utilitários chamado MemTest \cite{memtest06}. MemTest foi implementado para avaliar a estabilidade e consistência do sistema de gerência de memória do Linux \textit{kernel}. Do MemTest foi utilizado um utilitário chamado \texttt{fillmem}. Este utilitário faz várias alocações de memória, ou seja, de páginas de memória, disparando a necessidade de mandar algumas páginas para o ramzswap, ou seja, o \textit{swap} virtual.
 
-%Para fazer a interação entre o \textit{X system} e as aplicações, foi utilizado uma ferramenta chamada Xautomation \cite{xauto07}. Com esta ferramenta foi possível controlar toda a movimentação do cursor na tela e os cliques. Enquanto as aplicações são executadas, outros programas ficam responsáveis de fazer a coleta das informações referentes ao consumo de memória, através de leituras das estatísticas exportadas pelo \texttt{procfs}. É com base nesses dados que alguns gráficos foram plotados e discutidos nas seções posteriores deste trabalho.\\
+Ambos os tipos de testes, utilizaram cenários pré-definidos, dependendo do que se queria medir. Basicamente, os cenários apresentavam diferentes tamanhos da memória principal, se possuíam uma área de \textit{swap} real ou não, ou se estavam com o Cache Comprimido habilitado ou não.\\
 
-%Os testes utilizando \textit{benchmarks} sintéticos, foram executados usando um conjunto de utilitários chamado MemTest \cite{memtest06}. MemTest foi implementado para avaliar a estabilidade e consistência do sistema de gerência de memória do Linux \textit{kernel}. Do MemTest foi utilizado um utilitário chamado \texttt{fillmem}. Este utilitário faz várias alocações de memória, ou seja, de páginas de memória, disparando a necessidade de mandar algumas páginas para o \textit{swap}. É nesse momento que foram realizadas as medições referentes às páginas comprimidas, tais como, tamanho da página após a compressão, memória livre, se o \textit{Out-of-memory killer} foi invocado, etc.\\
-
-%Ambos os tipos de testes, utilizaram cenários pré-definidos, dependendo do que se queria medir. Basicamente, os cenários apresentavam diferentes tamanhos da memória principal, se possuíam uma área de \textit{swap} real ou não, ou se estavam com o Cache Comprimido presente ou não.\\
-
-%Os testes de comportamento do consumo de memória visam avaliar como a memória é consumida ao longo do tempo de duração do teste. Assim, espera-se identificar os pontos de falta de memória e a atuação do OOM \textit{killer}. Como o Cache Comprimido se utiliza da memória principal para armazenar as páginas comprimidas no \textit{swap} virtual, a quantidade de memória não-comprimida disponível para as aplicações é decrescida, e isso pode levar a uma chamada precoce do OOM killer. Por fim, os testes de consumo de potência foram realizados com o propósito de avaliar e medir os efeitos da compressão de memória no consumo da bateria do aparelho, visto que esse é um ponto crucial quando se está desenvolvendo aplicações para sistemas embarcados.
+Os testes de comportamento do consumo de memória visam avaliar como a memória é consumida ao longo do tempo de duração do teste. Assim, espera-se identificar os pontos de falta de memória e a atuação do OOM \textit{killer}. Como o Cache Comprimido se utiliza da memória principal para armazenar as páginas comprimidas no \textit{swap} virtual, a quantidade de memória não-comprimida disponível para as aplicações é decrescida, e isso pode levar a uma chamada precoce do OOM killer.
 
 \subsubsection{Ajustando o kernel}
 
@@ -499,46 +499,19 @@ Vale ressaltar que os valores que devem se escritos nesses parâmetros estão na u
 
 \subsection{Testes de Performance}
 
-%Nos testes de performance foram utilizados os \textit{bechmarks} sintéticos para avaliar alguns \textit{overheads} impostos pelo Cache Comprimido: overhead de compressão, overhead das listas de \textit{chunks} e overhead de compressão das páginas. Através dessa análise, espera-se que o Cache Comprimido seja mais rápido do que utilizar um \textit{swap} real em um dispositivo de armazenamento secundário, como um cartão MMC.\\
+Nesse tipo de teste foi utilizado um \textit{benchmark} sintético que realize a alocação de uma grande área de memória. O objetivo é analisar o overhead imposto pelo Cache Comprimido quando as páginas são destinadas à área de \textit{swap} virtual (ramzswap).\\
 
-%Somente as páginas que podem ir para o \textit{swap} estão sendo consideradas aqui, ou seja, somente as páginas anônimas. Na Tabela \ref{tab:tab01} estão os resultados do tempo de execução do \texttt{fillmem} alocando 70 MB de memória (\texttt{swappiness = 60, min\_free\_kbytes = 1024KB, max\_cc\_anon\_size = 1280 páginas}).
+Para testar a alocação de memória, foi utilizado um programa da suíte de testes MemTest\cite{memtest06}. O programa em questão é o \textbf{fillmem} e ele foi usado para alocar uma grande quantidade de memória de forma muito rápida. Na figura \ref{fig:fillmem50} estão os tempos de execução do fillmem para alocar 50 MB de memória.\\
 
-%\begin{table}[tbph]
-%\footnotesize
-%\centering
-% \begin{tabular}{|p{3cm}|p{3cm}|p{3cm}|p{3cm}|p{3cm}|}
-% \hline
-% \bfseries Teste & Sem-CC & CC WKdm & CC WK4x4 & CC LZO \\
-% \hline
-% \bfseries Tempo(s) & 14.68 & 4.64 & -- & 4.25 \\
-% \hline 
-% \end{tabular}
-%\normalsize
-%\caption{Teste de Performance: Cache Comprimido x Swap real}
-%\label{tab:tab01}
-%\end{table}
+\begin{figure}[htb]
+ \centering
+ \includegraphics[scale=0.5]{fillmem50.png}
+ % fillmem50.png: 640x480 pixel, 72dpi, 22.58x16.93 cm, bb=0 0 640 480
+ \caption{Tempo de de execução do fillmem para alocar 50 MB.}
+ \label{fig:fillmem50}
+\end{figure}
 
-%O teste que utilizou o algoritmo de compressão \texttt{WK4x4} invocou o OOM \textit{killer} e não pôde ser finalizado. Mas, analisando os outros valores, pode-se concluir que a operação de \textit{swap} utilizando o Cache Comprimido é cerca de 3 vezes mais rápida do que utilizando um cartão MMC. Isso se deve ao fato de que o \textit{swap} virtual é uma área da memória RAM, com tempo de acesso bem maior do que o da área de \textit{swap} no cartão MMC. Porém, com os testes utilizando o CC, o OOM \textit{killer} foi chamado. O problema está que aplicações importantes podem ser terminadas bruscamente por este dispositivo.
-
-%Como discutido anteriormente, o CC utilizado neste trabalho não possui a adaptabilidade para dimensionar o próprio tamanho da área comprimida utilizada. Assim, em algumas ocasiões o Cache Comprimido afeta o tamanho da memória livre e as aplicações acabam sendo terminadas pelo OOM \textit{killer}. Para um melhor desempenho do Cache Comprimido, é necessário que o sistema de \textit{swap} do \textit{kernel} seja bem conFigurado, como mostrado nas seções anteriores. Utilizando parâmetros de conFiguração do \textit{kernel} como \textit{swappiness} e \textit{min\_free\_kbytes}, pode-se aumentar o uso das áreas de \textit{swap}, aumentando também o uso do \textit{swap} virtual do CC, comprimindo mais páginas.
-
-\subsection{Testes de Consumo de Potência}
-
-%Neste teste, a bateria do aparelho foi substituída por uma fonte de alimentação mensurável e variável. Com este equipamento foi medida a potência total necessária pelo dispositivo. Note que não foi avaliada a energia gasta no processador, seria um processo bastante complexo e intrusivo. A Figura \ref{fig:pm_test} mostra o consumo de potência ao longo de um dos testes realizados na seção \ref{sec:mem_behavior}.
-
-%\begin{figure}[htb]
-%	\centering
-%	\includegraphics[scale=0.47]{pm_table}
-%	\label{fig:pm_table}
-%\end{figure}
-%\begin{figure}[htb]
-%	\centering
-%	\includegraphics[scale=0.67]{pm_test01}
-%	\caption{Testes de consumo de potência usando CC}
-%	\label{fig:pm_test}
-%\end{figure}
-
-%Nos passo 1 a 5, o consumo de potência é padrão pois o CC estava ativo mas não utilizado. Os passos mais importantes são de 5 a 8. Nestes passos o Cache Comprimido começou a ser utilizado e podemos ver uma leve diferença no consumo de potência quando se usa o Cache Comprimido e quando não se usa. Quando o CC é utilizado, ao invés do \textit{swap} real, há um ganho de 3\% no consumo de potência. Acredita-se que isso se deve ao fato do \textit{kernel} fazer menos requisições de E/S, não necessitando assim acessar o controlador do cartão MMC.
+No gráfico mostrado na figura \ref{fig:fillmem50}, nota-se que o tempo de alocação do fillmem é cerca de três vezes maior quando se usa o Cache Comprimido. Isso deve-se ao fato de haver overheads para a compactação das páginas. Apesar disso, quando Cache Comprimido é comparado à um sistema de \textit{swap} real, ou seja, utilizando um dispositivo de bloco real e não o ramzswap, nota-se que o tempo é bem maior quando se trata de escritas no MMC.
 
 \chapter{Redes Neurais e Mapas Auto-organizáveis}
 
