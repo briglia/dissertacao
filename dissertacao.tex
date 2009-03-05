@@ -97,7 +97,7 @@ A área para memória comprimida será adicionada ao sistema existente como mostrad
 
 \begin{figure}[ht]%htbp
 \centering
-\includegraphics[scale=0.85]{cc-intro}
+\includegraphics[scale=0.85]{figs/cc-intro}
 \caption{Hierarquia de memória com cache comprimido}
 \label{fig:cc_intro}
 \end{figure}
@@ -268,7 +268,7 @@ Este é o cache para páginas anônimas. Toda as páginas do \textit{swap cache} são
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[scale=0.8]{swp_entry}
+	\includegraphics[scale=0.8]{figs/swp_entry}
 	\caption{Campos da estrutura \texttt{swp\_entry\_t}}
 	\label{fig:swp_entry_fields}
 \end{figure}
@@ -301,7 +301,7 @@ A implementação atual do Cache Comprimido tira vantagem do sistema de \textit{sw
 
 \begin{figure}[htb]
  \centering
- \includegraphics[scale=0.7]{compcache.png}
+ \includegraphics[scale=0.7]{figs/compcache.png}
  % compcache.png: 425x122 pixel, 72dpi, 14.99x4.30 cm, bb=0 0 425 122
  \caption{Estrutura de swaps utilizando ramzswap como dispositivo de swap virtual.}
  \label{fig:compcache}
@@ -342,7 +342,7 @@ O cabeçalho dos objetos que o xvMalloc manipula está representado na figura \ref
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[scale=0.7]{obj-header.png}
+	\includegraphics[scale=0.7]{figs/obj-header.png}
 	\caption{Cabeçalho de um objeto manipulado pelo alocador do Cache Comprimido -- xvMalloc.}
 	\label{fig:obj-header}
 \end{figure}
@@ -366,20 +366,20 @@ Para objetos que estão livres, ou seja, podem ser alocados pelo alocador xvMallo
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[scale=0.7]{obj-free.png}
+	\includegraphics[scale=0.7]{figs/obj-free.png}
 	\caption{Cabeçalho de um objeto livre do alocador do Cache Comprimido -- xvMalloc.}
 	\label{fig:obj-free}
 \end{figure}
 
-Na figura \ref{fig:obj-free}, existem campos que apontam para a próximo e o anterior endereços de página. Esses campos são utilizados para acessar rapidamente uma página quando é requisitada pelo kernel do Linux. Cada página é identificada pela tupla \textit{<pageNum, offset>}.
+Na figura \ref{fig:obj-free}, existem campos que apontam para a próximo e o anterior endereços de página. Esses campos são utilizados para acessar rapidamente uma página quando é requisitada pelo kernel do Linux. Cada página é identificada pela tupla \textit{$<$pageNum, offset$>$}.
 
 \subsubsection{Operações de Inserção e Remoção das Páginas Comprimidas}
 
-\textbf{Inserção de páginas no Cache Comprimido:} a página descomprimida é primeiramente comprimida numa página de \textit{buffer}. O algoritmo de compressão utilizado é o LZO \cite{obe05lzo, ZivLem77}, que já é utilizado em sistemas de arquivo do Linux que utilizam compressão.  Após a compressão, o Cache Comprimido requisita ao ramzswap que armazene a página, sendo $\omega$ o tamanho da página comprimida. Nesse momento, o ramzswap solicita ao alocador xvMalloc que aloque um espaço de memória de tamanho $\omega$. Por fim, o xvMalloc passa ao ramzswap a tupla <pageNum, offset> como identificador daquela página. Essa tupla substitui o endereço no nodo da radix tree que o PFRA gerencia.
+\textbf{Inserção de páginas no Cache Comprimido:} a página descomprimida é primeiramente comprimida numa página de \textit{buffer}. O algoritmo de compressão utilizado é o LZO \cite{obe05lzo, ZivLem77}, que já é utilizado em sistemas de arquivo do Linux que utilizam compressão.  Após a compressão, o Cache Comprimido requisita ao ramzswap que armazene a página, sendo $\omega$ o tamanho da página comprimida. Nesse momento, o ramzswap solicita ao alocador xvMalloc que aloque um espaço de memória de tamanho $\omega$. Por fim, o xvMalloc passa ao ramzswap a tupla $<$pageNum, offset$>$ como identificador daquela página. Essa tupla substitui o endereço no nodo da radix tree que o PFRA gerencia.
 
 \begin{figure}[htb]
 	\centering
-	\includegraphics[scale=0.6]{radix_tree}
+	\includegraphics[scale=0.6]{figs/radix_tree}
 	\caption{Radix tree padrão, antes da compressão da página.}
 	\label{fig:radix-tree}
 \end{figure}
@@ -505,7 +505,7 @@ Para testar a alocação de memória, foi utilizado um programa da suíte de testes 
 
 \begin{figure}[htb]
  \centering
- \includegraphics[scale=0.5]{fillmem50.png}
+ \includegraphics[scale=0.5]{figs/fillmem50.png}
  % fillmem50.png: 640x480 pixel, 72dpi, 22.58x16.93 cm, bb=0 0 640 480
  \caption{Tempo de de execução do fillmem para alocar 50 MB.}
  \label{fig:fillmem50}
@@ -547,7 +547,7 @@ As localizações dos neurônios assim sintonizados se tornam ordenadas entre si de
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.30\textwidth]{training}
+	\includegraphics[width=0.30\textwidth]{figs/training}
 	\caption{Exemplo de rede n\~{a}o treinada.\cite{Mlin:06}}
 	\label{fig:training}
 \end{figure}
@@ -556,7 +556,7 @@ Um exemplo comum usado para mostrar os princípios de SOM é o mapeamento de cores
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.30\textwidth]{som_demo}
+	\includegraphics[width=0.30\textwidth]{figs/som_demo}
 	\caption{Um exemplo de SOM treinado para classificação de cores.\cite{Mlin:06}}
 	\label{fig:som_demo}
 \end{figure}
@@ -589,7 +589,7 @@ A cada iteração do treinamento, após o BMU ter sido determinado, o passo seguint
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.30\textwidth]{bmu}
+		\includegraphics[width=0.30\textwidth]{figs/bmu}
 	\caption{Vizinhança topológica de um BMU representada pela área sombreada\cite{Mlin:06}.}
 	\label{fig:bmu}
 \end{figure}
@@ -634,7 +634,7 @@ Assumindo que os valores para uma determinada propriedade está em um intervalo p
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.40\textwidth]{lmh}
+		\includegraphics[width=0.40\textwidth]{figs/lmh}
 	\caption{Subintervalos que representam os estados \textit{Low (L)}, \textit{Medium (M)} e\textit{ High (H)}.}
 	\label{fig:lmh}
 \end{figure}
@@ -647,7 +647,7 @@ Cada vetor no espaço tridimensional é uma instância específica da tripla que é m
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.55\textwidth]{mapeia}
+		\includegraphics[width=0.55\textwidth]{figs/mapeia}
 	\caption{Os vetores são mapeados em um espaço bidimensional representado pela grade de neurônios.}
 	\label{fig:mapeia}
 \end{figure}
@@ -662,7 +662,7 @@ Após a rede neural ter sido treinada, o mapa topológico do SOM \'{e} mostrado na
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.35\textwidth]{som_treinado.png}
+		\includegraphics[width=0.35\textwidth]{figs/som_treinado.png}
 	\caption{Rede Neural Treinada com dados coletados em Linux Embarcado \cite{Mlin:06}.}
 	\label{fig:som_treinado}
 \end{figure}
@@ -675,7 +675,7 @@ Na Figura \ref{fig:pdf_viewer}, pode-se notar que o caso de uso executado para a
 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[width=0.7\textwidth]{pdf_viewer.png}
+		\includegraphics[width=0.7\textwidth]{figs/pdf_viewer.png}
 	\caption{Resultados obtidos com o cenário 3 utilizando o aplicativo PDF Viewer.\cite{Alecrim:07}}
 	\label{fig:pdf_viewer}
 \end{figure}
@@ -684,14 +684,14 @@ Nas Figuras \ref{fig:browser_1} e \ref{fig:browser_2}, encontram-se os mapas par
 
 \begin{figure}[htb]
 	\centering
-		\includegraphics[width=0.7\textwidth]{browser_1.png}
+		\includegraphics[width=0.7\textwidth]{figs/browser_1.png}
 	\caption{Resultados obtidos com o cenário 1 utilizando o aplicativo Browser.\cite{Alecrim:07}}
 	\label{fig:browser_1}
 \end{figure}
 
 \begin{figure}[htb]
 	\centering
-		\includegraphics[width=0.7\textwidth]{browser_2.png}
+		\includegraphics[width=0.7\textwidth]{figs/browser_2.png}
 	\caption{Resultados obtidos com o cenário 2 utilizando o aplicativo Browser.\cite{Alecrim:07}}
 	\label{fig:browser_2}
 \end{figure}
