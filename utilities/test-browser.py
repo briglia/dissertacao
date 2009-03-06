@@ -3,23 +3,45 @@
 import time
 from os import system
 
-class Test:
-
-    CMD = 'run-standalone.sh dbus-send --type=method_call
-    --dest=com.nokia.osso_browser /com/nokia/osso_browser
-    com.nokia.osso_browser.load_url string:'
-
-    URLS = ['www.uol.com.br']
+class TestBrowser:
 
     def __init__(self):
+
+        self.send_url_cmd = 'run-standalone.sh dbus-send --type=method_call --dest=com.nokia.osso_browser /com/nokia/osso_browser com.nokia.osso_browser.load_url string:'
+        self.urls = ['www.uol.com.br', 'www.acritica.com.br']
+        self.wcount = 0
         self.__steps = []
 
     def close_window(self):
-        cmd = "xte -x :0.0 'mousemove 776 25' 'mouseclick 1'"
+        cmd = ("xte -x :0.0 'mousemove 776 25' 'mouseclick 1'", 2)
         self.add_step(cmd)
+
+    def open_new_browser(self):
+        '''
+        This is necessary to open first browser window.
+        '''
+        if self.wcount == 0:
+            self.add_step((self.send_url_cmd, 5))
+        else:
+            cmd = ("xte -x :0.0 'mousemove 150 30' 'mouseclick 1'", 1)
+            self.add_step(cmd)
+            cmd = ("xte -x :0.0 'mousemove 150 85' 'mouseclick 1'", 1)
+            self.add_step(cmd)
+            cmd = ("xte -x :0.0 'key Page_Down' 'key Page_Down' 'key Down' 'key Return'", 10)
+            self.add_step(cmd)
+        self.wcount = self.wcount + 1
+
+    def open_url(self, url):
+        self.open_new_browser()
+        cmd = self.send_url_cmd + url
+        self.add_step((cmd, 20))
 
     def add_step(self, cmd):
         self.__steps.append(cmd)
+
+    def close_all(self):
+        for i in xrange(0, self.wcount):
+            self.close_window()
 
     def play_steps(self):
         '''
@@ -27,10 +49,17 @@ class Test:
         Uses time.sleep() to make an interval between each command.
         '''
         for cmd in self.__steps:
-            system(cmd[1])
-            time.sleep(cmd[0])
+            print 'CMD: ', cmd[0]
+            system(cmd[0])
+            time.sleep(cmd[1])
+
+    def begin_test(self):
+        for url in self.urls:
+            self.open_url(url)
+        self.close_all()
+        self.play_steps()
 
 if __name__ == '__main__':
-    cmd = '/usr/bin/carman-evas --log-level=debug --log-dir=/tmp &'
-    system(cmd)
-    time.sleep(20)
+    test = TestBrowser()
+    test.begin_test()
+    print 'Test Finished...'
