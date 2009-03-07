@@ -386,7 +386,7 @@ Na figura \ref{fig:obj-free}, existem campos que apontam para a próximo e o ante
 
 \textbf{Remoção de páginas do Cache Comprimido:} do ponto de vista do PFRA e do kernel, a página comprimida tem o mesmo tipo que uma página normal. A única diferença entre a página comprimida e as páginas normais é que, a primeira está armazenada em uma partição de swap chamada ramzswap. Dessa forma, a referência à pagina comprimida, que é passada para a radix tree não se difere da referência das outras páginas, pois o ramzswap é um dispositivo de bloco como os outros. Assim, fica à cargo do Cache Comprimido e do xvMalloc que encontre a página comprimida, descomprime-a e retorne sua referência e valor ao kernel quando o mesmo requisita uma página do ramzswap.
 
-\section{Experimentos}
+\section{Experimentos com Cache Comprimido}
 
 Nesta seção são apresentados os testes que foram executados utilizando Cache Comprimido em um sistema embarcado com Linux. O principal objetivo dos testes é avaliar os impactos e as características do consumo de memória, quando temos uma área comprimida adicionada ao sistema.\\
 
@@ -511,7 +511,7 @@ Para testar a alocação de memória, foi utilizado um programa da suíte de testes 
  \label{fig:fillmem50}
 \end{figure}
 
-No gráfico mostrado na figura \ref{fig:fillmem50}, nota-se que o tempo de alocação do fillmem é cerca de três vezes maior quando se usa o Cache Comprimido. Isso deve-se ao fato de haver overheads para a compactação das páginas. Apesar disso, quando Cache Comprimido é comparado à um sistema de \textit{swap} real, ou seja, utilizando um dispositivo de bloco real e não o ramzswap, nota-se que o tempo é bem maior quando se trata de escritas no MMC.
+No gráfico mostrado na figura \ref{fig:fillmem50}, nota-se que o tempo de alocação do fillmem é cerca de três vezes maior quando se usa o Cache Comprimido. Isso deve-se ao fato de haver overheads para a compactação das páginas. A máquina usada \cite{nokiaN810}, como visto anteriomente, não possui disco rígido e sua memória secundária é composta por memória do tipo flash e cartões MMC. Esses dois tipos de memória, por suas características, possui um tempo de acesso muito maior do que o tempo dos discos rígidos convencionais. Por essa razão, a diferença entre ter uma memória de \textit{swap} virtual, e ter um swap real, tanto na memória \textit{flash}, quanto no MMC, não garante que o acesso ao \textit{swap} virtual do Cache Comprimido será mais rápido. Como pode-se notar no gráfico da figura \ref{fig:fillmem50}, o acesso às páginas de memória armazenadas no \textit{swap} real, em um cartão MMC, é até um pouco maior do que o tempo de acesso no Cache Comprimido. Isso deve-se ao fato de que o acesso ao \textit{swap} no MMC não possuir os tempos de descompactação da página.
 
 \chapter{Redes Neurais e Mapas Auto-organizáveis}
 
