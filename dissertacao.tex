@@ -451,51 +451,25 @@ Vale ressaltar que os valores que devem se escritos nesses parâmetros estão na u
 \subsection{Testes do Comportamento do Consumo de Memória}
 \label{sec:mem_behavior}
 
-O principal objetivo deste tipo de teste é visualizar como a memória é consumida ao longo do tempo e as situações de falta da mesma, quando várias aplicações são executadas pelo usuário. Para realizar estes testes, foram utilizados cenários que simulassem a interação do usuário no ambiente gráfico.\\
+O principal objetivo deste tipo de teste é visualizar como a memória é consumida ao longo do tempo e as situações de falta da mesma, quando várias aplicações são executadas pelo usuário. Para realizar os testes de consumo de memória, foi utilizado um cenário que representasse a interação do usuário com a máquina, com várias aplicações abertas, afim de impor uma grande quantidade de memória consumida.\\
 
-Foi desenvolvido um programa que automatiza a interação com as aplicações gráficas Usando o XAutomation \cite{xauto07}. Enquanto as aplicações eram executadas, um outro programa fazia leituras no \texttt{procfs}, coletando informações sobre a memória consumida por processo ou total do sistema.\\
+Enquanto as aplicações eram executadas, um outro programa fazia leituras no \texttt{procfs}, coletando informações sobre a memória consumida pelas aplicações abertas e a memória usada pelo \textit{swap} virtual do Cache Comprimido, o ramzswap.
 
-%A Figura \ref{fig:memtest01} mostra o consumo de memória através do tempo com o \texttt{max\_anon\_cc\_size} conFigurado para 1024 páginas (ou 4MB de tamanho).
+A Figura \ref{fig:behavior-test} mostra o consumo de memória através do tempo com o \texttt{max\_anon\_cc\_size} conFigurado para 1024 páginas (ou 4MB de tamanho).
 
-%\begin{figure}[htb]
-%	\centering
-%	\includegraphics[scale=0.80]{mem_behavior01}
-%	\caption{Tamanho do Comp. Cache x tempo: max\_anon\_cc\_size = 1024, Mem = 128M}
-%	\label{fig:memtest01}
-%\end{figure}
+\begin{figure}[htb]
+ \centering
+ \includegraphics[scale=0.5]{figs/behavior-no-cc.png}
+ % behavior-no-cc.png: 640x480 pixel, 72dpi, 22.58x16.93 cm, bb=0 0 640 480
+ \caption{Teste de consumo de memória usando Cache Comprimido.}
+ \label{fig:behavior-test}
+\end{figure}
 
-%Como pode-se notar na Figura \ref{fig:memtest01}, o consumo da área reservada para as páginas comprimidas foi inexistente. Nota-se pela linha de cor verde paralela ao eixo $X$ do gráfico, que representa o consumo do CC ao longo do tempo. O tamanho do CC se manteve estável ao longo do tempo, mostrando que nenhuma página foi comprimida. Isso se deve ao fato do \textit{kernel} estar conFigurado para reter mais páginas na memória, ou seja, na área descomprimida antes de enviá-las ao \textit{swap}. Esta implementação do CC \cite{briglia07, ccache09} se aproveita do sistema de \textit{swap} para comprimir as páginas, armazenandos-as em uma área de \textit{swap} virtual. Se o \textit{kernel} estiver conFigurado com parâmetros para diminuir a utilização das áreas de \textit{swap}, é evidente que afetará a utilização do CC, já que o mesmo segue conFigurações passadas para o \textit{kernel}. Na Figura \ref{fig:memtest02}, a memória RAM foi limitada para somente 100 MB, ao invés de 128 MB. Este valor de 100MB foi calculado com base em alguns testes empíricos. O tamanho da memória RAM total afeta os testes pois está diretamente aliada às condições de falta de memória. A memória total foi alterada para que a utilização do CC fosse maior. Porém, na Figura \ref{fig:memtest02}, pode-se notar que o OOM \textit{killer} foi invocado no tempo 600 ms. O CC foi utilizado (linha verde do gráfico), porém não teve tamanho suficiente para alocar uma quantidade de páginas comprimidas que satisfizessem a rápida alocação de memória imposta pelo teste. Dessa forma, a memória livre total (\textit{MemFree}, linha vermelha no gráfico), chegou à zero e o OOM \textit{killer} foi chamado para terminar algumas aplicações, liberando assim memória para o sistema (note que a linha vermelha de \textit{MemFree} sobe consideravelmente após a chamada do OOM).\\
+Como pode-se notar na Figura \ref{fig:behavior-test}, uma característica do Cache Comprimido é utilizar uma parte da memória livre do sistema para alocar espaço para o swap virtual. Isso faz com que a memória livre disponível para o sistema seja menor do que se o Cache Comprimido não fosse utilizado. Em situações em que o consumo de memória é feito de forma muito rápida, o Cache Comprimido não consegue agregar benefícios ao sistema. Assim, o OOM (\textit{Out-of-memory killer}) é chamado e processos são finalizados para que alguma memória seja liberada.\\
 
-%\begin{figure}[htb]
-%	\centering
-%	\includegraphics[scale=0.80]{mem_behavior02}
-%	\caption{Cache Comprimido x tempo: max\_anon\_cc\_size = 1024, Mem = 100M}
-%	\label{fig:memtest02}
-%\end{figure}
+Um pouco depois da metade da duração do teste, como visto na Figura \ref{fig:behavior-test}, quando o Cache Comprimido estava funcionando houve um aumento muito rápido no consumo de memória e no uso da área de swap virtual. Porém, a memória livre atingiu níveis muito baixos, o que ligou o mecanismo do OOM e algumas aplicações foram terminadas, e páginas comprimidas que estava armazenadas no swap virtual foram liberadas. Por essa razão nota-se um aumento abrupto na memória livre.\\
 
-%Usando o mesmo teste, mas com \texttt{swappiness = 60} e \texttt{min\_free\_kbytes = 3072}, o OOM \textit{killer} não foi invocado e o Cache Comprimido finalmente foi bastante utilizado. Veja na Figura \ref{fig:memtest03}.\\
-
-%\begin{figure}[htb]
-% 	\centering
-% 	\includegraphics[scale=0.80]{mem_behavior03}
-% 	\caption{Cache Comprimido x tempo: swappiness = 60, min\_free\_kbytes = 3072}
-% 	\label{fig:memtest03}
-%\end{figure}
-
-%A Figura \ref{fig:memtest03} mostra que o CC não é suficiente para a carga de memória imposta pelo teste. Seria necessário aumentar o seu tamanho, porém, tem-se um problema aqui: se o tamanho do CC for muito grande (mais de 50\% da memória total, por exemplo), não restará muita memória livre para as outras operações do \textit{kernel}, uma vez que o \textit{swap} virtual utiliza páginas da memória RAM. Uma das possíveis soluções para este problema é a implementação de um esquema de adaptabilidade do tamanho do Cache Comprimido \cite{castro03, irina05}.\\
-
-%Durante os testes, o tamanho das páginas comprimidas foi coletado afim de verificar qual é o tamanho médio de uma página depois de comprimida. Como pode-se ver na Figura \ref{fig:cc_dist}, a maioria das páginas ficam com metade do tamanho original depois de comprimidas. Mais ou menos 42\% das páginas ficam com tamanho entre 1 Kb e 2 Kb, depois da compressão. Esses valores dependem do algoritmo de compressão utilizado. Neste teste foi utilizado o algoritmo WK4x4, proposto em \cite{kaplan99compressed, wilson99}.\\
-
-%\begin{figure}[htb]
-%	\centering
-%	\includegraphics[scale=0.65]{cc_distribution}
-%	\caption{Distribuição do tamanho das páginas comprimidas}
-%	\label{fig:cc_dist}
-%\end{figure}
-
-%Os resultados destes testes indicam que tem-se um ganho na memória disponível para as aplicações quando o CC é utilizado. Com a fragmentação controlada através da abordagem de \textit{chunks}, e com a maioria das páginas comprimidas ficando com o tamanho entre 1 Kb e 2 Kb, pode-se chegar à conclusão que o CC aumenta em 100\% a memória disponível para as aplicações, através da compressão e utilização do \textit{swap} virtual. Esta é uma vantagem importante pois aplicações que antes não poderiam ser executadas por falta de memória, agora podem se beneficiar de uma memória virtualmente maior. Uma conclusão idêntica foi encontrada em \cite{irina05}, utilizando outra versão de Cache Comprimido.\\
-
-%Um dos problemas encontrados é que o \textit{kernel} deve ser bem ajustado para o uso do CC. Se isso não acontecer, o \textit{swap} virtual não é utilizado e as páginas não são comprimidas. Como as páginas reservadas ao Cache Comprimido nunca são liberadas pelo PFRA, seu tamanho pode diminuir a memória disponível para as aplicações, acarretando em constantes invocações do OOM \textit{killer}.
+O teste de consumo de memória indica que o Cache Comprimido é útil quando o consumo de memória tem uma taxa constante ou que aumenta pouco no decorrer do tempo. Em situações em que uma quantidade alta de memória livre é requisitada de forma muito rápida, o Cache Comprimido não beneficia o sistema.
 
 \subsection{Testes de Performance}
 
