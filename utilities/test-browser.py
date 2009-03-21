@@ -8,7 +8,10 @@ class TestBrowser:
     def __init__(self):
 
         self.send_url_cmd = 'run-standalone.sh dbus-send --type=method_call --dest=com.nokia.osso_browser /com/nokia/osso_browser com.nokia.osso_browser.load_url string:'
-        self.urls = ['www.uol.com.br', 'www.acritica.com.br']
+        self.urls = ['www.uol.com.br', 'www.acritica.com.br', 'www.kibeloco.com.br',
+                'www.wikipedia.org', 'www.humortadela.com.br', 'www.google.com',
+                'www.ufam.edu.br', 'www.gmail.com',
+                'sanguedelpredador.briglia.net', 'techblog.briglia.net']
         self.wcount = 0
         self.__steps = []
 
