@@ -448,7 +448,7 @@ Existem outros parâmetros que também devem ser ajustados, mas que não fazem part
 
 Vale ressaltar que os valores que devem se escritos nesses parâmetros estão na unidade de quantidade de páginas de memória, neste trabalho é utilizado o tamanho padrão de \texttt{PAGE\_SIZE = 4KB}.
 
-\subsection{Testes do Comportamento do Consumo de Memória}
+\subsection{Testes de Comportamento do Consumo de Memória}
 \label{sec:mem_behavior}
 
 O principal objetivo deste tipo de teste é visualizar como a memória é consumida ao longo do tempo e as situações de falta da mesma, quando várias aplicações são executadas pelo usuário. Para realizar os testes de consumo de memória, foi utilizado um cenário que representasse a interação do usuário com a máquina, com várias aplicações abertas, afim de impor uma grande quantidade de memória consumida.\\
@@ -471,13 +471,80 @@ Um pouco depois da metade da duração do teste, como visto na Figura \ref{fig:beh
 
 O teste de consumo de memória indica que o Cache Comprimido é útil quando o consumo de memória tem uma taxa constante ou que aumenta pouco no decorrer do tempo. Em situações em que uma quantidade alta de memória livre é requisitada de forma muito rápida, o Cache Comprimido não beneficia o sistema.
 
+\subsubsection{Testes com o Mibench}
+\label{sec:mibench}
+
+MiBench \ref{GRE01} é um conjunto de \textit{benchmarks} sintéticos que simulam vários tipos de operações afim de testar a performance de uma arquitetura ou de um sistema embarcado.\\
+
+A principal diferença do MiBench para os outros \textit{benchmarks} para sistemas embarcados é que o primeiro é composto por programas que possuem o código aberto, ou seja, são \textit{Open Source}. Uma outra diferença é que o MiBench é dividido em vários pacotes \ref{GRE01}, ou módulos, divididos de acordo com o tipo de benchmark que deseja-se realizar, como mostrado a seguir:
+
+\begin{itemize}
+ \item \textit{Automotive and Industrial Control}: possui programas que visam a avaliação de microprocessadores dedicados ao controle de sistemas. Os programas usados nessa categoria avaliam as operações matemáticas, contagem de bits, ordenação e processamento de imagens.
+ \item \textit{Network}: possui programas destinados a testarem microprocessadores existentes em roteadores e \textit{switches}. Os testes encontrados nesse módulo visam avaliar algoritmos e operações referentes à cálculos para encontrar rota mais curta, busca em árvores e tabelas de entrada/saída de dados.
+ \item \textit{Security}: este módulo inclui programas que avaliam os algoritmos de encriptação, decriptação e \textit{hash} de um microprocessador. É mais voltado para operações matemáticas.
+ \item \textit{Consumer Devices}: esta categoria é a mais parecida com o propósito deste trabalho. Possui programas que avaliam o processamento de imagem, áudio e HTML. Os programas incluídos nesta categoria fazem uso do processador e da memória para tocar uma música ou aplicar transformações em uma fotografia, por exemplo.
+ \item \textit{Office Automation}: esta categoria, utiliza programas que avaliam a manipulação de texto afim de realizar testes de performance em equipamentos de escritório, tais como impressoras, aparelhos de fax e processadores da fala.
+ \item \textit{Telecommunications}: neste módulos estão presentes programas que avaliam a capacidade dos microprocessadores dedicados à comunicação, codificação e decodificação de voz.
+\end{itemize}
+
+Os testes realizados neste trabalho visam avaliar se o uso do Cache Comprimido é importante ou prejudicial na execução de alguns \textit{benchmarks} presentes no MiBench. Para a realização dos testes, foi escolhido um programa de cada categoria apresentada anteriormente.\\
+
+A seguir encontram-se os gráficos do consumo da memória e do consumo da área de swap para cada categoria do MiBench. Foi escolhido um \textit{benchmark} de cada categoria:
+
+\begin{figure}[htpb]
+ \centering
+ \includegraphics[scale=0.5]{figs/automotive.png}
+ % automotive.png: 640x480 pixel, 72dpi, 22.58x16.93 cm, bb=0 0 640 480
+ \caption{Teste com o benchmark da categoria Automotive}
+ \label{fig:mibench_automotive}
+\end{figure}
+
+\begin{figure}[htpb]
+ \centering
+ \includegraphics[scale=0.5]{figs/consumer.png}
+ \caption{Teste com o benchmark da categoria Consumer}
+ \label{fig:mibench_consumer}
+\end{figure}
+
+\begin{figure}[htpb]
+ \centering
+ \includegraphics[scale=0.5]{figs/network.png}
+ \caption{Teste com o benchmark da categoria Network}
+ \label{fig:mibench_network}
+\end{figure}
+
+\begin{figure}[htpb]
+ \centering
+ \includegraphics[scale=0.5]{figs/office.png}
+ \caption{Teste com o benchmark da categoria Office Automation}
+ \label{fig:mibench_office}
+\end{figure}
+
+\begin{figure}[htpb]
+ \centering
+ \includegraphics[scale=0.5]{figs/security.png}
+ \caption{Teste com o benchmark da categoria Security}
+ \label{fig:mibench_security}
+\end{figure}
+
+\begin{figure}[htpb]
+ \centering
+ \includegraphics[scale=0.5]{figs/telecom.png}
+ \caption{Teste com o benchmark da categoria Telecom}
+ \label{fig:mibench_telecom}
+\end{figure}
+
+Como pode-se notar nos gráficos de consumo de memória dos testes com o MiBench (Figuras \ref{fig:mibench_automotive}, \ref{fig:mibench_consumer}, \ref{fig:mibench_network}, \ref{fig:mibench_office}, \ref{fig:mibench_security}, \ref{fig:mibench_telecom}), a utilização do Cache Comprimido nesse caso não traz nenhum benefício. A diferença da memória livre inicial vista nos gráficos, deve-se ao fato de que, quando o sistema possui área do Cache Comprimido configurada, a memória total livre é menor do que se o Cache Comprimido estivesse desligado. Isso deve-se ao fato do ramzswap alocar uma área da memória principal para armazenar as páginas comprimidas.\\
+
+Os gráficos indicam que os benchmarks do MiBench não são ideais para avaliarem consumo de memória quando não é utilizado um simulador de arquitetura. Por utilizarem muito mais o processador para operações, os benchmarks são projetados para avaliarem número de instruções efetuadas em várias regiões do microprocessador e não o consumo de memória do dispositivo.
+
 \subsection{Testes de Performance}
 
 Nesse tipo de teste foi utilizado um \textit{benchmark} sintético que realize a alocação de uma grande área de memória. O objetivo é analisar o overhead imposto pelo Cache Comprimido quando as páginas são destinadas à área de \textit{swap} virtual (ramzswap).\\
 
 Para testar a alocação de memória, foi utilizado um programa da suíte de testes MemTest\cite{memtest06}. O programa em questão é o \textbf{fillmem} e ele foi usado para alocar uma grande quantidade de memória de forma muito rápida. Na figura \ref{fig:fillmem50} estão os tempos de execução do fillmem para alocar 50 MB de memória.\\
 
-\begin{figure}[htb]
+\begin{figure}[htpb]
  \centering
  \includegraphics[scale=0.5]{figs/fillmem50.png}
  % fillmem50.png: 640x480 pixel, 72dpi, 22.58x16.93 cm, bb=0 0 640 480
