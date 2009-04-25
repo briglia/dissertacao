@@ -52,7 +52,7 @@ class TestBrowser:
         Uses time.sleep() to make an interval between each command.
         '''
         for cmd in self.__steps:
-            print 'CMD: ', cmd[0]
+            #print 'CMD: ', cmd[0]
             system(cmd[0])
             time.sleep(cmd[1])
 
@@ -63,6 +63,7 @@ class TestBrowser:
         self.play_steps()
 
 if __name__ == '__main__':
+    print 'Initiating tests...'
     test = TestBrowser()
     test.begin_test()
     print 'Test Finished...'
