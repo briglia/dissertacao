@@ -126,10 +126,53 @@ From kernel point-of-view, ramzswap is a normal swap area and must provide a sma
 
 %------------------------------------------------------------------------- 
 \subsubsection{Compressed Pages Storage}
-TODO
+Compressed pages are stored in data structures which xvMalloc handles. These structures are designed to group similar pages: free pages and compressed pages.
+Object header used by xvMalloc to handle compressed pages is showed in Figure \ref{fig:obj-header}.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.7]{figs/obj-header.png}
+	\caption{Object header handled by Compressed Cache memory allocator-- xvMalloc.}
+	\label{fig:obj-header}
+\end{figure}
+
+Where, each field means \cite{ccache06}:
+
+\begin{itemize}
+ \item Size: compressed page size calculated by compressor and used by xvMalloc.
+ \item Prev: offset of previous used/free block (relative to beginning of page).
+ \item \textit{Flags}:
+	\begin{itemize}
+		\item F1: flag used to indicate if a block is being used or not.
+		\item F2: flag used to indicate if the previous block is being used or not.
+	\end{itemize}
+ \item PAD: Not required if ALIGN if 4 bytes.
+\end{itemize}
+
+The total size for data structure used to represent a compressed page is 4 bytes.
+Free objects use a differente object header. It is represented in Figure \ref{fig:obj-free}.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.7]{figs/obj-free.png}
+	\caption{Free object header.}
+	\label{fig:obj-free}
+\end{figure}
+
+Each page represented by Figure \ref{fig:obj-free} is identified by \textit{$<$pageNum, offset$>$} tuple. It is used to quickly find a compressed page inside Compcache memory area.
 
 \subsubsection{Insertion and Removal Pages Operations}
-TODO
+
+\textbf{Compressed pages insertion:} first, selected page is compressed and copied to a buffer page. Compression algorithm used to compress is LZO \cite{obe05lzo, ZivLem77}, which is already implemented by Linux kernel. After the compression, Compcache sends the compressed page to ramzswap virtual swap area. At this moment, ramzswap calls xvMalloc passing compressed page size. xvMalloc allocates a memory portion with exact size of compressed page. Now, the compressed page is represented by the data structures discussed previously in this paper. After all the insertion process finishes, a tuple containing page number and offset is returned by xvMalloc to Linux kernel virtual memory system, which inserts this identifier into the radix-tree used to store swapped memory pages. Figure \ref{fig:radix-tree} shows the VM radix-tree before compressed page identifier is inserted.
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[scale=0.6]{figs/radix_tree}
+	\caption{Radix-tree: before compressed page is stored.}
+	\label{fig:radix-tree}
+\end{figure}
+
+\textbf{Compressed pages removal:} from PFRA and kernel point-of-view, there is no difference between compressed and regular pages represented in radix-tree. Actually, the difference is that compressed pages are swapped to ramzswap virtual swap area. This way, the compressed page reference passed to radix-tree is not different from a regular swapped page. All decompression and compression operations are done in block device level, with no alterations on higher levels, like kernel virtual memory. Another gain using this approach is the fact that Compcache uses actual kernel system to locate all compressed pages when necessary, adding just decompression overhead when page is required.
 
 \subsection{Using MiBench to test Compressed Cache}
 TODO
