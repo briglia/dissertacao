@@ -49,25 +49,27 @@ edwdavid@gmail.com\\
 \thispagestyle{empty}
 
 \begin{abstract}
-Cache memory compression was originally developed for desktop and server platforms, but has also attracted interest on embeded systems where memory is generally a scarce resource, and hardware changes bring more costs and energy consumption. The project evaluated in this paper acts in RAM memory of embedded devices, creating a virtual compressed area for memory swapping. Cache memory compression brings a considerable advantage in input-output-intensive applications by means of using a virtually larger cache for the local file system through compression algorithms. As a result, it increases the probability of fetching the necessary data in RAM itself, avoiding the need to make low calls to local storage.
-We will describe the Compressed Cache (Compcache) design, memory behavior tests, performance tests and tests using MiBench benchmarking suite.
+Memory compression has been used since applications memory demand increases over the time. Embedded systems has limited resources, processing and memory capacity are example of this. With hardware minituarization and embedded systems improvements, it is easy to have multimedia applications running in embedded computers like PDA's or Internet tablets. The work evaluated in this paper is called Compressed Cache and it acts in RAM memory of mobile devices running Linux as Operational System. Compressed Cache has been used to virtually increase the amount of RAM memory available to user applications, avoiding critical memory situations and providing more scenarios for multimedia applications. This paper shows an evaluation of Compressed Cache regarding performance, memory behaviour and improvements brought by RAM memory compression. MiBench benchmarks are also used to evaluate the Compressed Cache memory operations.
 \end{abstract}
 
 
+%------------------------------------------------------------------------- 
+\section{Introduction}
+
+Most of embedded systems has as common characteristic: your usage for single specific tasks. But embedded systems for general purpose are pretty common as well \cite{mor00}. In the past, embedded systems were used to perform single tasks, for example: DVD players firmware, camera systems, cars control, etc. But over the years this kind of equipment becomes more and more powerful in terms of processing and data storage. Due this, we have PDA's (Personal Data Assistant), internet tablets and netbooks which have the same processing capacity of old desktop computers. Users applications used on embedded systems have your requirements increased as well. Multimedia and Internet access is almost mandatory for embedded systems and user applications. Given this scenario, it is important to study ways to improve the user experience when using an embedded system. This paper evaluates one of the purposes for embedded systems which have to provide high processing power and memory capacity for user applications.
+
+Linux is an Operating System developed by a young student, Linus Torvalds, in University of Finland - Helsink \cite{linux:09}. Linus used Minix (another operating system), as basis and implemented Linux with new features. Linux kernel is released under GPL (GNU Public License), and the source code is available for everyone. As developers have access to Linux kernel, this operating system supports a largely number of hardware architectures, since single-processor machines to multi-processor ones. Due this, Linux has been used in embedded systems like PDA's, internet tablets, netbooks, etc.
+
+Compressed Cache (Compcache) adds a new level on Linux memory hierarchy \cite{castro03, douglis93, kaplan99compressed}. Compcache is used to improve the access time to memory pages in Linux kernel when storing such pages in RAM (Random Access Memory} and/or to improve the memory storage capacity, compressing pages in a virtual memory area called ramzswap. Swap areas are generally used as RAM extensions using block devices (hard disks, flash memory, etc), to store memory pages. But swap areas has a cost: pages input/output (I/O) velocity rates. It is knowing that block devices are slower for I/O operations due to technology used to store data. RAM memory is faster than block devices and keeping more memory pages in RAM brings more velocity when some page is requested by some application.
+
+The evaluated project presented in this paper uses a virtual swap area allocated in RAM to store memory pages in a compressed format. The tests presented here intend to show that, even with compression/decompression overhead added by Compcache, the page access time is smaller than have the same page stored in a block device. It is evaluated as well the behavior of Compcache when memory is consumed
+
+As presented in \cite{briglia07}, not only input and output rates could be improved when Compcache is used, but also the system behavior. Especially in memory-critical cases leading, Compcache can be used to ameliorate the Out-of-memory conditions. The Compcache version evaluated in \cite{briglia07} was updated and this new version is evaluated in this paper. Since Compcache had important modifications, it is important to evaluate it again and analyze if this new version had some improvement. The major difference between Compcache version used in \cite{briglia07} and the version evaluated here, is the implementation of a virtual swap area called ramzswap. Using this new approache, it is not necessary to make modifications in the Linux kernel, and ramzswap takes advantage of existent swap system. Another contribution by this paper are the tests performed using MiBench \cite{GRE01} to evaluate the memory consumption behavior. Since MiBench is largely used in embedded systems evaluations, this paper presents Compcache usage against MiBench benchmarks and tests using new Compcache version. Experiments used in this work are based in Briglia's\cite{briglia07} tests.
+
+This paper has been organized in four sections: Linux Virtual Memory Overview, Compressed Cache Implementation Design, Experiments, and Conclusion. The first section presents how Linux virtual memory system is implemented and used by Compcache. The second section shows how Compcache is designed to use virtual memory system as compressed area for memory pages. The third section presents all experiments done in this paper: memory consumption tests, MiBench tests, etc. And the last section evaluates how Compcache acted upon critical memory leads.
 
 %------------------------------------------------------------------------- 
-\Section{Introduction}
-
-Most of embedded systems has as common characteristic: your usage for single specific tasks. But embedded systems for general purpose are pretty common as well \cite{mor00}. Linux is an Operational System which can be used in embedded devices. Embedded devices, such as PDA's (Personal Data Assistance), netbooks and Internet tablets, can use Linux as Operational System, allowing users to have access to multimedia content and other tasks which demands a higher processing capacity and memory storage.
-
-Regarding processor power, there is no much to do instead of change the processor. But, for memory capacity, there are some solutions that do not depend on hardware changes. Compressed caching is the introduction of a new level into the virtual memory hierarchy.\cite{briglia07, castro03}. RAM (Random Access Memory), is used to store normal memory pages and compressed memory pages. Creating a reserved area called ramzswap, Compressed Cache uses this area for memory swapping. As used by several Operational Systems, swap areas intends to increase the virtual memory storage.
-
-As presented in \cite{briglia07}, not only input and output rates could be improved when Compcache is used, but also the system behavior. Especially in memory-critical cases leading, Compcache can be used to ameliorate the Out-of-memory conditions. Tests used in \cite{briglia07} did not use MiBench \cite{GRE01} to evaluate the memory consumption behavior. Since MiBench is largely used in embedded systems evaluations, this paper presents Compcache usage against MiBench benchmarks and tests using new Compcache version. Experiments used in this work are based in Briglia's\cite{briglia07} tests.
-
-%------------------------------------------------------------------------- 
-\Section{Compressed Caching}
-
-\subsection{Linux Virtual Memory Overview}
+\section{Linux Virtual Memory Overview}
 
 Physical pages are the basic unit of memory management \cite{love05kerneldevel} and the MMU is the hardware that translates virtual pages addresses into physical pages address and vice-versa. This compressed caching implementation, CCache \cite{ccache06}, adds some new flags to help with compressed pages identification and uses the same lists used by the PFRA (Page Frame Reclaiming Algorithm). When the system is under a low memory condition, it evicts pages from memory. It uses Least Recently Used (LRU) criteria to determine order in which to evict pages. It maintains two LRU lists---active and inactive LRU lists. These lists may contain both page-cache (file-backed) and swap-cache (anonymous) pages. When under memory pressure, pages in inactive list are freed as:
 
@@ -79,11 +81,11 @@ Physical pages are the basic unit of memory management \cite{love05kerneldevel} 
 \item Clean page-cache pages are simply freed.
 \end{itemize}
 
-\subsubsection{About Swap Cache}
+\subsection{About Swap Cache}
 
 This is the cache for anonymous pages. All swap cache pages are part of a single swapper\_space. A single radix tree maintains all pages in the swap cache. swp\_entry\_t is used as a key to locate the corresponding pages in memory. This value identifies the location in swap device reserved for this page.
 
-\subsubsection{About Page Cache}
+\subsection{About Page Cache}
 This is the cache for file-system pages. Like swap cache, this also uses radix-tree to keep track of file pages. Here, the offset in file is used as the search key. Each open file has a separate radix-tree. For pages present in memory, the corresponding radix-node points to struct page for the memory page containing file data at that offset.
 
 \SubSection{Compressed Cache Overview}
@@ -99,7 +101,7 @@ Using the same compression algorithm present in JFFS2 filesystems (LZO \cite{obe
  \label{fig:compcache}
 \end{figure}
 
-\subsubsection{Implementation Design}
+\section{Compressed Cache Implementation Design}
 
 A virtual block device is configured to have a swap partition and is added to system swaps table. Doing this, the PFRA is used to select the swappable pages and sent them to virtual compressed area (ramzswap).
 
@@ -126,7 +128,7 @@ But, xvMalloc has added new features \cite{ccache09}, as follow:
 From kernel point-of-view, ramzswap is a normal swap area and must provide a small access time for compressed pages. Low fragmentation results in less time when a compressed page is required by the memory management system. Another important feature implemented by xvMalloc is the size of meta-data for each object. With 4 bytes for each object (or compressed page), more space can be used to store compressed pages itself. The Compcache version presented in \cite{briglia07}, meta-data size is an issue because important bytes were spent to address the compressed pages.
 
 %------------------------------------------------------------------------- 
-\subsubsection{Compressed Pages Storage}
+\subsection{Compressed Pages Storage}
 Compressed pages are stored in data structures which xvMalloc handles. These structures are designed to group similar pages: free pages and compressed pages.
 Object header used by xvMalloc to handle compressed pages is showed in Figure \ref{fig:obj-header}.
 
@@ -162,7 +164,7 @@ Free objects use a differente object header. It is represented in Figure \ref{fi
 
 Each page represented by Figure \ref{fig:obj-free} is identified by \textit{$<$pageNum, offset$>$} tuple. It is used to quickly find a compressed page inside Compcache memory area.
 
-\subsubsection{Insertion and Removal Pages Operations}
+\subsection{Insertion and Removal Pages Operations}
 
 \textbf{Compressed pages insertion:} first, selected page is compressed and copied to a buffer page. Compression algorithm used to compress is LZO \cite{obe05lzo, ZivLem77}, which is already implemented by Linux kernel. After the compression, Compcache sends the compressed page to ramzswap virtual swap area. At this moment, ramzswap calls xvMalloc passing compressed page size. xvMalloc allocates a memory portion with exact size of compressed page. Now, the compressed page is represented by the data structures discussed previously in this paper. After all the insertion process finishes, a tuple containing page number and offset is returned by xvMalloc to Linux kernel virtual memory system, which inserts this identifier into the radix-tree used to store swapped memory pages. Figure \ref{fig:radix-tree} shows the VM radix-tree before compressed page identifier is inserted.
 
@@ -175,7 +177,7 @@ Each page represented by Figure \ref{fig:obj-free} is identified by \textit{$<$p
 
 \textbf{Compressed pages removal:} from PFRA and kernel point-of-view, there is no difference between compressed and regular pages represented in radix-tree. Actually, the difference is that compressed pages are swapped to ramzswap virtual swap area. This way, the compressed page reference passed to radix-tree is not different from a regular swapped page. All decompression and compression operations are done in block device level, with no alterations on higher levels, like kernel virtual memory. Another gain using this approach is the fact that Compcache uses actual kernel system to locate all compressed pages when necessary, adding just decompression overhead when page is required.
 
-\section{Compressed Cache experiments}
+\section{Experiments}
 
 This section we will present the tests used to evaluate Compcache running in an embedded Linux system. The main goal for the test is to evaluate the impacts and memory consumption behavior when system has a compressed memory area available. The experiments are also to evaluate some characteristics, as follow:
 
