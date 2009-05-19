@@ -33,18 +33,18 @@
 
 \title{Analysis of Cache Compression on Embedded Applications}
 
-\author{Anderson Briglia\\
-Universidade Federal do Amazonas\\ Departamento de Ciência da Computação \\ Av. 
-General Rodrigo Otavio, Manaus-Amazonas, Brazil\\ anderson.briglia@gmail.com\\
+%\author{Anderson Briglia\\
+%Universidade Federal do Amazonas\\ Departamento de Ciência da Computação \\ Av. 
+%General Rodrigo Otavio, Manaus-Amazonas, Brazil\\ anderson.briglia@gmail.com\\
 % For a paper whose authors are all at the same institution, 
 % omit the following lines up until the closing ``}''.
 % Additional authors and addresses can be added with ``\and'', 
 % just like the second author.
-\and
-Edward David Moreno\\
-DCOMP - Departamento de Ciência da Computação\\
-Universidade Federal de Sergipe\\ edwdavid@gmail.com\\
-}
+%\and
+%Edward David Moreno\\
+%DCOMP - Departamento de Ciência da Computação\\
+%Universidade Federal de Sergipe\\ edwdavid@gmail.com\\
+%}
 
 \maketitle
 \thispagestyle{empty}
@@ -60,21 +60,26 @@ Memory compression has been used since applications memory demand increases over
 \section{Introduction}
 \nohyphens{
 Most of embedded systems has as common characteristic: your usage for single specific tasks. But embedded systems for general purpose are pretty common as well \cite{mor00}. In the past, embedded systems were used to perform single tasks, for example: DVD players firmware, camera systems, cars control, etc. But over the years this kind of equipment becomes more and more powerful in terms of processing and data storage. Due this, we have PDA's (Personal Data Assistant), internet tablets and netbooks which have the same processing capacity of old desktop computers. Users applications used on embedded systems have your requirements increased as well. Multimedia and Internet access is almost mandatory for embedded systems and user applications. Given this scenario, it is important to study ways to improve the user experience when using an embedded system. This paper evaluates one of the purposes for embedded systems which have to provide high processing power and memory capacity for user applications.
-}
-\nohyphens{
+%}
+%\nohyphens{
+
 Linux is an Operating System developed by a young student, Linus Torvalds, in University of Finland - Helsink \cite{linux:09}. Linus used Minix (another operating system), as basis and implemented Linux with new features. Linux kernel is released under GPL (GNU Public License), and the source code is available for everyone. As developers have access to Linux kernel, this operating system supports a largely number of hardware architectures, since single-processor machines to multi-processor ones. Due this, Linux has been used in embedded systems like PDA's, internet tablets, netbooks, etc.
-}
-\nohyphens{
+%}
+%\nohyphens{
+
 Compressed Cache (Compcache) adds a new level on Linux memory hierarchy \cite{castro03, douglis93, kaplan99compressed}. Compcache is used to improve the access time to memory pages in Linux kernel when storing such pages in RAM (Random Access Memory} and/or to improve the memory storage capacity, compressing pages in a virtual memory area called ramzswap. Swap areas are generally used as RAM extensions using block devices (hard disks, flash memory, etc), to store memory pages. But swap areas has a cost: pages input/output (I/O) velocity rates. It is knowing that block devices are slower for I/O operations due to technology used to store data. RAM memory is faster than block devices and keeping more memory pages in RAM brings more velocity when some page is requested by some application.
-}
-\nohyphens{
+%}
+%\nohyphens{
+
 The evaluated project presented in this paper uses a virtual swap area allocated in RAM to store memory pages in a compressed format. The tests presented here intend to show that, even with compression/decompression overhead added by Compcache, the page access time is smaller than have the same page stored in a block device. It is evaluated as well the behavior of Compcache when memory is consumed.
-}
-\nohyphens{
-As presented in \cite{briglia07}, not only input and output rates could be improved when Compcache is used, but also the system behavior. Especially in memory-critical cases leading, Compcache can be used to ameliorate the Out-of-memory conditions. The Compcache version evaluated in \cite{briglia07} was updated and this new version is evaluated in this paper. Since Compcache had important modifications, it is important to evaluate it again and analyze if this new version had some improvement. The major difference between Compcache version used in \cite{briglia07} and the version evaluated here, is the implementation of a virtual swap area called ramzswap. Using this new approache, it is not necessary to make modifications in the Linux kernel, and ramzswap takes advantage of existent swap system. Another contribution by this paper are the tests performed using MiBench \cite{GRE01} to evaluate the memory consumption behavior. Since MiBench is largely used in embedded systems evaluations, this paper presents Compcache usage against MiBench benchmarks and tests using new Compcache version. Experiments used in this work are based in Briglia's\cite{briglia07} tests.
-}
-\nohyphens{
-This paper has been organized in four sections: Linux Virtual Memory Overview, Compressed Cache Implementation Design, Experiments, and Conclusion. The first section presents how Linux virtual memory system is implemented and used by Compcache. The second section shows how Compcache is designed to use virtual memory system as compressed area for memory pages. The third section presents all experiments done in this paper: memory consumption tests, MiBench tests, etc. And the last section evaluates how Compcache acted upon critical memory leads.
+%}
+%\nohyphens{
+
+As presented in \cite{briglia07}, not only input and output rates could be improved when Compcache is used, but also the system behavior. Especially in memory-critical cases leading, Compcache can be used to ameliorate the Out-of-memory conditions. The Compcache version evaluated in \cite{briglia07} was updated and this new version is evaluated in this paper. Since Compcache had important modifications, it is important to evaluate it again and analyze if this new version had some improvement. The major difference between Compcache version used in \cite{briglia07} and the version evaluated here, is the implementation of a virtual swap area called ramzswap. Using this new approach, it is not necessary to make modifications in the Linux kernel, and ramzswap takes advantage of existent swap system. Another contribution by this paper are the tests performed using MiBench \cite{GRE01} to evaluate the memory consumption behavior. Since MiBench is largely used in embedded systems evaluations, this paper presents Compcache usage against MiBench benchmarks and tests using new Compcache version. Experiments used in this work are based in Briglia's\cite{briglia07} tests.
+%}
+%\nohyphens{
+
+This paper has been organized in six sections: Introduction, Linux Virtual Memory Overview, Compressed Cache Implementation Design, Experiments, Related Wor and Conclusion. The second section presents how Linux virtual memory system is implemented and used by Compcache. The second section shows how Compcache is designed to use virtual memory system as compressed area for memory pages. The third section presents all experiments done in this paper: memory consumption tests, MiBench tests, etc. Related Word section presents some information about previous compressed cache implementations. And the last section evaluates how Compcache acted upon critical memory leads.
 }
 %------------------------------------------------------------------------- 
 \section{Linux Virtual Memory Overview}
@@ -89,22 +94,23 @@ Physical pages are the basic unit of memory management \cite{love05kerneldevel} 
 \item Clean page-cache pages are simply freed.
 \end{itemize}
 }
-\subsection{About Swap Cache}
+%\subsection{About Swap Cache}
 
-\nohyphens{
-This is the cache for anonymous pages. All swap cache pages are part of a single swapper\_space. A single radix tree maintains all pages in the swap cache. swp\_entry\_t is used as a key to locate the corresponding pages in memory. This value identifies the location in swap device reserved for this page.
-}
+%\nohyphens{
+%This is the cache for anonymous pages. All swap cache pages are part of a single swapper\_space. A single radix tree maintains all pages in the swap cache. swp\_entry\_t is used as a key to locate the corresponding pages in memory. This value identifies the location in swap device reserved for this page.
+%}
 
-\subsection{About Page Cache}
-\nohyphens{
-This is the cache for file-system pages. Like swap cache, this also uses radix-tree to keep track of file pages. Here, the offset in file is used as the search key. Each open file has a separate radix-tree. For pages present in memory, the corresponding radix-node points to struct page for the memory page containing file data at that offset.
-}
+%\subsection{About Page Cache}
+%\nohyphens{
+%This is the cache for file-system pages. Like swap cache, this also uses radix-tree to keep track of file pages. Here, the offset in file is used as the search key. Each open file has a separate radix-tree. For pages present in memory, the corresponding radix-node points to struct page for the memory page containing file data at that offset.
+%}
 
 \subsection{Compressed Cache Overview}
 \nohyphens{
 Compressed Cache (Compcache), is a technique which adds a new level in Linux memory hierarchy \cite{castro03, douglis93, kaplan99compressed}. Compcache is used to improve the memory pages access time in Linux kernel, storing more pages in RAM memory instead of slow block devices (used in regular swap\footnote{Swap area is a reserved portion from the filesystem which intends to increase the available virtual memory amount, improving the free memory for user applications.} areas) and avoiding that more pages were discarded. It is known that swap areas are slower than main memory, because block devices (usually hard disks), have higher access time rates for Input/Output operations. For embedded systems the problem is worst since swap area is generally not present in such systems.
-}
-\nohyphens{
+%}
+%\nohyphens{
+
 Using the same compression algorithm present in JFFS2 filesystems (LZO \cite{obe05lzo, ZivLem77}), swap selected memory pages are compressed and sent to the virtual swap area, called ramzswap. This virtual swap acts like a block device with a swap partition and from Linux kernel point of view, there is no difference from a regular swap partition and ramzswap swap partition. Virtual compressed swap is self-contained and the compression and decompression is done when a page is inserted or retrieved from Compcache. See Figure \ref{fig:compcache}.
 }
 
@@ -117,6 +123,7 @@ Using the same compression algorithm present in JFFS2 filesystems (LZO \cite{obe
 \end{figure}
 
 \section{Compressed Cache Implementation Design}
+
 \nohyphens{
 A virtual block device is configured to have a swap partition and is added to system swaps table. Doing this, the PFRA is used to select the swappable pages and sent them to virtual compressed area (ramzswap).
 
@@ -131,6 +138,7 @@ Inherited from TLSF \cite{Masmano04}, xvMalloc \cite{ccache09} has some useful f
 \item Very low fragmentation: In all tests, xvMalloc memory usage is within 12$\%$ of ``Ideal'' allocator.
 \end{itemize}
 }
+
 \nohyphens{
 But, xvMalloc has added new features \cite{ccache09}, as follow:
 
@@ -171,7 +179,7 @@ Where, each field means \cite{ccache09}:
 \end{itemize}
 
 The total size for data structure used to represent a compressed page is 4 bytes.
-Free objects use a differente object header. It is represented in Figure \ref{fig:obj-free}.
+Free objects use a different object header. It is represented in Figure \ref{fig:obj-free}.
 
 \begin{figure}[htb]
 	\centering
@@ -198,7 +206,7 @@ Each page represented by Figure \ref{fig:obj-free} is identified by \textit{$<$p
 }
 \section{Experiments}
 \nohyphens{
-This section we will present the tests used to evaluate Compcache running in an embedded Linux system. The main goal for the test is to evaluate the impacts and memory consumption behavior when system has a compressed memory area available. The experiments are also to evaluate some characteristics, as follow:
+This section we will present the tests used to evaluate Compcache running in an embedded Linux system. The main goal for the tests is to evaluate the impacts and memory consumption behavior when system has a compressed memory area available. The experiments are also to evaluate some characteristics, as follow:
 
 \begin{itemize}
 	\item How many pages are kept by Compcache and do not go to real swap partition, avoiding slow I/O operations.
@@ -214,7 +222,7 @@ To evaluate Compcache, we did a comparison between a real swap against Compcache
 \nohyphens{
 As test platform, a mobile device were used. It runs embedded Linux as native operating system. Nokia Internet Table N810 \cite{nokiaN810} has an ARM1136 processor, 400Mhz, 128MB RAM memory and 256MB of flash memory, used as secondary storage. This device still have 2D/3D graphics accelerator but it was not evaluated, and has two MMC/SD cards slots.
 
-As we can see on device's specification, it is focused on multimedia usage. As we know, multimedia applications have high processor and memory usage rates. Our tests intend to use memory intensively, hence we can measure the Compcache impact on system performance. The tests were divided into two groups: tests with real applications and tests using synthetic benchmarks. Tests with real applications tried to simulate a high memory consumption scenario with a lot of applications being executed and with some I/O operations to measure the memory and power consumption behavior when Compcache is running. Synthetic behchmarks were used to evaluate the Compcache performance, once they provided a easy way to measure the time spent on the tests.
+As we can see on device's specification, it is focused on multimedia usage. As we know, multimedia applications have high processor and memory usage rates. The tests intend to use memory intensively, hence we can measure the Compcache impact on system performance. The tests were divided into two groups: tests with real applications and tests using synthetic benchmarks. Tests with real applications tried to simulate a high memory consumption scenario with a lot of applications being executed and with some I/O operations to measure the memory and power consumption behavior when Compcache is running. Synthetic behchmarks were used to evaluate the Compcache performance, once they provided a easy way to measure the time spent on the tests.
 
 Tests with real applications consist of:
 
@@ -229,19 +237,19 @@ Tests with real applications consist of:
 
 We used an application called \textbf{xautomation} \cite{xauto07} to interact with the X system through bash scripts from the command line. Xautomation controls the interface, allowing mouse movements, mouse right and left clicks, key up and down, etc. Reading the \ident{/proc/meminfo} file, we have the memory consumption, and some graphics related to the memory consumption can be plotted. They will be shown and commented on in the following sections.
 
-The tests using synthetic benchmarks were executed using MemTest~\cite{memtest06}. MemTest is a group of small tests to evaluate the stability and consistency of the Linux memory management system. It contains several tests, but we used just one, since our main goal is to measure the Compcache performance: \textbf{fillmem}. This test intends to test the system memory allocation. It is useful to verify the virtual memory system against the memory allocation operation, pagination, and swap usage. It has one parameter which defines the size of memory allocated by itself.
+The tests using synthetic benchmarks were executed using MemTest~\cite{memtest06}. MemTest is a group of small tests to evaluate the stability and consistency of the Linux memory management system. It contains several tests, but we used just one, since the main goal is to measure the Compcache performance: \textbf{fillmem}. This test intends to test the system memory allocation. It is useful to verify the virtual memory system against the memory allocation operation, pagination, and swap usage. It has one parameter which defines the size of memory allocated by itself.
 
-Still using synthetic benchmarks, we have used MiBench \cite{GRE01}. Since MiBench is largely used to evaluate embedded system performance, we did some measurements executing MiBench utilities.
+Still using synthetic benchmarks, MiBench \cite{GRE01} was used. Since MiBench is largely used to evaluate embedded system performance, some measurements executing MiBench utilities were done.
 
-All the tests, using real applications or synthetic benchmarking, were applied using a pre-configured scenarios, depending on what would be measured. Basically we have scenarios with different RAM memory sizes, with or without a \textit{real} swap partition, and with or without Compcache added to the system.
+All the tests, using real applications or synthetic benchmarking, were applied using a pre-configured scenarios, depending on what would be measured. Basically there are scenarios with different RAM memory sizes, with or without a \textit{real} swap partition, and with or without Compcache added to the system.
 
 Memory behavior tests evaluate the memory consumption against time and the OOM killer interaction on the scenarios discussed before. Performance tests used MemTest \cite{memtest06} to measure the total time of the \texttt{fillmem} execution.
 }
 \subsection{Memory Behavior Tests}
 \nohyphens{
-The main goal of these tests is to see what is happening with the memory when Compcache is compressing and decompressing pages. To execute the tests we used real application scenarios, using applications provided by the default installation of the N810's distribution.
+The main goal of these tests is to see what is happening with the memory when Compcache is compressing and decompressing pages. To execute the tests real application scenarios were used, using applications provided by the default installation of the N810's distribution.
 
-To plot the graphs presented in this section, we did measurements through \texttt{procfs} reading, collecting information about MemFree and memory used by Compcache virtual swap (ramzswap).
+To plot the graphs presented in this section, measurements through \texttt{procfs} reading were done, collecting information about MemFree and memory used by Compcache virtual swap (ramzswap).
 
 Figure \ref{fig:behavior-test} shows the memory consumption againt time with Compcache size configure to 1024 pages or 4MB.
 
@@ -253,16 +261,16 @@ Figure \ref{fig:behavior-test} shows the memory consumption againt time with Com
  \label{fig:behavior-test}
 \end{figure}
 
-As we can notice in Figure \ref{fig:behavior-test}, Compcache has used a portion of free memory to allocate virtual swap space. Due this, free memory available to system is smaller when Compcache is on. On critical memory situations, this smaller free memory can be hazardous since OOM can be called faster to free memory.
+As can be noticed in Figure \ref{fig:behavior-test}, Compcache has used a portion of free memory to allocate virtual swap space. Due this, free memory available to system is smaller when Compcache is on. On critical memory situations, this smaller free memory can be hazardous since OOM can be called faster to free memory.
 
-After half test duration, as seen in Figure \ref{fig:behavior-test}, there was a faster memory consumption increase, even in virtual swap area. But, Compcache was unable to avoid the OOM call and due this, we see some memory being freed when free memory targets very low rates.
+After half test duration, as seen in Figure \ref{fig:behavior-test}, there was a faster memory consumption increase, even in virtual swap area. But, Compcache was unable to avoid the OOM call and due this, some memory is freed when free memory targets very low rates.
 }
 
 \subsection{Performance Tests}
 \nohyphens{
-Performance tests aim to analyze the Compcache overhead: compression overhead, ramzswap handling overhead, and page recovery overhead. With these tests we expect to prove that Compcache, even with all those overheads, is faster than using a swap partition on a block device.
+Performance tests aim to analyze the Compcache overhead: compression overhead, ramzswap handling overhead, and page recovery overhead. With these tests it is expected to prove that Compcache, even with all those overheads, is faster than using a swap partition on a block device.
 
-To test memory allocation speed, we used a program from MemTest \cite{memtest06}, called \textbf{fillmem}. Fillmem was used to make memory allocation very fast. In Figure \ref{fig:fillmem50}, fillmem execution time is represented. Memory allocation amount is equal to 50MB.
+To test memory allocation speed, was used a program from MemTest \cite{memtest06}, called \textbf{fillmem}. Fillmem was used to make memory allocation very fast. In Figure \ref{fig:fillmem50}, fillmem execution time is represented. Memory allocation amount is equal to 50MB.
 
 \begin{figure}[htpb]
  \centering
@@ -272,12 +280,12 @@ To test memory allocation speed, we used a program from MemTest \cite{memtest06}
  \label{fig:fillmem50}
 \end{figure}
 
-At the graph showed in Figure \ref{fig:fillmem50}, we can notice that execution time for fillmem to allocate 50MB of memory is three times bigger when Compcache is on. It happened since Compcache using ramzswap has some overheads to compress/decompress pages and calculate all page addressing. As seen before, the device used in tests \cite{nokiaN810}, does not have a hard disk for swapping. Due this, flash memory and MMC memory were used as real swap partition. But flash memory and MMC memory have access rates much bigger than hard disk ones. The difference between access a page stored in an MMC card, flash memory or RAM memory is very small. This difference is much bigger when hard disks are used as real swap.
+At the graph showed in Figure \ref{fig:fillmem50}, can be noticed that execution time for fillmem to allocate 50MB of memory is three times bigger when Compcache is on. It happened since Compcache using ramzswap has some overheads to compress/decompress pages and calculate all page addressing. As seen before, the device used in tests \cite{nokiaN810}, does not have a hard disk for swapping. Due this, flash memory and MMC memory were used as real swap partition. But flash memory and MMC memory have access rates much bigger than hard disk ones. The difference between access a page stored in an MMC card, flash memory or RAM memory is very small. This difference is much bigger when hard disks are used as real swap.
 
 Even the ramzswap pages retrieval had a time slightly bigger than when real swap was used. It happened due to decompression overhead added by Compcache.
 
 \subsection{Using MiBench to test Compressed Cache}
-MiBench \cite{GRE01} is a set of sintetic benchmarks which simulates several types of operations. MiBech intends to test hardware architecture performance and embedded systems.
+MiBench \cite{GRE01} is a set of synthetic benchmarks which simulates several types of operations. MiBech intends to test hardware architecture performance and embedded systems.
 
 The major difference between MiBench and other embedded system benchmarks, is that the first one is composed with Open Source utilities to make all measurements and tests. Another difference is that MiBench is subdivided into various modules \cite{GRE01} grouped by the test target, see below:
 
@@ -339,7 +347,7 @@ Next graphs show the Compcache usage versus time when MiBench benchmarks were ex
 Graphs presented in Figures \ref{fig:mibench_automotive}, \ref{fig:mibench_consumer}, \ref{fig:mibench_network}, \ref{fig:mibench_office}, \ref{fig:mibench_security}, \ref{fig:mibench_telecom}, Compcache utilization when MiBench benchmarks are executed did not bring any benefit to system performance or memory consumption. It happened due to low memory consumption by MiBench programs. Compcache is more effective when used in high memory consumption, compressing pages and keeping them in memory.
 The gap between free memory available when Compcache is on have an explanation. Since ramzswap (the virtual memory area), takes a portion of free memory to allocate compressed pages, free memory is smaller when Compcache is added to system.
 
-All graphs indicate that MiBench benchmarks are not ideal to evaluate memory consumption or Compcache performance. We noted that MiBench benchmarks are designed to do more processor operations than memory operations. Due this, MiBench benchmarking could not evaluate Compcache performance.
+All graphs indicate that MiBench benchmarks are not ideal to evaluate memory consumption or Compcache performance. Was noted that MiBench benchmarks are designed to do more processor operations than memory operations. Due this, MiBench benchmarking could not evaluate Compcache performance.
 }
 
 \section{Related work}
