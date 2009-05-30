@@ -9,12 +9,12 @@
 #define ACEL_MIN -5570.0
 */
 //Parameters for OMAP 
-#define MEM_MAX 6126.0
+#define MEM_MAX 19708.0
 #define MEM_MIN 0.0
-#define VELOC_MAX 748
-#define VELOC_MIN -2148.0
-#define ACEL_MAX 2148.0
-#define ACEL_MIN -2148.0
+#define VELOC_MAX 12420
+#define VELOC_MIN -588.0
+#define ACEL_MAX 12420.0
+#define ACEL_MIN -12420.0
 
 
 struct proc {

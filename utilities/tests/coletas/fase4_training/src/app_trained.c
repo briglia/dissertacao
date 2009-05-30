@@ -575,8 +575,8 @@ gint main(gint argc, gchar * argv[]) {
 	gtk_container_set_border_width (GTK_CONTAINER (window), 4);
 
 	/* Attach to the "delete" and "destroy" events so we can exit */
-	g_signal_connect(GTK_OBJECT(window), "delete_event",
-			 GTK_SIGNAL_FUNC(destroy_window), (gpointer)window);
+	/*g_signal_connect(GTK_OBJECT(window), "delete_event",
+			 GTK_SIGNAL_FUNC(destroy_window), (gpointer)window);*/
 
 	mainbox = gtk_vbox_new(FALSE, 5);
 
