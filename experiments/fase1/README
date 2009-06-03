@@ -1,0 +1,14 @@
+Descricao do diretorio
+
+Geral: Nesta fase dos experimentos é feita a coleta do MemFree através de leituras no /proc/meminfo
+
+* collector.py: Em conjunto com os programas implementados em test-*.py, este programa realiza leituras
+no /proc/meminfo e salva em um arquivo chamado "output.dat". Cada teste tem seu .dat. O collector.py deve
+ser executado após o teste inciar e para terminar deve ser enviado um sinal via CTRL + C.
+
+* test-*.py: automacao dos testes usando o XAutomation. Note que nao está implementada a automacao da
+execucao do PDF reader. Essa foi feita manualmente.
+
+* No diretorio coletas/ existem os .dat coletados pelo collector.py
+
+OBS: Ver fase2 para mais informacoes.

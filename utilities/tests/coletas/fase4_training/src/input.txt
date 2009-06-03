@@ -1,1 +1,0 @@
-../../logs_para_rede_neural/input_processed.txt
