@@ -1,0 +1,3 @@
+Apos a coleta, eh necessario que os .dat contendo as tuplas sejam convertidos para
+conterem valores de consumo de memoria e nao de MemFree x Tempo. Esses logs sao
+usados na aplicacao que identifica a frequencia e a area da rede neural treinada.
