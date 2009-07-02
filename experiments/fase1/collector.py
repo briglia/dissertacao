@@ -23,6 +23,8 @@ import copy
 import time
 from ConfigParser import MissingSectionHeaderError, ParsingError, NoSectionError
 
+MAX_MEM = 131072
+
 class Collector(object):
 
     def __init__(self):
@@ -33,7 +35,8 @@ class Collector(object):
         while not stop:
             try:
                 self.__read()
-                time.sleep(0.0001)
+                #Tempo entre as coletas (em segundos)
+                time.sleep(0.1)
             except KeyboardInterrupt:
                 stop = True
                 print 'Calculating velocity and acceleration...'
@@ -60,7 +63,8 @@ class Collector(object):
                         optval = optval[:pos]
 
                     optval = int(optval.strip())
-                    self.amostras_log.append(optval)
+                    #Quero armazenar a memoria consumida, e nao a livre
+                    self.amostras_log.append(MAX_MEM - int(optval))
 
     def __read(self):
         filename = '/proc/meminfo'
