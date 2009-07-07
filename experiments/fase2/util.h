@@ -9,12 +9,12 @@
 #define ACEL_MIN -5570.0
 */
 //Parameters for OMAP 
-#define MEM_MAX 129616.0
-#define MEM_MIN 111364
-#define VELOC_MAX 17900
-#define VELOC_MIN -17788
-#define ACEL_MAX 34896
-#define ACEL_MIN -27892
+#define MEM_MAX 129628.0
+#define MEM_MIN 0.0
+#define VELOC_MAX 2568.0
+#define VELOC_MIN -53816.0
+#define ACEL_MAX 54884
+#define ACEL_MIN -53768.0
 
 
 struct proc {
@@ -46,3 +46,5 @@ struct rss_list * read_log_statm(char*, unsigned long*);
 void free_rss_list(struct rss_list *);
 
 char * get_classname(double, double, double, char*);
+
+int get_classposition(double value, double max, double min); 

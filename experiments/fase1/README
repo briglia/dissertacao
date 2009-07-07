@@ -9,6 +9,8 @@ ser executado após o teste inciar e para terminar deve ser enviado um sinal via
 * test-*.py: automacao dos testes usando o XAutomation. Note que nao está implementada a automacao da
 execucao do PDF reader. Essa foi feita manualmente.
 
-* No diretorio coletas/ existem os .dat coletados pelo collector.py
+* No diretorio coletas/ existem os .dat coletados pelo collector.py que devem ser usados para gerar o
+input.txt
 
-OBS: Ver fase2 para mais informacoes.
+* No diretorio logs/ estao os logs que devem ser usados para geracao dos perfis. Cada log eh referente
+a um cenario de consumo da memoria.

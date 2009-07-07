@@ -1,1 +1,0 @@
-../fase3/saved_soms/saved_som.txt

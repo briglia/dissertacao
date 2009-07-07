@@ -107,7 +107,16 @@ class Collector(object):
             f.writelines([str(element), "\n"])
         print 'Writing output.dat...'
         f.close()
-        print 'File successfully recorded!'
+
+        print 'Writing output.log...'
+        f = open('output.log', 'w')
+        i = 0
+        for item in self.amostras_log:
+            l = str(i) + ' ' + str(item) + ' ' + str(item) +"\n"
+            f.writelines(l)
+            i = i+1
+        f.close()
+        print 'Files successfully recorded!'
 
 if __name__ == '__main__':
     test = Collector()

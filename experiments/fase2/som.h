@@ -4,7 +4,7 @@
 #define START_LEARNING_RATE 0.1
 #define NUM_ITERATIONS 500
 //#define INPUT_MAXSIZE 65300
-#define INPUT_MAXSIZE 6700
+#define INPUT_MAXSIZE 3819
 
 
 struct som_node {
