@@ -1,0 +1,1 @@
+../maemosom_gen_som_input.py
