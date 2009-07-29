@@ -403,6 +403,7 @@ Foram realizados testes com e sem um \textit{swap} real, utilizando uma partição
 \end{itemize}
 
 \subsection{Suite de Testes e Metodologia}
+\label{sec:metodologia}
 
 Utilizou-se um dispositivo móvel, parecido com um PDA que possui Linux embarcado como sistema operacional nativo. O Nokia Internet Tablet N810 \cite{nokiaN810} tem um processador ARM1136 com 400Mhz, 128MB de memória RAM e 256MB de memória \textit{flash}, utilizada como armazenamento secundário. Ainda possui acelerador gráfico 2D/3D e dois leitores de cartões MMC/SD.\\
 
@@ -552,33 +553,56 @@ No gráfico mostrado na figura \ref{fig:fillmem50}, nota-se que o tempo de alocaç
 
 Este capítulo apresenta o esquema de classificação de padrões de consumo de memória desenvolvido em \cite{Mlin:06} e como essa metodologia poderá ajudar na implementação da adaptatividade do tamanho do Cache Comprimido proposto neste trabalho.
 
-\section{Redes Neurais e Mapas Auto-organizáveis}
+\section{Redes Neurais Artificiais}
 \label{sec:redes_artificiais}
 
-As \textit{redes neurais artificiais} consistem em um método para solucionar problemas de inteligência artificial, armazenando um conhecimento experimental do problema atrav\'{e}s de t\'{e}cnicas de treinamento.\\
+As \textit{redes neurais artificiais} podem ser caracterizadas como modelos computacionais, com certas propriedades particulares como a habilidade de aprender, de identificar e classificar padrões \cite{Ben93}. Desta maneira, uma rede neural é capaz de extrair regras básicas a partir de dados reais, ou seja, a sistemática do problema, diferindo assim da computação programada, onde é necessário um conjunto de regras rígidas pré-fixadas e algoritmos \cite{Haykin:99}.\\
 
-As redes neurais podem ser definidas como um grupo interconectado de neurônios artificiais que usa um modelo matemático ou computacional baseado no comportamento do cérebro humano para processamento de informações \cite{Haykin:99, Christos, Tatibana}. Uma rede neural é capaz de extrair regras básicas a partir de dados reais, ou seja, a sistemática do problema, diferindo assim da computação programada, onde é necessário um conjunto de regras rígidas pré-fixadas e algoritmos \cite{Haykin:99}.\\
+Uma rede neural artificial consiste em \cite{Ben93}:
 
-Existem duas abordagens de treinamento para as redes neurais: o supervisionado e o não-supervisionado \cite{Haykin:99}.\\
+\begin{itemize}
+ \item Um conjunto de unidades de processamento.
+ \item Um estado de ativação para cada uma dessas unidades, que equivale aos dados de saída.
+ \item Conexões entre as unidades (ou neurônios). Essas conexões possuem pesos que interferem nos sinais de saída das unidades vizinhas.
+ \item Uma regra de propagação que ajusta a entrada de dados nas unidades de processamento. Esses dados são provenientes de uma amostra externa.
+ \item Uma função de ativação, que determina o novo nível de ativação baseada na entrada efetiva e no nível corrente de ativação.
+ \item Um conjunto de dados externos ou amostra para a entrada de dados de cada unidade de processamento.
+ \item Uma regra de aprendizagem.
+ \item Um ambiente o qual o sistema deve operar, ou seja, onde a rede neural deve ser inserida. Esse ambiente deve prover os dados de entrada, sinais e códigos de erros se necessário.
+\end{itemize}
 
-Independente do tipo de aprendizagem ou treinamento selecionado, toda rede é alimentada por uma seqüência de valores $x_{1}, x_{2}, \cdots, x_{n}$ na entrada e os pesos são ajustados de acordo com um modelo matemático durante a fase de treinamento. O processo de treinamento pode ser organizado nas etapas seguintes \cite{Haykin:99}:
+
+Existem duas abordagens de treinamento para as redes neurais: o supervisionado e o não-supervisionado \cite{Haykin:99}.
+
+\begin{itemize}
+ \item Treinamento supervisionado: nesse tipo de treinamento é fornecido um par de entrada e saída desejada de acordo com os dados da amostra. É calculado também um erro que é utilizado como retro-alimentação da rede afim de ajustar os pesos sinápticos dos neurônios.
+ \item Treinamento não-supervisionado: nesse tipo de treinamento somente são fornecidos os dados de entrada. O próprio mecanismo da rede deve ser capaz de extrair informações estatísticas das amostras afim de ajustar os pesos sinápticos os neurônios da rede.
+\end{itemize}
+
+Independente do tipo de aprendizagem ou treinamento selecionado, toda rede é alimentada por uma seqüência de valores $x_{1}, x_{2}, \cdots, x_{n}$ na entrada e os pesos são ajustados de acordo com um modelo matemático durante a fase de treinamento. O processo de treinamento pode ser organizado nas etapas seguintes \cite{Haykin:99, Ben93}:
 
 \begin{enumerate}
 	\item O primeiro padrão de entrada é apresentado para a rede.
 	\item Os pesos são ajustados para capacitar a rede de reconhecer o padrão fornecido.
 	\item O segundo padrão de entrada é apresentado para a rede e a etapa 2 é efetuada novamente.
 	\item O mesmo é aplicado para todos os outros padrões.
-	\item O procedimento de 1 até 4 é executado novamente centenas ou milhares de vezes até encontrar uma conFiguração de pesos sinápticos capaz de reconhecer todos os padrões fornecidos no treinamento.
+	\item O procedimento de 1 até 4 é executado novamente centenas ou milhares de vezes até encontrar uma configuração de pesos sinápticos capaz de reconhecer todos os padrões fornecidos no treinamento.
 \end{enumerate}
+
+Este trabalho utiliza-se de uma rede neural para encontrar padrões de consumo de memória. No trabalho encontrado em \cite{Mlin:06}, pode-se verificar que é possível identificar padrões referentes à quantidade de páginas de memória que são requisitadas ao \textit{kernel} do Linux.\\
+
+Como cada página de memória é atômica, ou seja, está ou não está completamente ocupada, é possível gerar amostras de entrada para a rede neural com base na velocidade que as páginas são requisitadas ou ocupadas. Cada programa requisita memória de acordo com o seu fluxo de execução e é com base nessa caracaterística que foi comprovado que é possível classificar o consumo de memória \cite{Mlin:06}.\\
+
+Após encontrados os perfis de consumo de memória das aplicações testadas nos casos de uso, espera-se adaptar o uso do Cache Comprimido de acordo com o comportamento das mesmas. Para aplicações que requisitam mais memória, o Cache Comprimido deve ser um pouco maior, esperando aumentar a capacidade de armazenamento das páginas de memória. Para aplicações que possuem um consumo menor, o Cache Comprimido pode até ser descartado. Porém, não podemos esquecer de uma importante variável: a velocidade de consumo da memória.\\
+
+Como visto na seção de testes deste trabalho, aplicações que requisitam memória muito rapidamente, podem levar o sistema à falta de memória, mesmo que o Cache Comprimido esteja ativo. Para evitar isso, é necessário que se identifique esse perfil antes mesmo que a memória seja requisitada, preparando assim o Cache Comprimido.
 
 \subsection{Mapas Auto-Organizáveis}
 \label{sec:som}
 
 \textit{Mapas Auto-Organizáveis} ou simplesmente \textit{SOM (do inglês Self Organizing Maps)} é uma rede neural artificial auto-organizável, de aprendizagem não supervisionada, baseada em grades de neurônios artificiais onde os pesos são adaptados em conformidade com os vetores de entrada fornecidos durante o treinamento. Foi desenvolvido pelo professor Teuvo Kohonen e às vezes é chamado de mapa de Kohonen \cite{Junkie, Borgelt:00, Germano:99, Honkela:98, Koh88}.\\
 
-No SOM, os neurônios estão colocados em nós de uma grade unidimensional ou bidimensional, outras dimensões tamb\'{e}m s\~{a}o possíveis, embora n\~{a}o sejam t\~{a}o comuns. Os neurônios são seletivamente sintonizados a vários padrões de entrada ou classes de padrões de entrada no decorrer de um processo de aprendizagem ou treinamento.\\
-
-As localizações dos neurônios assim sintonizados se tornam ordenadas entre si de modo que um sistema de coordenadas significativas para características diferentes de entrada é criado sobre a grade. Portanto um mapa auto-organizável é caracterizado pela formação de uma mapa topográfico dos padrões de entrada, baseado nas características estatísticas intrínsecas contidas nos padrões de entrada, por isso o nome \textit{mapa auto-organizável} \cite{Haykin:99}.
+Os SOMs são um tipo de rede neural um pouco diferente pois utilizam a distância topológica entre os neurônios como parâmetro de entrada do sistema de aprendizagem. Os SOMs são muito utilizados para fazer mapas em que os padrões podem ser visualizados, ou seja, características semelhantes dos dados de entrada (ou amostra), são agrupados topologicamente próximos. Portanto um SOM é caracterizado pela formação de um mapa topográfico dos padrões de entrada, baseado nas características estatísticas intrínsecas contidas nesses dados, por isso o nome \textit{mapa auto-organizável} \cite{Haykin:99}.
 
 \begin{figure}[htbp]
 	\centering
@@ -587,7 +611,7 @@ As localizações dos neurônios assim sintonizados se tornam ordenadas entre si de
 	\label{fig:training}
 \end{figure}
 
-Um exemplo comum usado para mostrar os princípios de SOM é o mapeamento de cores a partir de seus 3 componentes: vermelho, verde e azul ou RGB (\textit{red, green and blue}) em um espaço bidimensional. A Figura \ref{fig:som_demo} ilustra um exemplo de SOM treinado para reconhecer padrões de cores RGB. As cores são fornecidas para a rede como vetores de 3 dimensões, uma dimensão para cada componente de cor, e a rede foi treinada para representá-los em um espaço de 2 dimensões. Observe que além do agrupamento de cores em regiões distintas, as regiões de propriedades similares estão localizadas de forma adjacente.
+Em \cite{Mlin:06} e \cite{Alecrim:07} é usado um exemplo comum de SOM que utiliza um mapeamento de cores a partir de seus 3 componentes: vermelho, verde e azul ou RGB (\textit{red, green and blue}) em um espaço bidimensional. Na Figura \ref{fig:training}, pode-se ver um exemplo de SOM que ainda não foi treinado. Já a Figura \ref{fig:som_demo} ilustra um exemplo de SOM treinado para reconhecer padrões de cores RGB. As cores são fornecidas para a rede como vetores de 3 dimensões, uma dimensão para cada componente de cor, e a rede foi treinada para representá-los em um espaço de 2 dimensões. Observe que além do agrupamento de cores em regiões distintas, as regiões de propriedades similares estão localizadas de forma adjacente \cite{Mlin:06}.
 
 \begin{figure}[htbp]
 	\centering
@@ -596,11 +620,7 @@ Um exemplo comum usado para mostrar os princípios de SOM é o mapeamento de cores
 	\label{fig:som_demo}
 \end{figure}
 
-A rede SOM ilustrada na Figura \ref{fig:som_demo} apresenta uma grade de tamanho $40 \times 40$. Cada nó da grade possui 3 pesos, cada um representando um componente RGB. Além disso, cada nó é representado por uma célula retangular, quando desenhado na interface gráfica do aplicativo.\\
-
-Cada nó da grade tem uma posição topológica específica representada por uma coordenada $(x, y)$ e contém um vetor de pesos sinápticos de dimensão igual ao vetor de entrada. Ou seja, caso os dados de treinamento consistem de vetores $x$ de dimensão $n$:\[ x = [x_{1}, x_{2}, x_{3}, ..., x_{n}] \] Então cada nó ou neurônio $j$ da grade contém um vetor correspondente de peso $w_{j}$ com a mesma dimensão $n$:
-
-\[ w_{j} = [w_{j1}, w_{j2}, w_{j3}, ..., w_{jn}] \]
+A rede SOM ilustrada na Figura \ref{fig:som_demo} apresenta uma grade de tamanho $40 \times 40$. Cada nó da grade possui 3 pesos, cada um representando um componente RGB. Além disso, cada nó é representado por uma célula retangular, quando desenhado na interface gráfica do aplicativo utilizado para treinar a rede e mostar o SOM.\\
 
 A formação do SOM \'{e} feita primeiramente inicializando os pesos sinápticos da grade, com valores obtidos de um gerador de números randômicos. Assim, nenhuma organização prévia é imposta ao mapa de características (veja Figura \ref{fig:training}. Depois que a grade \'{e} feita, s\~{a}o executados 6 processos importantes \cite{Haykin:99}:
 
@@ -620,30 +640,21 @@ dist_{j} = \sqrt{\sum_{i=1}^n (x_{i}-w_{i})^2}
 \label{eq:euclidean}
 \end{equation}
 
-A cada iteração do treinamento, após o BMU ter sido determinado, o passo seguinte consiste em calcular quais são os neurônios localizados na vizinhança topológica do BMU. Tais neurônios terão os seus pesos sinápticos alterados posteriormente durante o processo de adaptação sináptica. A Figura \ref{fig:bmu} ilustra um exemplo de vizinhança topológica determinada no início do treinamento da rede.
+Os pesos sinápticos dos neurônios são ajustados de acordo com o BMU a cada iteração do treinamento. No decorrer do treinamento, o raio de ação do BMU diminui, modificando menos neurônios vizinhos e especializando ainda mais as áreas com relação aos padrões de entrada da amostra.
 
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.30\textwidth]{figs/bmu}
-	\caption{Vizinhança topológica de um BMU representada pela área sombreada\cite{Mlin:06}.}
-	\label{fig:bmu}
-\end{figure}
-
-Uma característica da rede SOM é que a área da vizinhança topológica diminui ao longo do treinamento da rede.  A cada iteração $t$, a função de decaimento exponencial é calculada para permitir o reajuste do tamanho da vizinhança do BMU como mostrada na Equação \ref{eq:decay}:
-
-\begin{equation}
-\sigma(t) = \sigma_{0} e^{(-\frac{t}{\lambda})}
-\label{eq:decay}
-\end{equation}
-
-onde $\sigma_{0}$ representa o raio $\sigma$ no tempo $t_{0}$ que tem o mesmo valor do raio da grade, e $\lambda$ é uma constante de tempo. A variável $t$ representa um dado instante do treinamento, ou melhor, um passo de tempo da iteração.
-
-\subsection{Classificação de Padrões de Consumo de Memória baseado em Redes Neurais Auto-Organizáveis}
+\subsection{Método de classificação de consumo de memória baseado em Mapas auto-organizáveis}
 \label{sec:classe_rede}
 
 Ainda baseado em \cite{Mlin:06}, essa seç\~{a}o mostra um pouco dos testes realizados afim de classificar padrões de consumo de memória utilizando um SOM.
-Os testes consistem em executar casos de uso de aplicações afim de realizar algumas medições do consumo de memória das aplicações envolvidas. Os casos de uso foram executados no sistema operacional Linux.
-Após a execuç\~{a}o de alguns casos de uso, foram observadas várias variáveis afim de compor os dados de entrada para o algoritmo de SOM. A seguinte estrutura foi escolhida para representar os dados de entradas:
+Os testes consistem em executar casos de uso de aplicações afim de realizar algumas medições do consumo de memória das aplicações envolvidas. Os casos de uso foram executados no sistema operacional Linux e seguindo a metodologia apresentada na seção \ref{sec:metodologia}.\\
+
+Como utilizado nos trabalhos \cite{Mlin:06} e \cite{Alecrim:07}, o algoritmo de treinamento da rede espera dados referentes ao consumo de memória de uma determinada aplicação.\\
+
+Neste trabalho a abordagem foi um pouco diferente. Em \cite{Alecrim:07}, já se tinham as aplicações e foi feito um mapa para cada uma delas. Aqui o SOM é utilizado para identificar qual padrão de consumo pertence à qual aplicação, afim de saber de antemão que decisão tomar em relação ao Cache Comprimido.\\
+
+Assim, as amostras foram retiradas do consumo de memória total do sistema, e não somente de uma determinada aplicação. Um programa foi desenvolvido para coletar a memória total livre em intervalos de tempo constante.\\
+
+Lembrando que \cite{Mlin:06}:
 
 \begin{itemize}
 \item quantidade de páginas físicas alocadas que representa a \textit{quantidade de memória física consumida};
@@ -663,78 +674,66 @@ TVCM = \frac{vcm_{2} - vcm_{1}}{t_{2} - t_{1}}
 \label{eq:aceleracao}
 \end{equation}
 
-Os seguintes estados podem ser atribuídos para cada propriedade apresentada: Low (L), Medium (M) e High (H). Os estados L, M e H representam respectivamente um conjunto de números pequenos, médios e grandes em um intervalo de valores estabelecidos. A definição de L, M e H são usadas para representar o comportamento de uma determinada propriedade de uma forma simples e abstrata.\\
-
-Assumindo que os valores para uma determinada propriedade está em um intervalo positivo $[limite_{minimo}, limite_{maximo}]$, então o mesmo pode ser dividido em 3 subintervalos que representam os estados \textit{L}, \textit{M} e \textit{H}, como ilustrado na Figura \ref{fig:lmh}. Observe que os valores de L, M e H são dependentes do limite mínimo e máximo de um intervalo estabelecido.
-
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.40\textwidth]{figs/lmh}
-	\caption{Subintervalos que representam os estados \textit{Low (L)}, \textit{Medium (M)} e\textit{ High (H)}.}
-	\label{fig:lmh}
-\end{figure}
+Ainda como visto em \cite{Mlin:06}, essas três dimensões ainda possuem subintervalos que podem ser caracterizados como Low (L), Medium (M) e High(H). Esses subintervalos são utilizados para representarem o comportamento de uma determinada propriedade de uma forma simples e abstrata.\\
 
 A quantidade de memória consumida está localizada em um desses subintervalos, assumindo um dos três estados $\{Low, Medium, High\}$ apresentados. Sendo assim a quantidade de memória consumida é classificada como \textit{baixo consumo} de memória quando o seu valor está no estado L, \textit{médio consumo} de memória quando o seu valor está no estado M e \textit{alto consumo} de memória quando localizado no estado H. A quantidade de memória consumida abrange somente valores inteiros positivos, visto que consumo de memória de valor negativo é logicamente inexistente no mundo real. A mesma analogia \'{e} utilizada para os valores de VCM e TVCM.\\
 
-A tripla $<$memória,vcm,tvcm$>$ pode ser mapeada facilmente para uma estrutura de dados que seja aceita algoritmo do SOM, que foi desenvolvido em \cite{Mlin:06}. Já que o SOM utiliza vetores tridimensionais como valores de entrada, a tripla pode facilmente ser calculada contendo cada valor como sendo uma dimens\~{a}o desse vetor.\\
+A tripla $<$memória,vcm,tvcm$>$ pode ser mapeada facilmente para uma estrutura de dados que seja aceita algoritmo do SOM, que foi usado em \cite{Mlin:06}. Já que o SOM utiliza vetores tridimensionais como valores de entrada, a tripla pode facilmente ser calculada contendo cada valor como sendo uma dimens\~{a}o desse vetor.\\
 
 Cada vetor no espaço tridimensional é uma instância específica da tripla que é mapeado na grade de neurônios do SOM. Cada célula da grade de neurônios armazena então um vetor tridimensional do tipo [memória, vcm, tvcm], conforme a Figura \ref{fig:mapeia}.
 
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[width=0.55\textwidth]{figs/mapeia}
-	\caption{Os vetores são mapeados em um espaço bidimensional representado pela grade de neurônios.}
+	\caption{Os vetores são mapeados em um espaço bidimensional representado pela grade de neurônios \cite{Mlin:06}.}
 	\label{fig:mapeia}
 \end{figure}
 
-A idéia de utilizar o mapa de neurônios auto-organizáveis é agrupar topologicamente as classes apresentadas de consumo de memória em áreas ou regiões distintas. Dessa forma, cada região representa uma conFiguração ou conjunto de conFigurações similares capaz de representar o estado do consumo de memória em um determinado instante.\\
-
-Para treinar a rede, utilizou-se um caso de uso que tentava reproduzir o uso normal de um computador. Neste caso de uso foram utilizadas v\'{a}rias aplicações gr\'{a}ficas como: browsers, leitores de pdf, video players e editores de texto.
+A idéia de utilizar o mapa de neurônios auto-organizáveis é agrupar topologicamente as classes apresentadas de consumo de memória em áreas ou regiões distintas. Dessa forma, cada região representa uma configuração ou conjunto de configurações similares capaz de representar o estado do consumo de memória em um determinado instante.
 
 \section{Resultados obtidos}
+Neste seção são apresentados os dados obtidos através do treinamento da rede neural e classificação dos padrões de consumo utilizando SOMs.
 
-Após a rede neural ter sido treinada, o mapa topológico do SOM \'{e} mostrado na Figura \ref{fig:som_treinado}:
+\subsection{Coleta dos dados}
+Como dito anteriormente, os dados coletados para a entrada da rede neural vieram de leituras constantes da memória livre do sistema. Casos de uso foram definidos com base nos mesmos casos apresentados na seção \ref{sec:mem_behavior}. Lá, foram utilizadas as seguintes aplicações: browser, media player e visualizador de arquivos no formato PDF.\\
 
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.35\textwidth]{figs/som_treinado.png}
-	\caption{Rede Neural Treinada com dados coletados em Linux Embarcado \cite{Mlin:06}.}
-	\label{fig:som_treinado}
-\end{figure}
+Todas as leituras foram realizadas no dispositivo móvel e foram desenvolvidos programas que automatizassem a coleta dos dados. Os passos para gerar as amostras foram os seguintes:
 
-O treinamento da rede neural foi feito utilizando um caso de uso gen\'{e}rico como dito anteriormente, desenvolvido para Linux embarcado por Francisco Alecrim \cite{Alecrim:07}. Ainda no trabalho desenvolvido em \cite{Alecrim:07}, encontramos uma ferramenta desenvolvida para analisar de uma forma mais intuitiva e melhorada os mapas topográficos das aplicações individualmente. Desta forma, \'{e} possível classificar cada caso de uso em relaç\~{a}o aos valores da tripla [memória consumida, vcm, tvcm].\\
+\begin{enumerate}
+ \item Executa-se um caso de uso, ou seja, somente o browser, ou o media player, etc.
+ \item Durante a execução são coletadas as amostras de memória total livre $\times$ tempo.
+ \item As amostras são convertidas em triplas para o tipo usado no treinamento da rede neural: $<$memória, vcm, tvcm$>$.
+\end{enumerate}
 
-Na ferramenta desenvolvida, foi adicionado mais um dado referente à freqüência da área que o BMU acessa no mapa do caso de uso geral (Veja Figuras \ref{fig:pdf_viewer}, \ref{fig:browser_1} e \ref{fig:browser_2}. O box central da interface, mostra os nós mais acessados pelo caso de uso que está sendo analisado. Quanto mais escuro, mais vezes aquele nó foi visitado, ou seja, escolhido como BMU. Esse \'{e} um dado muito importante pois permite que seja visualizado melhor as características de alocaç\~{a}o de memória do caso de uso.\\
+No final, temos 3 arquivos de log contendo a memória total livre durante a execução das 3 aplicações: browser, media player e visualizador de PDF's. Ainda foi adicionado mais um arquivo de log contendo a memória livre $\times$ tempo durante a execução dos 3 programas simultaneamente.\\
 
-Na Figura \ref{fig:pdf_viewer}, pode-se notar que o caso de uso executado para a aplicaç\~{a}o \textbf{PDF Viewer} possui um escurecimento mais intenso nas regiões de coloraç\~{a}o azul. A cor azul representa a característica de padr\~{a}o de consumo m\'{e}dio.
+Esse arquivos de log são concatenados e utilizados como dados de entrada para o treinamento da rede neural.
 
-\begin{figure}[htbp]
-	\centering
-		\includegraphics[width=0.7\textwidth]{figs/pdf_viewer.png}
-	\caption{Resultados obtidos com o cenário 3 utilizando o aplicativo PDF Viewer.\cite{Alecrim:07}}
-	\label{fig:pdf_viewer}
-\end{figure}
+\subsection{Treinando a rede neural e criando o SOM}
+Foram treinadas diferentes redes neurais e criados diferentes SOMs com o propósito de identificar os padrões de consumo de memória em diferentes situações. Para cada rede neural foram criados arquivos de logs com o consumo de memória dos aplicativos discutidos anteriormente.\\
 
-Nas Figuras \ref{fig:browser_1} e \ref{fig:browser_2}, encontram-se os mapas para a aplicaç\~{a}o \textbf{Browser}. No cenário 1, onde utilizada uma única aba para a navegaç\~{a}o, o aplicativo alternou entre o padr\~{a}o de consumo alto e m\'{e}dio,com m\'{e}dia variaç\~{a}o de consumo de memória e baixa taxa de variaç\~{a}o de consumo. No cenário 2, onde s\~{a}o utilizadas várias janelas para navegaç\~{a}o, o aplicativo teve padr\~{a}o do consumo alto, com baixa variaç\~{a}o e taxa de variaç\~{a}o.
+Nomeando os diferentes cenários de criação dos SOMs, temos as seguintes situações:
 
-\begin{figure}[htb]
-	\centering
-		\includegraphics[width=0.7\textwidth]{figs/browser_1.png}
-	\caption{Resultados obtidos com o cenário 1 utilizando o aplicativo Browser.\cite{Alecrim:07}}
-	\label{fig:browser_1}
-\end{figure}
+\begin{itemize}
+ \item Cenário alpha: Cache Comprimido desligado e kernel sem área de swap.
+ \item Cenário beta: Cache Comprimido ligado e configurado com área de swap virtual aproximadamente igual a 10 MB.
+ \item Cenário gama: Cache Comprimido ligado, configurado com área de swap virtual aproximadamente igual a 10 MB e com \textit{swap balance} igual a 60.
+\end{itemize}
 
-\begin{figure}[htb]
-	\centering
-		\includegraphics[width=0.7\textwidth]{figs/browser_2.png}
-	\caption{Resultados obtidos com o cenário 2 utilizando o aplicativo Browser.\cite{Alecrim:07}}
-	\label{fig:browser_2}
-\end{figure}
+Os cenários adotados são idênticos aos casos de uso utilizados nos testes de comportamento de memória, apresentados na seção \ref{sec:mem_behavior}. Desta forma podemos visualizar o comportamento do Cache Comprimido $\times$ áreas visitas do SOM.\\
 
-\section{Utilização de SOM na adaptatividade do Cache Comprimido}
-Como proposto nesta dissertação, a utilização da ferramenta desenvolvida em \cite{Alecrim:07} e \cite{Mlin:06}, é bastante útil na implementação da adaptatividade do CC. Utilizando os mapas gerados pela análise de cada aplicação, pode-se avaliar em quais momentos é necessário que o tamanho do CC seja alterado afim de suprir a necessidade de memória livre do sistema.\\
+Nas Figuras XXXX podemos visualizar que os mapas são levemente diferentes entre os três cenários apresentados. Porém, o mais importante é a área de visitação que cada aplicação possui. É esta área que será utilizada para identificar qual aplicação está sendo executada no sistema e com isso gerar uma tomada de decisão para o Cache Comprimido.
 
-Com a criação de um mapa com casos de uso que simulem a utilização do sistema por um usuário final, é possível determinar quais são as áreas mais acessadas por determinadas aplicações. Nesse caso, é possível verificar qual é o comportamento de consumo de memória para um determinado caso de uso e assim, tomar medidas para que não falte memória. Essas medidas podem ser o aumento ou diminuição do tamanho do CC, a mudança para um algoritmo de compressão mais eficaz (porém mais lento), etc. A tripla $<$memória, vcm, tvcm$>$, pode ser utilizada para "prever" o consumo de memória baseado no consumo anterior e no perfil (mapa) da aplicação analisada. O parâmetro "tvcm" é especialmente importante pois pode ser utilizado como a "velocidade" que uma aplicação aloca mais memória. Muito útil para evitar que situações que o OOM \textit{killer} seja invocado.
+\subsection{Classificando as aplicações}
+As triplas $<$memória, vcm, tvcm$>$, são mapeadas diretamente para índices RGB das cores utilizadas nos mapas. Assim, uma aplicação que visita uma área mais avermelhada, possui um consumo de memória maior do que a velocidade e a aceleração, visto que possui uma porção maior de vermelho na composição da cor. Uma aplicação que visita uma área mais azulada, possui uma variação na aceleração maior do que as outras duas dimensões, e assim por diante. Com base nessas características e no programa desenvolvido em \cite{Alecrim:07}, é possível identificar as áreas visitadas do SOM dado um log de entrada. Espera-se com isso conseguir identificar qual aplicação está executando com base no padrão de comportamento de áreas visitadas do SOM.\\
+
+Nas Figuras XXXX, temos a visualização das áreas visitadas do SOM de acordo com as amostras coletadas durante a execução das aplicações. Note que as áreas são diferentes dado um cenário (Alpha, Beta ou Gama). Isso confirma o fato de que o comportamento do consumo de memória das aplicações é influenciado quando o Cache Comprimido está presente.
+
+
+% \section{Utilização de SOM na adaptatividade do Cache Comprimido}
+% Como proposto nesta dissertação, a utilização da ferramenta desenvolvida em \cite{Alecrim:07} e \cite{Mlin:06}, é bastante útil na implementação da adaptatividade do CC. Utilizando os mapas gerados pela análise de cada aplicação, pode-se avaliar em quais momentos é necessário que o tamanho do CC seja alterado afim de suprir a necessidade de memória livre do sistema.\\
+% 
+% Com a criação de um mapa com casos de uso que simulem a utilização do sistema por um usuário final, é possível determinar quais são as áreas mais acessadas por determinadas aplicações. Nesse caso, é possível verificar qual é o comportamento de consumo de memória para um determinado caso de uso e assim, tomar medidas para que não falte memória. Essas medidas podem ser o aumento ou diminuição do tamanho do CC, a mudança para um algoritmo de compressão mais eficaz (porém mais lento), etc. A tripla $<$memória, vcm, tvcm$>$, pode ser utilizada para "prever" o consumo de memória baseado no consumo anterior e no perfil (mapa) da aplicação analisada. O parâmetro "tvcm" é especialmente importante pois pode ser utilizado como a "velocidade" que uma aplicação aloca mais memória. Muito útil para evitar que situações que o OOM \textit{killer} seja invocado.
 
 %\chapter{Conclusão}
 %\section{Conclusão}
