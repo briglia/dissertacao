@@ -722,7 +722,30 @@ Nomeando os diferentes cenários de criação dos SOMs, temos as seguintes situaçõe
 
 Os cenários adotados são idênticos aos casos de uso utilizados nos testes de comportamento de memória, apresentados na seção \ref{sec:mem_behavior}. Desta forma podemos visualizar o comportamento do Cache Comprimido $\times$ áreas visitas do SOM.\\
 
-Nas Figuras XXXX podemos visualizar que os mapas são levemente diferentes entre os três cenários apresentados. Porém, o mais importante é a área de visitação que cada aplicação possui. É esta área que será utilizada para identificar qual aplicação está sendo executada no sistema e com isso gerar uma tomada de decisão para o Cache Comprimido.
+Nas Figuras \ref{fig:som-trained}, \ref{fig:som-trained-cc}, \ref{fig:som-trained-cc-tun}, podemos visualizar que os mapas são levemente diferentes entre os três cenários apresentados. Porém, o mais importante é a área de visitação que cada aplicação possui. É esta área que será utilizada para identificar qual aplicação está sendo executada no sistema e com isso gerar uma tomada de decisão para o Cache Comprimido.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.40\textwidth]{figs/trained}
+	\caption{Cenário Alpha: SOM para rede neural treinada sem Cache Comprimido.}
+	\label{fig:som-trained}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.40\textwidth]{figs/trained-cc}
+	\caption{Cenário Beta: SOM para rede neural treinada com Cache Comprimido de tamanho igual a 10MB.}
+	\label{fig:som-trained-cc}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.40\textwidth]{figs/trained-cc-tun}
+	\caption{Cenário Gama: SOM para rede neural treinada com Cache Comprimido = 10MB e swappiness = 60.}
+	\label{fig:som-trained-cc-tun}
+\end{figure}
+
+Nos testes com o cenário Alpha, nenhuma página de memória era comprimida e podemos notar que a parte azulada do gráfico, que indica uma baixa aceleração no consumo e um baixo consumo de páginas de memória, é bem pequena. Nos cenários seguintes, Beta e Gama, a área azulada já é ligeramente maior. Isso se deve ao fato do Cache Comprimido armazenar mais páginas de memória, deixando assim páginas livres na área não-comprimida.\\
+
+Também podemos notar que de acordo com que o Cache Comprimido é mais utilizado, ou seja, mais páginas de memória são comprimidas e armazenadas, temos um aumento da área azulada no SOM. Isso pode ser verificado no cenário Gama, o qual, através da configuração do parâmetro de \textit{swappiness} no sistema, apressamos o envio de páginas de memória para a área de \textit{swap virtual}, deixando assim mais memória livre.
 
 \subsection{Classificando as aplicações}
 As triplas $<$memória, vcm, tvcm$>$, são mapeadas diretamente para índices RGB das cores utilizadas nos mapas. Assim, uma aplicação que visita uma área mais avermelhada, possui um consumo de memória maior do que a velocidade e a aceleração, visto que possui uma porção maior de vermelho na composição da cor. Uma aplicação que visita uma área mais azulada, possui uma variação na aceleração maior do que as outras duas dimensões, e assim por diante. Com base nessas características e no programa desenvolvido em \cite{Alecrim:07}, é possível identificar as áreas visitadas do SOM dado um log de entrada. Espera-se com isso conseguir identificar qual aplicação está executando com base no padrão de comportamento de áreas visitadas do SOM.\\
