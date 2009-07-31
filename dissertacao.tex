@@ -750,9 +750,52 @@ Também podemos notar que de acordo com que o Cache Comprimido é mais utilizado, 
 \subsection{Classificando as aplicações}
 As triplas $<$memória, vcm, tvcm$>$, são mapeadas diretamente para índices RGB das cores utilizadas nos mapas. Assim, uma aplicação que visita uma área mais avermelhada, possui um consumo de memória maior do que a velocidade e a aceleração, visto que possui uma porção maior de vermelho na composição da cor. Uma aplicação que visita uma área mais azulada, possui uma variação na aceleração maior do que as outras duas dimensões, e assim por diante. Com base nessas características e no programa desenvolvido em \cite{Alecrim:07}, é possível identificar as áreas visitadas do SOM dado um log de entrada. Espera-se com isso conseguir identificar qual aplicação está executando com base no padrão de comportamento de áreas visitadas do SOM.\\
 
-Nas Figuras XXXX, temos a visualização das áreas visitadas do SOM de acordo com as amostras coletadas durante a execução das aplicações. Note que as áreas são diferentes dado um cenário (Alpha, Beta ou Gama). Isso confirma o fato de que o comportamento do consumo de memória das aplicações é influenciado quando o Cache Comprimido está presente.
+Nas Figuras \ref{fig:browser}, \ref{fig:browser-cc } e \ref{fig:browser-cc-tun}, temos a visualização das áreas visitadas do SOM de acordo com as amostras coletadas durante a execução do Browser. Note que as áreas são diferentes dado um cenário (Alpha, Beta ou Gama). Isso confirma o fato de que o comportamento do consumo de memória das aplicações é influenciado quando o Cache Comprimido está presente.
 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/browser.png}
+	\caption{Cenário Alpha: regiões onde a aplicação 'Browser' visitou no SOM.}
+	\label{fig:browser}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/cc-browser.png}
+	\caption{Cenário Beta: regiões onde a aplicação 'Browser' visitou no SOM.}
+	\label{fig:browser-cc}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/cc-tun-browser.png}
+	\caption{Cenário Gama: regiões onde a aplicação 'Browser' visitou no SOM.}
+	\label{fig:browser-cc-tun}
+\end{figure}
 
+Como o esperado, o Browser teve um consumo mais baixo da memória quando o Cache Comprimido estava ativo e o swap configurado para receber mais páginas, mais cedo. Isso pode ser visualizado no gráfico do cenário Gama.\\
+
+Uma outra medida, não menos importante, é a frequência de visita dos pontos (visualizada aqui no retângulo central de cada figura). Esse gráfico mostra quais pontos foram mais visitados durante a execução da aplicação avaliada. A frequência é calculada pela quantidade de vezes que um BMU é encontrado quando comparada uma amostra com os dados da rede treinada. Cada vez que um ponto é visitado, ele ganha 1 unidade de cor preta. Assim, pontos mais escuros indicam mais visitas do que os pontos mais claros.\\
+
+De novo, podemos notar que quando o Cache Comprimido estava ligado, os pontos mais visitados estavam na área azulada do SOM, indicando um baixo consumo da memória principal do sistema.
+
+No Anexo A, pode-se encontrar os perfis para as outras aplicações: visualizador de arquivos pdf e multimídia \textit{player}.
+
+Analisando os 3 logs de execução de cada aplicação testada, podemos chegar à conclusão de 3 tipos de perfis:
+
+\begin{itemize}
+ \item Alto consumo de memória: são aquelas aplicações que tiveram seus perfis visitando áreas no SOM em tons de vermelho.
+ \item Baixo consumo de memória: são aquelas aplicações que tiveram seus perfis visitando áreas no SOM em tons de azul.
+ \item Mediano consumo de memória: são aquelas aplicações que possuem seus perfis como uma mistura dos outros dois, não prevalecendo nenhuma área.
+\end{itemize}
+
+Dado cada perfil, foi desenvolvido um programa capaz de identificar qual aplicação está sendo executada, com base na rede neural já treinada de acordo com o cenário utilizado: Alpha, Beta ou Gama. Esse programa é usado para tomar uma decisão: ligar ou não o Cache Comprimido e ainda, qual será a configuração do mesmo. Esse sistema é apresentado na seção a seguir.
+
+\subsection{Adaptatividade no Cache Comprimido}
+
+TODO
+
+\section{Trabalhos Futuros}
+
+\section{Conclusão}
 % \section{Utilização de SOM na adaptatividade do Cache Comprimido}
 % Como proposto nesta dissertação, a utilização da ferramenta desenvolvida em \cite{Alecrim:07} e \cite{Mlin:06}, é bastante útil na implementação da adaptatividade do CC. Utilizando os mapas gerados pela análise de cada aplicação, pode-se avaliar em quais momentos é necessário que o tamanho do CC seja alterado afim de suprir a necessidade de memória livre do sistema.\\
 % 
