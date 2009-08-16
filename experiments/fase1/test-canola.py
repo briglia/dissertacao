@@ -136,6 +136,16 @@ class TestCanola:
         self.click_back()
         self.click_back()
         self.click_back()
+        #Opening a video
+        self.click_bt(VIDEOS_BT, EV_FIRST_BT_X)
+        self.click_bt(MY_VIDEOS_BT, EV_FIRST_BT_X)
+        self.click_list(0)
+        self.click_list(3)
+        self.add_delay(210)
+        self.click_back()
+        self.click_back()
+        self.click_back()
+        self.click_back()
         # End
         self.click_back()
         self.click_yes()
