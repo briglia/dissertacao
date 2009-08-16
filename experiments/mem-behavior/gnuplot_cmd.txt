@@ -1,0 +1,8 @@
+set terminal postscript
+set output "canola.ps"
+set grid
+set title "Canola - Consumo do Swap: CC x CC-Tun (swappiness = 60)"
+set xlabel "Time (s)"
+set ylabel "SwapFree (KB)"
+plot "com-cc/canola.log" using 1:3 with lines lw 2 title "SwapFree: CC default", \
+"com-cc-tun/canola.log" using 1:3 with lines lw 2 title "SwapFree: CC-Tun"
