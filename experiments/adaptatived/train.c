@@ -9,8 +9,6 @@
 #include "som.h"
 #include "ui.h"
 
-extern void status_bar_push_item(char *info); 
-extern void update_percentual_trained(void); 
 /*
  * Read the input from file for Self Organizing Maps (SOM)
  * and return the length of inputs
@@ -294,9 +292,6 @@ void train(struct input_pattern * inputs[], int input_len) {
 			}
 		}
 		
-		//Update status bar 
-		status_bar_push_item(g_strdup_printf("Iteration..: %d -> %f s ",iteration,(difftime(end_time, start_time)))); 
-	
 		//Update progress bar 
 		gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(pbar),((double)iteration/NUM_ITERATIONS));
 		gtk_progress_bar_set_text (GTK_PROGRESS_BAR(pbar),g_strdup_printf("%f %%",100*((double)iteration/NUM_ITERATIONS)));
@@ -304,13 +299,7 @@ void train(struct input_pattern * inputs[], int input_len) {
 		/* Run all pending events and high priority idle functions */
 		while(g_main_context_iteration(NULL, FALSE));
 
-		update_percentual_trained(); 
-
-
-
 	}
-	
-	status_bar_push_item(g_strdup_printf(" finished !!! ")); 
 }
 
 
