@@ -31,11 +31,6 @@ void status_bar_push_item(gchar *info)
 	gtk_statusbar_push (GTK_STATUSBAR (status_bar), GPOINTER_TO_INT (context_id),info);
 }
 
-
-
-
-
-
 /*
  * Monitor the memory consumption pattern of application
  * in the trained SOM
@@ -56,6 +51,20 @@ void run(void) {
 
 	struct rss_list * head = NULL;
 	struct rss_list * iterator = NULL;
+
+	/* Matrix used to save frequency values */
+	int freq_matrix[40][40];
+	char *line;
+	FILE *fp;
+
+	/* Init frequency matrix with 0's */
+	for (i = 0; i < 40; i++) {
+		for (j = 0; j < 40; j++) {
+			freq_matrix[i][j] = 0;
+		}
+	}
+	i = 0;
+	j = 0;
 
 	fullname=filename; 
 
@@ -149,6 +158,9 @@ void run(void) {
 		gtk_widget_modify_bg(drawingfreq[i][j],
 				     GTK_STATE_NORMAL,
 				     &color);
+		/* Update frequency matrix */
+		freq_matrix[i][j] = freq_matrix[i][j] + 1;
+
 		while(g_main_context_iteration(NULL, FALSE));
 		usleep(1000);
 
@@ -186,6 +198,29 @@ void run(void) {
 	if (head)
 		free_rss_list(head);
 	status_bar_push_item(g_strdup_printf("Executation terminated : %s",filename));
+
+	fp = fopen("freq-table.log", "w");
+	if (fp == NULL) {
+		fprintf(stderr, "error opening file %s\n",
+				"freq-table.log");
+		return;
+	}
+	printf("\nSaving frequency Matrix\n");
+	for (i = 0; i < 40; i++) {
+		for (j = 0; j < 40; j++) {
+			if (freq_matrix[i][j] > 0) {
+				line = (char *)malloc(30);
+				sprintf(line, "(%d, %d) %d\n", i, j,
+						freq_matrix[i][j]);
+				fputs(line, fp);
+				free(line);
+			}
+		}
+	}
+
+	if (fclose(fp)) {
+		fprintf(stderr, "error closing file\n");
+	}
 }
 
 
