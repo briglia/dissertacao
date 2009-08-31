@@ -10,6 +10,12 @@
 \usepackage{graphicx}
 \usepackage{setspace}
 
+\usepackage{float}
+\floatstyle{ruled}
+\newfloat{program}{thp}{lop}
+\floatname{program}{Algoritmo}
+\renewcommand{\theprogram}{\thechapter.\arabic{program}}
+
 \begin{document} 
 
 \thispagestyle{empty}
@@ -890,7 +896,7 @@ Analisando os 3 logs de execução de cada aplicação testada, podemos chegar à con
  \item Mediano consumo de memória: são aquelas aplicações que possuem seus perfis como uma mistura dos outros dois, não prevalecendo nenhuma área.
 \end{itemize}
 
-Dado cada perfil, foi desenvolvido um programa capaz de identificar qual aplicação está sendo executada, com base na rede neural já treinada de acordo com o cenário utilizado: Alpha, Beta ou Gama. Esse programa é usado para tomar uma decisão: ligar ou não o Cache Comprimido e ainda, qual será a configuração do mesmo. Esse sistema é apresentado na seção a seguir.
+Dado cada perfil, foi desenvolvido um programa capaz de identificar qual aplicação está sendo executada, com base na rede neural já treinada de acordo com o cenário utilizado: Alpha, Beta ou Gama. Esse programa é usado para tomar uma decisão: ligar ou não o Cache Comprimido e ainda, qual será a configuração do mesmo. Esse sistema é apresentado no capítulo a seguir.
 
 \section{Sumário}
 
@@ -898,9 +904,133 @@ Neste Capítulo foram apresentados conceitos de redes neurais e mapas auto-organi
 
 Na seção \ref{sec:classificando}, foi verificado que o SOM apresenta uma forma diferente quando se muda o cenário, ou seja, quando o Cache Comprimido está ligado, desligado ou quando o kernel não está configurado. Isso influencia diretamente as regiões do SOM que cada aplicação visita quando está consumindo memória. É nessa variação que é implementada a adaptatividade do Cache Comprimido no próximo Capítulo.
 
+\chapter{Cache Comprimido Adaptativo}
+
+Neste capítulo será apresentada a solução para implementar uma característica de adaptação do Cache Comprimido, frente à memória consumida em tempo real.
+
 \section{Adaptatividade no Cache Comprimido}
 
-TODO
+Implementar a adaptatividade ao Cache Comprimido é adaptá-lo de acordo com o consumo de memória instantâneo. Para implementar essa nova característica alguns requisitos são necessários:
+
+\begin{itemize}
+ \item Ter uma amostra do consumo de memória instantâneo.
+ \item Ter um padrão que confronte Configurações do CC versus Padrão de Consumo de memória. Esse padrão vale para decidir o que fazer quando determinado nível de memória é atingido.
+ \item Implementar uma heurística para definir a configuração do CC que será adotada, de acordo com a amostra de memória.
+\end{itemize}
+
+Como visto na seção \ref{sec:classificando}, cada aplicação possui um SOM característico. Além disso, o SOM de cada aplicação testada depende do cenário adotado: se existe ou não CC ativo, por exemplo. O programa utilizado em \cite{Alecrim:07}, além de gerar o SOM para um log de consumo de memória, também gera uma matriz de frequências, como visto nas Figuras \ref{fig:browser-freq}, \ref{fig:canola-freq} e \ref{fig:pdf-freq} (área sombreada):
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/browser-freq.png}
+	\caption{Cenário Alpha: imagem que representa o SOM para o Browser e sua matriz de frequências.}
+	\label{fig:browser-freq}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/canola-freq.png}
+	\caption{Cenário Alpha: imagem que representa o SOM para o media player Canola e sua matriz de frequências.}
+	\label{fig:canola-freq}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/pdf-freq.png}
+	\caption{Cenário Alpha: imagem que representa o SOM para o visualizador de PDF's e sua matriz de frequências.}
+	\label{fig:pdf-freq}
+\end{figure}
+
+A matriz de frequência de cada aplicação mostra quantas vezes aquele BMU foi visitado. Quanto mais escuro é o pixel, mais vezes o BMU foi selecionado.\\
+
+Se for possível determinar os BMU's em tempo de execução e compará-lo com as matrizes de frequência das três aplicações testadas, é possível determinar qual aplicação está sendo executada e tomar medidas quanto ao Cache Comprimido assim que essa identificação é feita. O algoritmo seria o seguinte:
+
+\begin{enumerate}
+ \item Ler o saved\_som.txt contendo a rede neural treinada para o cenário dado. A rede neural é representada por uma matriz quadrática de ordem 40 em que cada célula representa um \textbf{som\_node} com os pesos sinápticos.
+ \item Armazenar em matrizes de ordem 40 a tabela de frequência para cada aplicação: browser, pdf e canola.
+ \item Realizar leituras periódicas da memória livre em um intervalo de tempo ($t = 1$s). Guardar os valores em um vetor de inteiros.
+ \item Calcular o BMU para cada valor do vetor construído no item anterior. Comparar esse BMU com a matriz de frequências de cada aplicação.
+\end{enumerate}
+
+
+O algoritmo descrito foi implementado em um programa e testado na plataforma ARM. O código mostrado em \ref{alg:magic}, escrito em linguagem C, ilustra o algoritmo apresentado:
+
+\begin{program}
+\begin{verbatim}
+int magic() {
+    struct rss_list *head = NULL;
+    struct rss_list *iterator = NULL;
+    int x, i, j;
+    unsigned int current_rss = 0;
+    unsigned int new_rss;
+    struct som_node *bmu = NULL;
+    int veloc = 0;
+    int accel = 0;
+    int browser_factor = 0;
+    int canola_factor = 0;
+    int pdf_factor = 0;
+
+    i = j = 0;
+    /* Collect memFree for x seconds */
+    populate_mem_free_array();
+
+    /* Get the head pointer for rss_list */
+    head = read_mem_free_log();
+    iterator = head;
+
+    for (x = 0; x < MAX_INPUTS; x++) {
+        new_rss = iterator->rss_pages;
+        iterator = iterator->next;
+
+        /* Get the closest bmu */
+        bmu = get_bmu_xy(grids,
+                         &new_rss,
+                         &current_rss,
+                         &veloc,
+                         &accel);
+            i = bmu->xp;
+            j = bmu->yp;
+
+            if (freq_pdf[i][j] != 0) {
+                pdf_factor = pdf_factor + freq_pdf[i][j];
+            } else if (freq_browser[i][j] != 0) {
+                browser_factor = browser_factor + freq_browser[i][j];
+            } else if (freq_canola[i][j] != 0) {
+                canola_factor = canola_factor + freq_canola[i][j];
+            }
+    }
+    printf("PDF factor: %d\n", pdf_factor);
+    printf("Browser factor: %d\n", browser_factor);
+    printf("Canola factor: %d\n", canola_factor);
+}
+\end{verbatim}
+\caption{Algoritmo usado para calcular o fator de semelhança entre os BMU's.}
+\label{alg:magic}
+\end{program}
+
+A variável \texttt{MAX\_INPUTS} possui o tamanho do vetor das amostras de memória livre ao longo do tempo. O programa foi feito para realizar leituras no \texttt{/proc/sys/vm/memfree} a cada segundo. Assim, o programa possui uma latência de \texttt{MAX\_INPUTS} segundos, tirando o tempo de processamento, para calcular os \textbf{fatores de semelhança}.
+
+O objetivo dessa função é calcular um \textit{fator de semelhança}, ou seja, o maior fator entre \texttt{pdf\_factor}, \texttt{browser\_factor} e \texttt{canola\_factor}, indica ainda qual matriz de frequências teve mais BMU's em comum em relação à coleta de memória livre do sistema. Assim, o maior fator indica qual aplicação está sendo executada em um determinado momento.\\
+
+Identificando qual aplicação está sendo executada, e conhecendo seu comportamento de consumo de memória, pode-se decidir qual configuração passar para o CC, em termos de tamanho, e ainda qual valor para o \texttt{swappiness} e \texttt{min\_free\_kbytes}, ambos variáveis de configurações do kernel do Linux.\\
+
+\subsection{Daemon para adaptar o Cache Comprimido}
+
+No Linux, programas do tipo \textit{daemon} são programas que possuem sua execução sendo feita em \textit{background}, ou seja, são programas que não esperam uma interação direta do usuário.\\
+
+Para adaptar o CC ao consumo de memória, foi desenvolvido um \textit{daemon} que, dentre outras operações, utiliza o Algoritmo \ref{alg:magic} para determinar qual perfil executar do CC. Esse \textit{daemon} também é responsável por decidir que configuração realizar no CC.\\
+
+Para facilitar os testes e limitar o universo de combinações das configurações do CC e do kernel do Linux, os perfis foram definidos em três \textit{scripts}. Um \textit{script} que desliga o CC, ou seja, retira a área de \textit{swap virtual} e libera todas as páginas de memória. Um \textit{script} que liga o CC e configura o mesmo com um tamanho de aproximadamente 10MB para o \textit{swap virtual} e um \textit{script} que liga o CC com um tamanho de aproximadamente 5MB, configura o \texttt{swappiness} para 60 e o \texttt{min\_free\_kbytes} para 2048. Resumindo e nomeando os scripts, temos:
+
+\begin{itemize}
+ \item Script 01: desligar o CC.
+ \item Script 02: ligar o CC com tamanho igual a 10MB.
+ \item Script 03: ligar o CC com tamanho igual a 5MB, swappiness = 60 e min\_free\_kbytes = 2048.
+\end{itemize}
+
+Os scripts são chamados de acordo com o fator definido.
+
+
 
 \chapter{Conclusão e Trabalhos Futuros}
 
