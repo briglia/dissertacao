@@ -9,26 +9,39 @@
 #include "util.h"
 #include "ui.h"
 
+/* Max reads from /proc/meminfo */
 #define MAX_INPUTS 90
+
+/* Total memory in kilobytes */
 #define MEM 131072
 
+/* Array used for memFree reads */
 int mem_free_array[MAX_INPUTS];
 
-extern int read_som_input(struct input_pattern* [], int);
-int read_trained_som(char filename[], struct som_node * grids[][GRIDS_YSIZE]); 
-extern void init_grid(struct som_node* [][GRIDS_YSIZE]);
-extern void train(struct input_pattern* [], int);
-extern void save_trained_som(char*, struct som_node* [][GRIDS_YSIZE]);
 extern struct som_node * get_bmu_xy(struct som_node* [][GRIDS_YSIZE],
 		unsigned int*,
 		unsigned int*,
 		int*, int*);
 
 /* freq tables */
-int freq_browser[40][40];
-int freq_canola[40][40];
-int freq_pdf[40][40];
+int freq_browser[GRIDS_XSIZE][GRIDS_YSIZE];
+int freq_canola[GRIDS_XSIZE][GRIDS_YSIZE];
+int freq_pdf[GRIDS_XSIZE][GRIDS_YSIZE];
 
+/* Initialize freq_browser, freq_canola and freq_pdf matrix */
+void init_freq_tables() {
+	int i, j;
+	for (i = 0; i < 40; i++) {
+		for (j = 0; j < 40; j++) {
+			freq_browser[i][j] = 0;
+			freq_canola[i][j] = 0;
+			freq_pdf[i][j] = 0;
+		}
+	}
+}
+
+/* This method parses /proc/meminfo file and returns memfree - MEM
+ */
 int get_memfree()
 {
 	FILE* fp;
@@ -59,6 +72,7 @@ int get_memfree()
 	return MEM - MemFree;
 }
 
+/* Populates mem_free_array with values read from /proc/meminfo */
 void populate_mem_free_array() {
 	int i = 0;
 	int timeout = 1;
@@ -71,7 +85,8 @@ void populate_mem_free_array() {
 
 }
 
-void read_freq_log(char filename[]) {
+/* Reads freq-{pdf,browser,canola}.log files and saves into a 40x40 matrix */
+void read_freq_log(char filename[], int freq_table[GRIDS_XSIZE][GRIDS_YSIZE]) {
 	FILE *fp;
 	ssize_t bytes_read;
 	size_t len = 0;
@@ -88,15 +103,10 @@ void read_freq_log(char filename[]) {
 		printf("Error opening freq log file\n");
 		return;
 	}
+
 	while((bytes_read = getline(&line, &len, fp)) != -1) {
 		sscanf(line, "(%d, %d) %d", &i, &j, &freq);
-		if (strcmp(filename, "freq-browser.log") == 0) {
-			freq_browser[i][j] = freq;
-		} else if (strcmp(filename, "freq-canola.log") == 0) {
-			freq_canola[i][j] = freq;
-		} else if (strcmp(filename, "freq-pdf.log") == 0) {
-			freq_pdf[i][j] = freq;
-		}
+		freq_table[i][j] = freq;
 	}
 
 	if (line)
@@ -105,6 +115,7 @@ void read_freq_log(char filename[]) {
 		printf("Error closing file\n");
 }
 
+/* Reads mem_free_array and returns a rss_list struct for get_bmu_xy() */
 struct rss_list * read_mem_free_log() {
 	unsigned int vm_pages, rss_pages;
 	struct rss_list head, *list;
@@ -125,6 +136,8 @@ struct rss_list * read_mem_free_log() {
 	return head.next;
 }
 
+/* Finds the factor (pdf, browser or canola) according to mem_free_array
+ * input, trained neural network som and frequency tables */
 int magic() {
 	struct rss_list *head = NULL;
 	struct rss_list *iterator = NULL;
@@ -178,29 +191,19 @@ int main()
 	int i;
 	int j;
 
-	/* Save trained som in grids */
-	//read_trained_som("saved_som.txt", grids);
-
-	/* Init frequency matrix for browser, pdf and canola */
-	for (i = 0; i < 40; i++) {
-		for (j = 0; j < 40; j++) {
-			freq_browser[i][j] = 0;
-			freq_canola[i][j] = 0;
-			freq_pdf[i][j] = 0;
-		}
-	}
-
-	/* Save trained som in grids */
+	/* Save trained som in grids struct */
 	read_trained_som("saved_som.txt", grids);
 
-	read_freq_log("freq-pdf.log");
-	read_freq_log("freq-browser.log");
-	read_freq_log("freq-canola.log");
+	init_freq_tables();
+
+	read_freq_log("freq-pdf.log", freq_pdf);
+	read_freq_log("freq-browser.log", freq_browser);
+	read_freq_log("freq-canola.log", freq_canola);
 
 	magic();
 
 	//read_freq_log("freq-pdf.log");
-	/*
+/*
 	for (i = 0; i < 40; i++) {
 		for (j = 0; j < 40; j++) {
 			printf("%d ", freq_pdf[i][j]);
