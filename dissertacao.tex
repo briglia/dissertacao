@@ -50,7 +50,7 @@ Dissertação apresentada ao Departamento de Ciência da Computação do Instituto de
 \begin{center}
 %\begin{Large}
 Manaus \\
-Março de 2008\\
+Setembro de 2009\\
 %\end{Large}
 \end{center}
 
@@ -953,11 +953,11 @@ Se for possível determinar os BMU's em tempo de execução e compará-lo com as mat
 \end{enumerate}
 
 
-O algoritmo descrito foi implementado em um programa e testado na plataforma ARM. O código mostrado em \ref{alg:magic}, escrito em linguagem C, ilustra o algoritmo apresentado:
+O algoritmo descrito foi implementado em um programa e testado na plataforma ARM. O código mostrado em \ref{alg:calc_profile}, escrito em linguagem C, ilustra o algoritmo apresentado:
 
 \begin{program}
 \begin{verbatim}
-int magic() {
+int calculate_profile() {
     struct rss_list *head = NULL;
     struct rss_list *iterator = NULL;
     int x, i, j;
@@ -999,13 +999,16 @@ int magic() {
                 canola_factor = canola_factor + freq_canola[i][j];
             }
     }
-    printf("PDF factor: %d\n", pdf_factor);
-    printf("Browser factor: %d\n", browser_factor);
-    printf("Canola factor: %d\n", canola_factor);
+    if ((pdf_factor > browser_factor) && (pdf_factor > canola_factor)) {
+        return ALPHA_PROFILE;
+    } else if (browser_factor > canola_factor)
+        return GAMA_PROFILE;
+    else
+        return BETA_PROFILE;
 }
 \end{verbatim}
 \caption{Algoritmo usado para calcular o fator de semelhança entre os BMU's.}
-\label{alg:magic}
+\label{alg:calc_profile}
 \end{program}
 
 A variável \texttt{MAX\_INPUTS} possui o tamanho do vetor das amostras de memória livre ao longo do tempo. O programa foi feito para realizar leituras no \texttt{/proc/sys/vm/memfree} a cada segundo. Assim, o programa possui uma latência de \texttt{MAX\_INPUTS} segundos, tirando o tempo de processamento, para calcular os \textbf{fatores de semelhança}.
@@ -1018,30 +1021,126 @@ Identificando qual aplicação está sendo executada, e conhecendo seu comportament
 
 No Linux, programas do tipo \textit{daemon} são programas que possuem sua execução sendo feita em \textit{background}, ou seja, são programas que não esperam uma interação direta do usuário.\\
 
-Para adaptar o CC ao consumo de memória, foi desenvolvido um \textit{daemon} que, dentre outras operações, utiliza o Algoritmo \ref{alg:magic} para determinar qual perfil executar do CC. Esse \textit{daemon} também é responsável por decidir que configuração realizar no CC.\\
+Para adaptar o CC ao consumo de memória, foi desenvolvido um \textit{daemon} que, dentre outras operações, utiliza o Algoritmo \ref{alg:calc_profile} para determinar qual perfil executar do CC. Esse \textit{daemon} também é responsável por decidir que configuração realizar no CC, ou ainda, quando ligá-lo ou desligá-lo. O Algoritmo \ref{alg:main} mostra a função \textit{main} do \textit{daemon}.
 
-Para facilitar os testes e limitar o universo de combinações das configurações do CC e do kernel do Linux, os perfis foram definidos em três \textit{scripts}. Um \textit{script} que desliga o CC, ou seja, retira a área de \textit{swap virtual} e libera todas as páginas de memória. Um \textit{script} que liga o CC e configura o mesmo com um tamanho de aproximadamente 10MB para o \textit{swap virtual} e um \textit{script} que liga o CC com um tamanho de aproximadamente 5MB, configura o \texttt{swappiness} para 60 e o \texttt{min\_free\_kbytes} para 2048. Resumindo e nomeando os scripts, temos:
+\begin{program}
+\begin{scriptsize}
+\begin{verbatim}
+int main()
+{
+    /* Starts profile as ALPHA_PROFILE: CC is not configured */
+    current_profile = ALPHA_PROFILE;
 
-\begin{itemize}
- \item Script 01: desligar o CC.
- \item Script 02: ligar o CC com tamanho igual a 10MB.
- \item Script 03: ligar o CC com tamanho igual a 5MB, swappiness = 60 e min\_free\_kbytes = 2048.
-\end{itemize}
+    do {
+        if (current_profile != previous_profile) {
+            if (current_profile == ALPHA_PROFILE) {
+                printf("ALPHA PROFILE\n");
+                system("sh unuse_compcache.sh");
 
-Os scripts são chamados de acordo com o fator definido.
+                previous_profile = ALPHA_PROFILE;
 
+                /* Save trained som in grids struct */
+                read_trained_som(NO_CC_DIR"saved_som.txt", grids);
+
+                init_freq_tables();
+
+                read_freq_log(NO_CC_DIR"freq-pdf.log", freq_pdf);
+                read_freq_log(NO_CC_DIR"freq-browser.log", freq_browser);
+                read_freq_log(NO_CC_DIR"freq-canola.log", freq_canola);
+
+                read_max_min_values(NO_CC_DIR"max_min_values.txt");
+            } else if (current_profile == BETA_PROFILE) {
+                printf("BETA PROFILE\n");
+                system("sh unuse_compcache.sh");
+                system("sh use_compcache.sh 5120");
+
+                previous_profile = BETA_PROFILE;
+
+                /* Save trained som in grids struct */
+                read_trained_som(WITH_CC_DIR"saved_som.txt", grids);
+
+                init_freq_tables();
+
+                read_freq_log(WITH_CC_DIR"freq-pdf.log", freq_pdf);
+                read_freq_log(WITH_CC_DIR"freq-browser.log", freq_browser);
+                read_freq_log(WITH_CC_DIR"freq-canola.log", freq_canola);
+
+                read_max_min_values(WITH_CC_DIR"max_min_values.txt");
+                } else if (current_profile == GAMA_PROFILE) {
+                    printf("GAMA PROFILE\n");
+                    system("sh unuse_compcache.sh");
+                    system("sh use_compcache.sh 10240");
+                    system("echo 60 > /proc/sys/vm/swappiness");
+
+                    previous_profile = GAMA_PROFILE;
+
+                    /* Save trained som in grids struct */
+                    read_trained_som(WITH_CC_DIR"saved_som.txt", grids);
+
+                    init_freq_tables();
+
+                    read_freq_log(WITH_CC_DIR"freq-pdf.log", freq_pdf);
+                    read_freq_log(WITH_CC_DIR"freq-browser.log", freq_browser);
+                    read_freq_log(WITH_CC_DIR"freq-canola.log", freq_canola);
+
+                    read_max_min_values(WITH_CC_DIR"max_min_values.txt");
+
+                    }
+            }
+
+                current_profile = calculate_profile();
+        } while(1);
+
+        return 0;
+}
+\end{verbatim}
+\end{scriptsize}
+\caption{Algoritmo usado no daemon de adaptatividade.}
+\label{alg:main}
+\end{program}
+
+Note que cada perfil adotado executa ações diferentes no sistema. Para o perfil \texttt{ALPHA}, o CC é desligado e os módulos são descarregados. Para o perfil \texttt{BETA}, o CC é ligado com tamanho aproximado de 5MB, nesse caso espera-se um consumo mediano da memória. Para o perfil \texttt{GAMA}, o CC é ligado com tamanho aproximado de 10MB e \texttt{swappiness} $= 60$, o que faz as páginas irem mais cedo para o swap virtual onde são comprimidas e armazenadas. Nesse perfil esperamos um consumo intenso da memória ou a possível falta da mesma.\\
+
+Cada perfil é encontrado usando a função apresentada no Algoritmo \ref{alg:calc_profile}. Esse algoritmo utiliza a rede neural treinada, a matriz de frequência do BMU de cada aplicação e as coletas da memória livre instantânea do sistema.\\
+
+O acerto em determinar o perfil de memória depende da quantidade de coletas que serão feitas antes da análise nas matrizes de frequências. Porém, coletar a memória leva \texttt{MAX\_INPUT} segundos, onde esse valor é o tamanho do vetor de coletas da memória livre. Assim, existe um ajuste para que o \textit{daemon} não leve muito tempo para determinar em que perfil está ou para qual perfil o consumo de memória está caminhando.\\
+
+Na Figura \ref{fig:mem-adapt}, está representado a memória livre ao longo de um teste feito para checar se a adaptatividade do CC trás benefícios ou não. O teste consiste em abrir 8 instâncias do Browser, tocar um vídeo no \textit{media player}, simultaneamente e ainda abrir um arquivo PDF.\\
+
+Podemos que a memória livre (MemFree), varia e acontecem alguns picos. Isso se deve ao fato de que quando o perfil é alterado, existe uma liberação ou um consumo maior de memória. Também podemos notar que o uso do \textit{daemon} mantém uma média de memória livre maior do que em casos onde ele não é utilizado.
+
+\begin{figure}[htb]
+ \centering
+ \includegraphics[scale=0.6]{figs/mem-adapt.pdf}
+ \caption{Memória livre (MemFree) ao longo do teste com o CC adaptativo.}
+ \label{fig:mem-adapt}
+\end{figure}
+
+\section{Sumário}
+Neste Capítulo foi apresentado a heurística e a solução encontrada para utilizar redes neurais e perfis de consumo de memória na adaptatividade do Cache Comprimido. Também foi mostrado que um \textit{daemon} foi implementado para configurar o CC e a área de swap virtual afim de obter um uso mais eficiente da memória total do sistema.
 
 
 \chapter{Conclusão e Trabalhos Futuros}
-
+Neste Capítulo são apresentados algumas ideias para trabalhos futuros envolvendo o Cache Comprimido e a adaptatividade. Também é apresentada a conclusão deste trabalho de mestrado.
 
 \section{Trabalhos Futuros}
+Quanto ao Cache Comprimido, existem alguns pontos, apresentados em \cite{ccache09} de melhorias e implementação de novas características:
+
+\begin{itemize}
+ \item \textit{Swap free notification}: hoje, o swap virtual (ramzswap) não possui um mecanismo que libere as páginas que não são mais necessárias, como páginas de processos que foram finalizados.
+ \item Implementar uma heurística que também contemple uma área de swap real, ou seja, quando o CC estiver sem capacidade de armazenas mais páginas, redirecioná-las para um swap real. No caso de sistemas embarcados essa pode não ser uma solução ótima pois esses sistemas geralmente são \textit{swapless} (sem área de swap real).
+\end{itemize}
+
+No daemon implementado com a adaptatividade, o SOM representando a rede neural treinada é carregado para cada perfil adotado. Isso é um problema se tivermos muitos perfis ou se usarmos uma rede neural com uma grade maior de neurônios (a grade atual tem tamanho $40 x 40$). O ideal seria ter um SOM para a rede neural treinada que conseguisse identificar os vários perfis adotados.\\
+
+Uma característica ao daemon que pode ser implementada é a identificação dos perfis em um tempo menor. Assim o tempo de reação do daemon ao consumo de memória pode ser menor, evitando casos em que a memória atinja um nível mínimo entre uma leitura e outra. Hoje o tempo mínimo para identificar um perfil é de $25$ segundos, que é o tempo gasto para coletar as informações de memória livre. Esse tempo não está levando em conta o tempo de processamento para achar o BMU.
 
 \section{Conclusão}
-% \section{Utilização de SOM na adaptatividade do Cache Comprimido}
-% Como proposto nesta dissertação, a utilização da ferramenta desenvolvida em \cite{Alecrim:07} e \cite{Mlin:06}, é bastante útil na implementação da adaptatividade do CC. Utilizando os mapas gerados pela análise de cada aplicação, pode-se avaliar em quais momentos é necessário que o tamanho do CC seja alterado afim de suprir a necessidade de memória livre do sistema.\\
-% 
-% Com a criação de um mapa com casos de uso que simulem a utilização do sistema por um usuário final, é possível determinar quais são as áreas mais acessadas por determinadas aplicações. Nesse caso, é possível verificar qual é o comportamento de consumo de memória para um determinado caso de uso e assim, tomar medidas para que não falte memória. Essas medidas podem ser o aumento ou diminuição do tamanho do CC, a mudança para um algoritmo de compressão mais eficaz (porém mais lento), etc. A tripla $<$memória, vcm, tvcm$>$, pode ser utilizada para "prever" o consumo de memória baseado no consumo anterior e no perfil (mapa) da aplicação analisada. O parâmetro "tvcm" é especialmente importante pois pode ser utilizado como a "velocidade" que uma aplicação aloca mais memória. Muito útil para evitar que situações que o OOM \textit{killer} seja invocado.
+Como proposto nesta dissertação, a utilização da ferramenta desenvolvida em \cite{Alecrim:07} e \cite{Mlin:06}, é bastante útil na implementação da adaptatividade do CC. Utilizando os mapas gerados pela análise de cada aplicação, pode-se avaliar em quais momentos é necessário que o tamanho do CC seja alterado afim de suprir a necessidade de memória livre do sistema.\\
+ 
+Com a criação de um mapa com casos de uso que simulem a utilização do sistema por um usuário final, é possível determinar quais são as áreas mais acessadas por determinadas aplicações. Nesse caso, é possível verificar qual é o comportamento de consumo de memória para um determinado caso de uso e assim, tomar medidas para que não falte memória. Essas medidas podem ser o aumento ou diminuição do tamanho do CC, a mudança para um algoritmo de compressão mais eficaz (porém mais lento), etc. A tripla $<$memória, vcm, tvcm$>$, pode ser utilizada para "prever" o consumo de memória baseado no consumo anterior e no perfil (mapa) da aplicação analisada. O parâmetro "tvcm" é especialmente importante pois pode ser utilizado como a "velocidade" que uma aplicação aloca mais memória. Muito útil para evitar que situações que o OOM \textit{killer} seja invocado.\\
+
+A heurística utilizando SOM's e redes neurais, proposta para implementar a adaptatividade ao Cache Comprimido mostrou-se eficiente, aumentando a quantidade média de memória livre ao longo de um alto consumo.
 
 %\chapter{Conclusão}
 %\section{Conclusão}
