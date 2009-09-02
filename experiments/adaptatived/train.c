@@ -448,7 +448,10 @@ struct som_node * get_bmu_xy (struct som_node * grids[][GRIDS_YSIZE],
 			      unsigned int * new_rss,
 			      unsigned int * current_rss,
 			      int * veloc,
-			      int * accel) {
+			      int * accel,
+			      int mem_max, int mem_min,
+			      int veloc_max, int veloc_min,
+			      int acel_max, int acel_min) {
 	int temp_veloc;
 	struct input_pattern * neural_input = NULL;
 	struct som_node * bmu = NULL;
@@ -463,14 +466,14 @@ struct som_node * get_bmu_xy (struct som_node * grids[][GRIDS_YSIZE],
 		malloc(sizeof(struct input_pattern));
 
 	neural_input->weights[0] = normalize((double)*current_rss,
-					     MEM_MAX,
-					     MEM_MIN);
+					     mem_max,
+					     mem_min);
 	neural_input->weights[1] = normalize((double)*veloc, 
-					     VELOC_MAX, 
-					     VELOC_MIN);
+					     veloc_max, 
+					     veloc_min);
 	neural_input->weights[2] = normalize((double)*accel, 
-					     ACEL_MAX, 
-					     ACEL_MIN);
+					     acel_max, 
+					     acel_min);
 
 	/* Get the BMU */
 	bmu = get_bmu(neural_input->weights, WEIGHTS_SIZE, grids);

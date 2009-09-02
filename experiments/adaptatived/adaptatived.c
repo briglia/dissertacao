@@ -9,11 +9,45 @@
 #include "util.h"
 #include "ui.h"
 
+/* Files directories */
+#define NO_CC_DIR "no-cc/"
+#define WITH_CC_DIR "with-cc/"
+#define CC_TUN_DIR "cc-tun/"
+
+/* This variable saves the latest dir */
+char *current_dir;
+
+/* Memory behavior profiles:
+ * These profiles are the same presented in dissertation
+ * text. ALPHA: CC is off. BETA: CC is on with 10MB of size. GAMA: CC is on
+ * and swappiness = 60 and min_free_kbytes = 2048
+ */
+#define ALPHA_PROFILE	1
+#define BETA_PROFILE	2
+#define GAMA_PROFILE	3
+
+/* This variable saves the latest configured profile */
+int current_profile = 0;
+int previous_profile = 0;
+
+/* Boundaries for get_bmu_xy(). These values are different according to
+ * running profile.
+ */
+int mem_max = 0;
+int mem_min = 0;
+int veloc_max = 0;
+int veloc_min = 0;
+int acel_max = 0;
+int acel_min = 0;
+
 /* Max reads from /proc/meminfo */
-#define MAX_INPUTS 90
+#define MAX_INPUTS 25
 
 /* Total memory in kilobytes */
 #define MEM 131072
+
+/* Minimal free kilobytes before turn-off CC */
+#define MIN_FREE_KB 2048
 
 /* Array used for memFree reads */
 int mem_free_array[MAX_INPUTS];
@@ -21,7 +55,7 @@ int mem_free_array[MAX_INPUTS];
 extern struct som_node * get_bmu_xy(struct som_node* [][GRIDS_YSIZE],
 		unsigned int*,
 		unsigned int*,
-		int*, int*);
+		int*, int*, int, int, int, int, int, int);
 
 /* freq tables */
 int freq_browser[GRIDS_XSIZE][GRIDS_YSIZE];
@@ -38,6 +72,35 @@ void init_freq_tables() {
 			freq_pdf[i][j] = 0;
 		}
 	}
+}
+
+/* Read memory, velocity and acceleration values from file. These values
+ * varies according to profile used.
+ */
+void read_max_min_values(char filename[]) {
+	FILE *fp;
+	char buffer[2048];
+	ssize_t bytes_read;
+	size_t len = 0;
+	char * line = NULL;
+
+	fp = fopen(filename, "r");
+
+	if (fp == NULL) {
+		printf("Error opening freq log file\n");
+		return;
+	}
+
+	while((bytes_read = getline(&line, &len, fp)) != -1) {
+		sscanf(line, "%d %d %d %d %d %d", &mem_max, &mem_min,
+				&veloc_max, &veloc_min, &acel_max, &acel_min);
+	}
+
+	if (line)
+		free(line);
+	if (fclose(fp))
+		printf("Error closing file\n");
+
 }
 
 /* This method parses /proc/meminfo file and returns memfree - MEM
@@ -138,7 +201,7 @@ struct rss_list * read_mem_free_log() {
 
 /* Finds the factor (pdf, browser or canola) according to mem_free_array
  * input, trained neural network som and frequency tables */
-int magic() {
+int calculate_profile() {
 	struct rss_list *head = NULL;
 	struct rss_list *iterator = NULL;
 	int x, i, j;
@@ -169,7 +232,10 @@ int magic() {
 				&new_rss,
 				&current_rss,
 				&veloc,
-				&accel);
+				&accel,
+				mem_max, mem_min,
+				veloc_max, veloc_min,
+				acel_max, acel_min);
 		i = bmu->xp;
 		j = bmu->yp;
 
@@ -181,42 +247,80 @@ int magic() {
 			canola_factor = canola_factor + freq_canola[i][j];
 		}
 	}
-	printf("PDF factor: %d\n", pdf_factor);
-	printf("Browser factor: %d\n", browser_factor);
-	printf("Canola factor: %d\n", canola_factor);
+
+	if ((pdf_factor > browser_factor) && (pdf_factor >
+				canola_factor)) {
+		return ALPHA_PROFILE;
+	} else if (browser_factor > canola_factor)
+		return GAMA_PROFILE;
+	else
+		return BETA_PROFILE;
 }
 
 int main()
 {
-	int i;
-	int j;
+	/* Starts profile as ALPHA_PROFILE: CC is not configured */
+	current_profile = ALPHA_PROFILE;
 
-	/* Save trained som in grids struct */
-	read_trained_som("saved_som.txt", grids);
-
-	init_freq_tables();
-
-	read_freq_log("freq-pdf.log", freq_pdf);
-	read_freq_log("freq-browser.log", freq_browser);
-	read_freq_log("freq-canola.log", freq_canola);
-
-	magic();
-
-	//read_freq_log("freq-pdf.log");
-/*
-	for (i = 0; i < 40; i++) {
-		for (j = 0; j < 40; j++) {
-			printf("%d ", freq_pdf[i][j]);
-		}
-		printf("\n");
-	}
-
-	i = 0;
 	do {
-		mem_free_array[i] = get_memfree();
-		sleep(timeout);
-		i++;
-	} while(i<MAX_INPUTS); */
+		if (current_profile != previous_profile) {
+			if (current_profile == ALPHA_PROFILE) {
+				printf("ALPHA PROFILE\n");
+				system("sh unuse_compcache.sh");
+
+				previous_profile = ALPHA_PROFILE;
+
+				/* Save trained som in grids struct */
+				read_trained_som(NO_CC_DIR"saved_som.txt", grids);
+
+				init_freq_tables();
+
+				read_freq_log(NO_CC_DIR"freq-pdf.log", freq_pdf);
+				read_freq_log(NO_CC_DIR"freq-browser.log", freq_browser);
+				read_freq_log(NO_CC_DIR"freq-canola.log", freq_canola);
+
+				read_max_min_values(NO_CC_DIR"max_min_values.txt");
+			} else if (current_profile == BETA_PROFILE) {
+				printf("BETA PROFILE\n");
+				system("sh unuse_compcache.sh");
+				system("sh use_compcache.sh 5120");
+
+				previous_profile = BETA_PROFILE;
+
+				/* Save trained som in grids struct */
+				read_trained_som(WITH_CC_DIR"saved_som.txt", grids);
+
+				init_freq_tables();
+
+				read_freq_log(WITH_CC_DIR"freq-pdf.log", freq_pdf);
+				read_freq_log(WITH_CC_DIR"freq-browser.log", freq_browser);
+				read_freq_log(WITH_CC_DIR"freq-canola.log", freq_canola);
+
+				read_max_min_values(WITH_CC_DIR"max_min_values.txt");
+			} else if (current_profile == GAMA_PROFILE) {
+				printf("GAMA PROFILE\n");
+				system("sh unuse_compcache.sh");
+				system("sh use_compcache.sh 10240");
+				system("echo 60 > /proc/sys/vm/swappiness");
+
+				previous_profile = GAMA_PROFILE;
+
+				/* Save trained som in grids struct */
+				read_trained_som(WITH_CC_DIR"saved_som.txt", grids);
+
+				init_freq_tables();
+
+				read_freq_log(WITH_CC_DIR"freq-pdf.log", freq_pdf);
+				read_freq_log(WITH_CC_DIR"freq-browser.log", freq_browser);
+				read_freq_log(WITH_CC_DIR"freq-canola.log", freq_canola);
+
+				read_max_min_values(WITH_CC_DIR"max_min_values.txt");
+
+			}
+		}
+
+		current_profile = calculate_profile();
+	} while(1);
 
 	return 0;
 }
