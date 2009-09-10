@@ -1,8 +1,9 @@
 set terminal postscript
-set output "canola.ps"
+set output "mem-consumption.ps"
 set grid
-set title "Canola - Consumo do Swap: CC x CC-Tun (swappiness = 60)"
+set title "Consumo de memoria das aplicacoes sem CC"
 set xlabel "Time (s)"
-set ylabel "SwapFree (KB)"
-plot "com-cc/canola.log" using 1:3 with lines lw 2 title "SwapFree: CC default", \
-"com-cc-tun/canola.log" using 1:3 with lines lw 2 title "SwapFree: CC-Tun"
+set ylabel "MemFree (KB)"
+plot "sem-cc/canola.log" using 1:2 with lines lw 2 title "Canola", \
+"sem-cc/browser.log" using 1:2 with lines lw 2 title "Browser", \
+"sem-cc/pdf.log" using 1:2 with lines lw 2 title "PDF"

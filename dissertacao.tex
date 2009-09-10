@@ -97,7 +97,7 @@ Por último, e não menos importante, um outro ponto de destaque da motivação dest
 \section{Objetivos}
 \label{sec:objetivos}
 
-O propósito principal deste trabalho é desenvolver um sistema de memória comprimida, utilizando como base a implementação \textit{Open Source} encontrada em \cite{ccache09}, e que implemente o conceito de adaptatividade do tamanho do CC, baseado em perfis de consumo de memória das aplicações, definidos utilizando uma rede neural e SOM's (mapas auto-organizáveis).\\
+O propósito principal deste trabalho é desenvolver um sistema de memória comprimida, utilizando como base a implementação \textit{Open Source} encontrada em \cite{ccache09}, e que implemente o conceito de adaptatividade do tamanho do CC, baseado em perfis de consumo de memória das aplicações, definidos utilizando uma rede neural e SOMs (mapas auto-organizáveis).\\
 
 Experimentos realizados em trabalhos anteriores \cite{briglia07, castro03}, indicaram que o tamanho da área comprimida de memória afeta o desempenho do sistema. Espera-se que, seja possível classificar o uso da memória, como mostrado em \cite{Mlin:06} e utilizar esses dados na heurística de como a área de cache comprimido deve ser dimensionada. A implementação deste trabalho não possui dependências de arquitetura, apesar de ser focada em Linux embarcado para arquitetura ARM (\textit{Advanced RISC Machine}).\\
 
@@ -185,7 +185,7 @@ Para a validação da implementação são utilizados dois tipos de testes preliminar
 % \item Avaliação dos testes com SOM - Verificar os perfis de consumo de memória coletados no item anterior.
 % \item Implementação do CC com adaptatividade - Implementação de modificações na versão atual do CC para a utilização de adaptatividade.
 % \item Integração SOM e CC - Implementação de uma ferramenta que avalie os mapas resultantes da avaliação dos vários perfis de memória, e o Cache Comprimido. A idéia é utilizar a saída dessa ferramenta como entrada para a heurística de adaptatividade do CC.
-% \item Testes Finais - Testes com a versão do CC com adaptatividade utilizando SOM's.
+% \item Testes Finais - Testes com a versão do CC com adaptatividade utilizando SOMs.
 % \item Confecção da dissertação - Escrita da dissertação de mestrado.
 % \item Revisão Final - Revisão da implementação e da dissertação.
 % \end{enumerate}
@@ -295,7 +295,7 @@ Os primeiros estudos que utilizavam cache comprimido para reduzir a paginação em
 
 Tendo o trabalho de Douglis ser inconclusivo, muitos outros pesquisadores se ocuparam em estudar o caso. Em 1999, Kaplan\cite{kaplan99compressed} chegou à conclusão que a compressão do cache pode reduzir os custos das operações de \textit{paging}\footnote{São operações de E/S no \textit{Page Cache}\cite{love05kerneldevel}. Este cache é utilizado para reduzir o número de E/S dos discos, aumentando assim a performance. Páginas do \textit{Page Cache} estão na memória RAM.}. Kaplan ainda confirmou o que Douglis\cite{douglis93} verificou anteriormente: cache comprimido estático beneficia menos do que um cache comprimido com adaptatividade. Alguns trabalhos correlatos também foram desenvolvidos em 1999. Como apresentado em \cite{swapcc99}, não se trata especificamente da memória cache comprimida, mas sim da compressão da área de \textit{swap} do sistema. Neste trabalho é apresentada uma versão de compressão da memória voltada às páginas que podem ser selecionadas para o \textit{swap}, salvando algum espaço no disco e diminuindo as operações de E/S no \textit{swap}. Testes concluíram que a compressão da área de \textit{swap} pode aumentar a velocidade das aplicações em 20\%. Outros trabalhos também apontaram ganhos na performance de aplicações, como apresentado em \cite{irina05}, no quais a compressão da memória melhorou a performance de aplicações reais, com índices de 1.3 a 55. Nos testes com \textit{benchmarks} e algumas aplicações de simulação, como o NS2 (\textit{Network Simulator}), foi verificado que um nível de memória comprimida adicionada ao sistema garante que aplicações que necessitem de um \textit{working set} maior que a memória física disponível, possam ser executadas.\\
 
-Um dos últimos trabalhos sobre Cache Comprimido foi implementado por Rodrigo Castro \cite{castro03-2, castro03}. Utilizando a versão 2.4.x do Linux \textit{kernel}, vários testes foram realizados, com adaptatividade e sem. Os resultados mostraram que os ganhos são maiores quando existe alguma heurística de adaptatividade presente no CC. Como dito anteriormente, um dos objetivos deste trabalho também é propor uma heurística de adaptatividade para o CC. Porém, pretende-se usar um método mais científico e menos empírico. Através dos SOM's e da classificação de padrões de consumo de memória proposta em \cite{Mlin:06}, espera-se traçar um ``perfil'' de consumo de cada aplicação e usá-lo para definir uma heurística de adaptatividade do CC.\\
+Um dos últimos trabalhos sobre Cache Comprimido foi implementado por Rodrigo Castro \cite{castro03-2, castro03}. Utilizando a versão 2.4.x do Linux \textit{kernel}, vários testes foram realizados, com adaptatividade e sem. Os resultados mostraram que os ganhos são maiores quando existe alguma heurística de adaptatividade presente no CC. Como dito anteriormente, um dos objetivos deste trabalho também é propor uma heurística de adaptatividade para o CC. Porém, pretende-se usar um método mais científico e menos empírico. Através dos SOMs e da classificação de padrões de consumo de memória proposta em \cite{Mlin:06}, espera-se traçar um ``perfil'' de consumo de cada aplicação e usá-lo para definir uma heurística de adaptatividade do CC.\\
 
 A maioria dos trabalhos discutidos anteriormente, são anteriores às versões mais novas do \textit{kernel} do Linux. Daquela época para os dias atuais, o \textit{kernel} sofreu muitas melhorias e o esquema utilizado para o CC na versão usada nesse trabalho é diferente. Assim faz-se necessário um \textit{overview} da versão do Cache Comprimido usada neste trabalho, implementada por Nitin Gupta \cite{briglia07, ccache09}.
 
@@ -453,14 +453,14 @@ O principal objetivo dos testes realizados nessa seção é classificar e identific
 As aplicações escolhidas para os testes foram: um navegador de Internet ou \textit{browser}, um \textit{media player} chamado Canola e um programa para ler arquivos no formato PDF. O ambiente de testes é um dispositivo com Linux embarcado e 128MB de memória RAM total. Para realizar as coletas em diferentes situações e ter um comparativo, foram ainda definidos três cenários:
 
 \begin{itemize}
- \item Cenário alpha: Cache Comprimido desligado e kernel sem área de swap.
- \item Cenário beta: Cache Comprimido ligado e configurado com área de swap virtual aproximadamente igual a 10 MB.
- \item Cenário gama: Cache Comprimido ligado, configurado com área de swap virtual aproximadamente igual a 10 MB e com \textit{swap balance} igual a 60.
+ \item Cenário Alpha: Cache Comprimido desligado e kernel sem área de swap.
+ \item Cenário Beta: Cache Comprimido ligado e configurado com área de swap virtual aproximadamente igual a 10 MB.
+ \item Cenário Gama: Cache Comprimido ligado, configurado com área de swap virtual aproximadamente igual a 10 MB e com \textit{swap balance} igual a 60.
 \end{itemize}
 
 Os cenários servem para identificar em quais situações é bom ter um CC configurado ou não, ou ainda qual o impacto de inserir uma área de swap na memória e comprimir as páginas. Também servem para dar um panorama e ajudar na definição de uma heurística boa para implementar a adaptatividade do CC, um dos objetivos desse trabalho.\\
 
-Para padronizar os testes e simular a mesma situação nos três cenários dados, foram desenvolvidos programas para automatizar a interação com as aplicações utilizadas nos testes. O XAutomation \cite{xauto07}, é um utilitário para Linux que serve para interagir com o sistema gráfico do sistema, fazendo o papel dos cliques de mouse, por exemplo. Assim é possível automatizar a abertura de páginas da Internet nos testes envolvendo o \textit{browser}, automatizar também a interação com o Canola e o visualizador de PDF's. O código-fonte dos programas escritos para automatizar os tests pode ser encontrado no Anexo XXX.
+Para padronizar os testes e simular a mesma situação nos três cenários dados, foram desenvolvidos programas para automatizar a interação com as aplicações utilizadas nos testes. O XAutomation \cite{xauto07}, é um utilitário para Linux que serve para interagir com o sistema gráfico do sistema, fazendo o papel dos cliques de mouse, por exemplo. Assim é possível automatizar a abertura de páginas da Internet nos testes envolvendo o \textit{browser}, automatizar também a interação com o Canola e o visualizador de PDF's.
 
 \subsubsection{Resultados dos testes}
 
@@ -486,7 +486,7 @@ Os experimentos, como dito anteriormente, foram divididos em três cenários: Alph
  \label{fig:mem-behavior-browser-alpha-gama}
 \end{figure}
 
-A memória livre no segundo teste é maior pois mais páginas de memória são enviadas mais cedo para a área de swap, nesse caso, o \textit{ramzswap} do Cache Comprimido. Isso acontece pois o \textit{kernel} foi configurado com \textit{swappiness} $= 60$, e no gráfico anterior, esse valor era $0$. A tabela XXX mostra estatísticas lidas do Cache Comprimido, comparando o cenário com \textit{swappiness} $= 0$ e o outro com \textit{swappiness} $= 60$.\\
+A memória livre no segundo teste é maior pois mais páginas de memória são enviadas mais cedo para a área de swap, nesse caso, o \textit{ramzswap} do Cache Comprimido. Isso acontece pois o \textit{kernel} foi configurado com \textit{swappiness} $= 60$, e no gráfico anterior, esse valor era $0$. A Tabela \ref{tab:browser-compcache} mostra estatísticas lidas do Cache Comprimido, comparando o cenário com \textit{swappiness} $= 0$ e o outro com \textit{swappiness} $= 60$.\\
 
 \begin{table}[h]
 \begin{tabular}{|c|p{3cm}|p{3cm}|p{3cm}|p{3cm}|}
@@ -567,9 +567,9 @@ Com esses dados, podemos ainda concluir que o CC traz mais benefícios para o sis
 \subsection{Testes com o Mibench}
 \label{sec:mibench}
 
-MiBench \ref{GRE01} é um conjunto de \textit{benchmarks} sintéticos que simulam vários tipos de operações afim de testar a performance de uma arquitetura ou de um sistema embarcado.\\
+MiBench \cite{GRE01} é um conjunto de \textit{benchmarks} sintéticos que simulam vários tipos de operações afim de testar a performance de uma arquitetura ou de um sistema embarcado.\\
 
-A principal diferença do MiBench para os outros \textit{benchmarks} para sistemas embarcados é que o primeiro é composto por programas que possuem o código aberto, ou seja, são \textit{Open Source}. Uma outra diferença é que o MiBench é dividido em vários pacotes \ref{GRE01}, ou módulos, divididos de acordo com o tipo de benchmark que deseja-se realizar, como mostrado a seguir:
+A principal diferença do MiBench para os outros \textit{benchmarks} para sistemas embarcados é que o primeiro é composto por programas que possuem o código aberto, ou seja, são \textit{Open Source}. Uma outra diferença é que o MiBench é dividido em vários pacotes \cite{GRE01}, ou módulos, divididos de acordo com o tipo de benchmark que deseja-se realizar, como mostrado a seguir:
 
 \begin{itemize}
  \item \textit{Automotive and Industrial Control}: possui programas que visam a avaliação de microprocessadores dedicados ao controle de sistemas. Os programas usados nessa categoria avaliam as operações matemáticas, contagem de bits, ordenação e processamento de imagens.
@@ -657,9 +657,9 @@ Um outro dado, não menos importante, é que o overhead de comprimir e descomprimi
 
 
 
-\chapter{Redes Neurais e Mapas Auto-organizáveis}
+\chapter{Redes Neurais e Mapas Auto-organizáveis no Cache Comprimido}
 
-Este capítulo apresenta o esquema de classificação de padrões de consumo de memória desenvolvido em \cite{Mlin:06} e como essa metodologia poderá ajudar na implementação da adaptatividade do tamanho do Cache Comprimido proposto neste trabalho.
+Este capítulo apresenta uma introdução sobre redes neurais e mapas auto-organizáveis. Também apresenta como funciona o método de classificação de consumo de memória proposto em \cite{Mlin:06}, e utilizado neste trabalho nos testes com o Cache Comprimido.
 
 \section{Redes Neurais Artificiais}
 \label{sec:redes_artificiais}
@@ -676,7 +676,7 @@ Uma rede neural artificial consiste em \cite{Ben93}:
  \item Uma função de ativação, que determina o novo nível de ativação baseada na entrada efetiva e no nível corrente de ativação.
  \item Um conjunto de dados externos ou amostra para a entrada de dados de cada unidade de processamento.
  \item Uma regra de aprendizagem.
- \item Um ambiente o qual o sistema deve operar, ou seja, onde a rede neural deve ser inserida. Esse ambiente deve prover os dados de entrada, sinais e códigos de erros se necessário.
+ \item Um ambiente onde a rede neural deve ser inserida. Esse ambiente deve prover os dados de entrada, sinais e códigos de erros se necessário. Geralmente esse ambiente é o sistema operacional ou um sistema de simulação.
 \end{itemize}
 
 
@@ -691,26 +691,26 @@ Independente do tipo de aprendizagem ou treinamento selecionado, toda rede é ali
 
 \begin{enumerate}
 	\item O primeiro padrão de entrada é apresentado para a rede.
-	\item Os pesos são ajustados para capacitar a rede de reconhecer o padrão fornecido.
+	\item Os pesos são ajustados para capacitar a rede e reconhecer o padrão fornecido.
 	\item O segundo padrão de entrada é apresentado para a rede e a etapa 2 é efetuada novamente.
 	\item O mesmo é aplicado para todos os outros padrões.
 	\item O procedimento de 1 até 4 é executado novamente centenas ou milhares de vezes até encontrar uma configuração de pesos sinápticos capaz de reconhecer todos os padrões fornecidos no treinamento.
 \end{enumerate}
 
-Este trabalho utiliza-se de uma rede neural para encontrar padrões de consumo de memória. No trabalho encontrado em \cite{Mlin:06}, pode-se verificar que é possível identificar padrões referentes à quantidade de páginas de memória que são requisitadas ao \textit{kernel} do Linux.\\
+Este trabalho utiliza-se de uma rede neural com treinamento não-supervisionado para encontrar padrões de consumo de memória. No trabalho encontrado em \cite{Mlin:06}, pode-se verificar que é possível identificar padrões referentes à quantidade de páginas de memória que são requisitadas ao \textit{kernel} do Linux.\\
 
 Como cada página de memória é atômica, ou seja, está ou não está completamente ocupada, é possível gerar amostras de entrada para a rede neural com base na velocidade que as páginas são requisitadas ou ocupadas. Cada programa requisita memória de acordo com o seu fluxo de execução e é com base nessa caracaterística que foi comprovado que é possível classificar o consumo de memória \cite{Mlin:06}.\\
 
 Após encontrados os perfis de consumo de memória das aplicações testadas nos casos de uso, espera-se adaptar o uso do Cache Comprimido de acordo com o comportamento das mesmas. Para aplicações que requisitam mais memória, o Cache Comprimido deve ser um pouco maior, esperando aumentar a capacidade de armazenamento das páginas de memória. Para aplicações que possuem um consumo menor, o Cache Comprimido pode até ser descartado. Porém, não podemos esquecer de uma importante variável: a velocidade de consumo da memória.\\
 
-Como visto na seção de testes deste trabalho, aplicações que requisitam memória muito rapidamente, podem levar o sistema à falta de memória, mesmo que o Cache Comprimido esteja ativo. Para evitar isso, é necessário que se identifique esse perfil antes mesmo que a memória seja requisitada, preparando assim o Cache Comprimido.
+Como visto na seção de testes inciais deste trabalho (ver detalhes capítulo 2), aplicações que requisitam memória muito rapidamente, podem levar o sistema à falta de memória, mesmo que o Cache Comprimido esteja ativo. Para evitar isso, é necessário que se identifique esse perfil antes mesmo que a memória seja requisitada, de forma adequada para otimizar o consumo de memória de uma aplicação.
 
-\subsection{Mapas Auto-Organizáveis}
+\section{Mapas Auto-Organizáveis}
 \label{sec:som}
 
 \textit{Mapas Auto-Organizáveis} ou simplesmente \textit{SOM (do inglês Self Organizing Maps)} é uma rede neural artificial auto-organizável, de aprendizagem não supervisionada, baseada em grades de neurônios artificiais onde os pesos são adaptados em conformidade com os vetores de entrada fornecidos durante o treinamento. Foi desenvolvido pelo professor Teuvo Kohonen e às vezes é chamado de mapa de Kohonen \cite{Junkie, Borgelt:00, Germano:99, Honkela:98, Koh88}.\\
 
-Os SOMs são um tipo de rede neural um pouco diferente pois utilizam a distância topológica entre os neurônios como parâmetro de entrada do sistema de aprendizagem. Os SOMs são muito utilizados para fazer mapas em que os padrões podem ser visualizados, ou seja, características semelhantes dos dados de entrada (ou amostra), são agrupados topologicamente próximos. Portanto um SOM é caracterizado pela formação de um mapa topográfico dos padrões de entrada, baseado nas características estatísticas intrínsecas contidas nesses dados, por isso o nome \textit{mapa auto-organizável} \cite{Haykin:99}.
+Os SOMs são um tipo de rede neural um pouco diferente pois utilizam a distância topológica entre os neurônios como parâmetro de entrada do sistema de aprendizagem. Os SOMs são muito utilizados para fazer mapas em que os padrões podem ser visualizados, ou seja, características semelhantes dos dados de entrada (ou amostra), são agrupados topologicamente próximos. Portanto um SOM é caracterizado pela formação de um mapa topográfico dos padrões de entrada, baseado nas características estatísticas intrínsecas contidas nesses dados, por isso o nome \textit{mapa auto-organizável} \cite{Haykin:99}.\\
 
 \begin{figure}[htbp]
 	\centering
@@ -719,7 +719,7 @@ Os SOMs são um tipo de rede neural um pouco diferente pois utilizam a distância 
 	\label{fig:training}
 \end{figure}
 
-Em \cite{Mlin:06} e \cite{Alecrim:07} é usado um exemplo comum de SOM que utiliza um mapeamento de cores a partir de seus 3 componentes: vermelho, verde e azul ou RGB (\textit{red, green and blue}) em um espaço bidimensional. Na Figura \ref{fig:training}, pode-se ver um exemplo de SOM que ainda não foi treinado. Já a Figura \ref{fig:som_demo} ilustra um exemplo de SOM treinado para reconhecer padrões de cores RGB. As cores são fornecidas para a rede como vetores de 3 dimensões, uma dimensão para cada componente de cor, e a rede foi treinada para representá-los em um espaço de 2 dimensões. Observe que além do agrupamento de cores em regiões distintas, as regiões de propriedades similares estão localizadas de forma adjacente \cite{Mlin:06}.
+Em \cite{Mlin:06} e \cite{Alecrim:07} foi usado um exemplo comum de SOM que utiliza um mapeamento de cores a partir de seus 3 componentes: vermelho, verde e azul ou RGB (do inglês \textit{red, green and blue}) em um espaço bidimensional. Na Figura \ref{fig:training}, pode-se ver um exemplo de SOM que ainda não foi treinado. Já a Figura \ref{fig:som_demo} ilustra um exemplo de SOM treinado para reconhecer padrões de cores RGB. As cores são fornecidas para a rede como vetores de 3 dimensões, uma dimensão para cada componente de cor, e a rede foi treinada para representá-los em um espaço de 2 dimensões. Observe que além do agrupamento de cores em regiões distintas, as regiões de propriedades similares estão localizadas de forma adjacente \cite{Mlin:06}.\\
 
 \begin{figure}[htbp]
 	\centering
@@ -748,33 +748,34 @@ dist_{j} = \sqrt{\sum_{i=1}^n (x_{i}-w_{i})^2}
 \label{eq:euclidean}
 \end{equation}
 
-Os pesos sinápticos dos neurônios são ajustados de acordo com o BMU a cada iteração do treinamento. No decorrer do treinamento, o raio de ação do BMU diminui, modificando menos neurônios vizinhos e especializando ainda mais as áreas com relação aos padrões de entrada da amostra.
+Os pesos sinápticos dos neurônios são ajustados de acordo com o BMU a cada iteração do treinamento. No decorrer do treinamento, o raio de ação do BMU diminui, modificando menos neurônios vizinhos e especializando ainda mais as áreas com relação aos padrões de entrada da amostra.\\
 
-\subsection{Método de classificação de consumo de memória baseado em Mapas auto-organizáveis}
+Os algoritmos usados para a inicialização dos pesos sinápticos, cálculo para achar o BMU e o cálculo da distância euclidiana são os mesmos que foram usados em \cite{Mlin:06} e estão presentes no Apêndice A.
+
+\section{Método de classificação de consumo de memória baseado em SOMs}
 \label{sec:classe_rede}
 
-Ainda baseado em \cite{Mlin:06}, essa seç\~{a}o mostra um pouco dos testes realizados afim de classificar padrões de consumo de memória utilizando um SOM.
-Os testes consistem em executar casos de uso de aplicações afim de realizar algumas medições do consumo de memória das aplicações envolvidas. Os casos de uso foram executados no sistema operacional Linux e seguindo a metodologia apresentada na seção \ref{sec:metodologia}.\\
+Ainda baseado em \cite{Mlin:06}, essa seç\~{a}o mostra como os SOMs podem ser utilizados para classificar o consumo de memória e também como é feita a coleta dos dados de entrada para o treinamento das redes neurais e conseguinte geração dos SOMs.\\
 
-Como utilizado nos trabalhos \cite{Mlin:06} e \cite{Alecrim:07}, o algoritmo de treinamento da rede espera dados referentes ao consumo de memória de uma determinada aplicação.\\
+As coletas consistem em executar casos de uso de aplicações (Browser, Canola e PDF viewer), afim de realizar algumas medições do consumo de memória das mesmas. Os casos de uso foram executados no sistema operacional Linux e seguindo a metodologia apresentada na seção \ref{sec:metodologia}.\\
 
-Neste trabalho a abordagem foi um pouco diferente. Em \cite{Alecrim:07}, já se tinham as aplicações e foi feito um mapa para cada uma delas. Aqui o SOM é utilizado para identificar qual padrão de consumo pertence à qual aplicação, afim de saber de antemão que decisão tomar em relação ao Cache Comprimido.\\
+Como utilizado nos trabalhos \cite{Mlin:06} e \cite{Alecrim:07}, o algoritmo de treinamento da rede espera dados referentes ao consumo de memória de uma determinada aplicação. Ou seja, o programa de treinamento da rede neural espera um vetor com $x$ entradas, sendo $x$ o número de leituras da memória consumida ao longo do tempo.\\
 
-Assim, as amostras foram retiradas do consumo de memória total do sistema, e não somente de uma determinada aplicação. Um programa foi desenvolvido para coletar a memória total livre em intervalos de tempo constante.\\
+Para cada aplicação testada, foram feitas leituras durante um tempo $t$. Essas leituras formaram o vetor de entrada para treinamento da rede neural e geração do SOM. Assim, o SOM gerado indica o padrão de consumo de memória de todas as aplicações juntas. Cada aplicação ainda tem o seu próprio padrão, agora identificável pela rede neural e SOM gerado. Esse padrão é classificado de acordo com a metodologia desenvolvida em \cite{Mlin:06}.\\
 
 Lembrando que \cite{Mlin:06}:
 
 \begin{itemize}
-\item quantidade de páginas físicas alocadas que representa a \textit{quantidade de memória física consumida};
+\item \textit{memória} (mem) é a quantidade de páginas físicas alocadas que representa a \textit{quantidade de memória física consumida};
 
-\item \textit{variação do consumo de memória (VCM)} que é utilizada para indicar o ritmo em que o consumo de memória está aumentando ou diminuindo. Esta variação é calculada através da razão entre a diferença da quantidade de memória física consumida e o intervalo de tempo decorrido, conforme a Equação \ref{eq:velocidade};
+\item \textit{variação do consumo de memória (VCM)} que é utilizada para indicar o ritmo em que o consumo de memória está aumentando ou diminuindo. Esta variação é calculada usando a razão entre a diferença da quantidade de memória física consumida e o intervalo de tempo decorrido, conforme a Equação \ref{eq:velocidade};
 
 \begin{equation}
 VCM = \frac{mem_{2} - mem_{1}}{t_{2} - t_{1}}
 \label{eq:velocidade}
 \end{equation}
 
-\item \textit{taxa de variação do consumo de memória (TVCM)} que é utilizada para indicar o ritmo em que a variação de consumo de memória está aumentando ou diminuindo. Esta taxa é calculada através da razão entre a diferença da variação do consumo de memória e o intervalo de tempo decorrido, conforme a Equação \ref{eq:aceleracao}.
+\item \textit{taxa de variação do consumo de memória (TVCM)} que é utilizada para indicar o ritmo em que a variação de consumo de memória está aumentando ou diminuindo. Esta taxa é calculada usando a razão entre a diferença da variação do consumo de memória e o intervalo de tempo decorrido, conforme a Equação \ref{eq:aceleracao}.
 \end{itemize}
 
 \begin{equation}
@@ -786,9 +787,9 @@ Ainda como visto em \cite{Mlin:06}, essas três dimensões ainda possuem subinterv
 
 A quantidade de memória consumida está localizada em um desses subintervalos, assumindo um dos três estados $\{Low, Medium, High\}$ apresentados. Sendo assim a quantidade de memória consumida é classificada como \textit{baixo consumo} de memória quando o seu valor está no estado L, \textit{médio consumo} de memória quando o seu valor está no estado M e \textit{alto consumo} de memória quando localizado no estado H. A quantidade de memória consumida abrange somente valores inteiros positivos, visto que consumo de memória de valor negativo é logicamente inexistente no mundo real. A mesma analogia \'{e} utilizada para os valores de VCM e TVCM.\\
 
-A tripla $<$memória,vcm,tvcm$>$ pode ser mapeada facilmente para uma estrutura de dados que seja aceita algoritmo do SOM, que foi usado em \cite{Mlin:06}. Já que o SOM utiliza vetores tridimensionais como valores de entrada, a tripla pode facilmente ser calculada contendo cada valor como sendo uma dimens\~{a}o desse vetor.\\
+Assim, a tripla $<$memória,vcm,tvcm$>$ pode ser mapeada facilmente para uma estrutura de dados que seja aceita no algoritmo do SOM, que foi usado em \cite{Mlin:06}. Já que o SOM utiliza vetores tridimensionais como valores de entrada, a tripla pode facilmente ser utilizada, contendo cada valor como sendo uma dimens\~{a}o desse vetor.\\
 
-Cada vetor no espaço tridimensional é uma instância específica da tripla que é mapeado na grade de neurônios do SOM. Cada célula da grade de neurônios armazena então um vetor tridimensional do tipo [memória, vcm, tvcm], conforme a Figura \ref{fig:mapeia}.
+Cada vetor no espaço tridimensional é uma instância específica da tripla que é mapeado na grade de neurônios do SOM. Cada célula da grade de neurônios armazena então um vetor tridimensional do tipo $<$memória, vcm, tvcm$>$, conforme a Figura \ref{fig:mapeia}.\\
 
 \begin{figure}[htbp]
 	\centering
@@ -797,13 +798,10 @@ Cada vetor no espaço tridimensional é uma instância específica da tripla que é m
 	\label{fig:mapeia}
 \end{figure}
 
-A idéia de utilizar o mapa de neurônios auto-organizáveis é agrupar topologicamente as classes apresentadas de consumo de memória em áreas ou regiões distintas. Dessa forma, cada região representa uma configuração ou conjunto de configurações similares capaz de representar o estado do consumo de memória em um determinado instante.
-
-\chapter{Resultados Obtidos}
-Neste capítulo serão apresentados os resultados obtidos através dos experimentos realizados utilizando o Cache Comprimido e a classificação de padrões de consumo de memória.
+A idéia de utilizar o mapa de neurônios auto-organizáveis é agrupar topologicamente as classes apresentadas de consumo de memória em áreas ou regiões distintas. Dessa forma, cada região representa uma configuração ou conjunto de configurações similares capaz de representar o estado do consumo de memória de uma aplicação em um determinado instante.
 
 \section{Coleta dos dados}
-Como dito anteriormente, os dados coletados para a entrada da rede neural vieram de leituras constantes da memória livre do sistema. Casos de uso foram definidos com base nos mesmos casos apresentados na seção \ref{sec:mem_behavior}. Lá, foram utilizadas as seguintes aplicações: browser, media player e visualizador de arquivos no formato PDF.\\
+Como dito anteriormente, os dados coletados para a entrada da rede neural foram obtidos de leituras constantes da memória livre do sistema. Alguns casos de uso foram definidos com base nos mesmos casos apresentados na seção \ref{sec:mem_behavior}. Lá, foram utilizadas as seguintes aplicações: browser, media player e visualizador de arquivos no formato PDF.\\
 
 Todas as leituras foram realizadas no dispositivo móvel e foram desenvolvidos programas que automatizassem a coleta dos dados. Os passos para gerar as amostras foram os seguintes:
 
@@ -815,22 +813,21 @@ Todas as leituras foram realizadas no dispositivo móvel e foram desenvolvidos pr
 
 No final, temos 3 arquivos de log contendo a memória total livre durante a execução das 3 aplicações: browser, media player e visualizador de PDF's. Ainda foi adicionado mais um arquivo de log contendo a memória livre $\times$ tempo durante a execução dos 3 programas simultaneamente.\\
 
-Esse arquivos de log são concatenados e utilizados como dados de entrada para o treinamento da rede neural.
+Esses arquivos de log são concatenados e utilizados como dados de entrada para o treinamento da rede neural.
 
 \section{Treinando a rede neural e criando o SOM}
-Foram treinadas diferentes redes neurais e criados diferentes SOMs com o propósito de identificar os padrões de consumo de memória em diferentes situações. Para cada rede neural foram criados arquivos de logs com o consumo de memória dos aplicativos discutidos anteriormente.\\
-
-Como visto na seção de Testes de comportamento de consumo da memória, temos três cenários:
+\label{sec:treinando-redes}
+Foram treinadas diferentes redes neurais com seus SOMs respectivos. A idéia é treinar uma rede neural e gerar o SOM para cada cenário usado nos testes de comportamento de memória (ver seção \ref{sec:mem_behavior}):
 
 \begin{itemize}
- \item Cenário alpha: Cache Comprimido desligado e kernel sem área de swap.
- \item Cenário beta: Cache Comprimido ligado e configurado com área de swap virtual aproximadamente igual a 10 MB.
- \item Cenário gama: Cache Comprimido ligado, configurado com área de swap virtual aproximadamente igual a 10 MB e com \textit{swap balance} igual a 60.
+ \item Cenário Alpha: Cache Comprimido desligado e kernel sem área de swap.
+ \item Cenário Beta: Cache Comprimido ligado e configurado com área de swap virtual aproximadamente igual a 10 MB.
+ \item Cenário Gama: Cache Comprimido ligado, configurado com área de swap virtual aproximadamente igual a 10 MB e com \textit{swappiness} igual a 60.
 \end{itemize}
 
-Os cenários adotados são idênticos aos casos de uso utilizados nos testes de comportamento de memória, apresentados na seção \ref{sec:mem_behavior}. Desta forma podemos visualizar o comportamento do Cache Comprimido $\times$ áreas visitas do SOM.\\
+Para cada cenário apresentado foram realizadas medidas da memória consumida pelas aplicações durante a execução dos testes. Os testes seguem a mesma metodologia apresentada na seção \ref{sec:mem_behavior} e essas amostras fizeram parte do vetor de entrada para treinamento das redes e geração de cada SOM. No final do treinamento das redes, temos um SOM para o consumo de memória das aplicações quando são executadas no cenário Alpha, um SOM que representa o consumo de memória das aplicações para o cenário Beta e por último um SOM que representa o consumo da memória para o cenário Gama. Essas 3 redes neurais e seus respectivos SOMs são capazes de identificar o consumo de cada uma das aplicações utilizadas nos testes (Browser, Canola ou PDF viewer), de acordo com o cenário usado.\\
 
-Nas Figuras \ref{fig:som-trained}, \ref{fig:som-trained-cc}, \ref{fig:som-trained-cc-tun}, podemos visualizar que os mapas são levemente diferentes entre os três cenários apresentados. Porém, o mais importante é a área de visitação que cada aplicação possui. É esta área que será utilizada para identificar qual aplicação está sendo executada no sistema e com isso gerar uma tomada de decisão para o Cache Comprimido.
+Nas Figuras \ref{fig:som-trained}, \ref{fig:som-trained-cc}, \ref{fig:som-trained-cc-tun}, podemos visualizar que os mapas são levemente diferentes em cada um dos três cenários apresentados. Essa diferença nos SOMs indica que o uso do Cache Comprimido altera as classes de consumo de memória das aplicações. De acordo com \cite{Mlin:06}, uma área mais avermelhada, ou seja, com mais elemento \textit{Red} indica que a quantidade de memória medida é grande (mem) e uma área mais azulada (\textit{Blue}), indica que taxa de variação do consumo (tvcm) é alta e o consumo é baixo. Porém, o mais importante é a área de visitação que cada aplicação possui. É esta área que será utilizada para identificar qual aplicação está sendo executada no momento e com isso gerar uma tomada de decisão para o Cache Comprimido (ver seção \ref{sec:classificando}).
 
 \begin{figure}[htbp]
 	\centering
@@ -851,15 +848,27 @@ Nas Figuras \ref{fig:som-trained}, \ref{fig:som-trained-cc}, \ref{fig:som-traine
 	\label{fig:som-trained-cc-tun}
 \end{figure}
 
-Nos testes com o cenário Alpha, nenhuma página de memória era comprimida e podemos notar que a parte azulada do gráfico, que indica uma baixa aceleração no consumo e um baixo consumo de páginas de memória, é bem pequena. Nos cenários seguintes, Beta e Gama, a área azulada já é ligeramente maior. Isso se deve ao fato do Cache Comprimido armazenar mais páginas de memória, deixando assim páginas livres na área não-comprimida.\\
+Nos testes com o cenário Alpha, nenhuma página de memória era comprimida e podemos notar que a parte azulada do gráfico, que indica uma baixa aceleração no consumo e um baixo consumo de páginas de memória, é bem pequena. Nos cenários seguintes, Beta e Gama, a área azulada já é ligeramente maior. Isso se deve ao fato do Cache Comprimido armazenar mais páginas de memória, deixando assim páginas livres na área não-comprimida, indicando um consumo menor da memória, por parte das aplicações.\\
 
-Também podemos notar que de acordo com que o Cache Comprimido é mais utilizado, ou seja, mais páginas de memória são comprimidas e armazenadas, temos um aumento da área azulada no SOM. Isso pode ser verificado no cenário Gama, o qual, através da configuração do parâmetro de \textit{swappiness} no sistema, apressamos o envio de páginas de memória para a área de \textit{swap virtual}, deixando assim mais memória livre.
+Também podemos notar que de acordo com que o Cache Comprimido é mais utilizado, ou seja, mais páginas de memória são comprimidas e armazenadas, temos um aumento da área azulada no SOM. Isso pode ser verificado no cenário Gama, o qual, através da configuração do parâmetro de \textit{swappiness} em \texttt{/proc/sys/vm/swappiness}, apressamos o envio de páginas de memória para a área de \textit{swap virtual}, deixando assim mais memória livre.
 
 \section{Classificando as aplicações}
 \label{sec:classificando}
-As triplas $<$memória, vcm, tvcm$>$, são mapeadas diretamente para índices RGB das cores utilizadas nos mapas. Assim, uma aplicação que visita uma área mais avermelhada, possui um consumo de memória maior do que a velocidade e a aceleração, visto que possui uma porção maior de vermelho na composição da cor. Uma aplicação que visita uma área mais azulada, possui uma variação na aceleração maior do que as outras duas dimensões, e assim por diante. Com base nessas características e no programa desenvolvido em \cite{Alecrim:07}, é possível identificar as áreas visitadas do SOM dado um log de entrada. Espera-se com isso conseguir identificar qual aplicação está executando com base no padrão de comportamento de áreas visitadas do SOM.\\
+As triplas $<$memória, vcm, tvcm$>$, são mapeadas para valores RGB das cores de cada pixel que compõe o SOM, sendo que:
 
-Nas Figuras \ref{fig:browser}, \ref{fig:browser-cc } e \ref{fig:browser-cc-tun}, temos a visualização das áreas visitadas do SOM de acordo com as amostras coletadas durante a execução do Browser. Note que as áreas são diferentes dado um cenário (Alpha, Beta ou Gama). Isso confirma o fato de que o comportamento do consumo de memória das aplicações é influenciado quando o Cache Comprimido está presente.
+\begin{itemize}
+ \item a memória é mapeada para R ou vermelho.
+ \item o vcm é mapeado para G ou verde.
+ \item o tvcm é mapeado para B ou azul.
+\end{itemize}
+
+Como mostrado na seção \ref{sec:treinando-redes}, a rede neural que gerou cada SOM é treinada com coletas da memória livre feitas durante a execução de cada aplicação testada. Assim, o SOM agrupa os BMU's (Best Matching Units), de acordo com a classe de consumo, ou seja, de acordo com os valores das triplas $<$memória, vcm, tvcm$>$, mapeadas como cores dos pixels.\\
+
+O SOM representa o padrão de consumo de todas as aplicações testadas juntas (Browser, Canola e PDF viewer). Se quisermos saber qual é o SOM de uma determinada aplicação (somente do Browser, por exemplo), devemos passar para a rede um vetor contendo as amostras de consumo de memória da aplicação e determinar quais são os BMU's dada a amostra.\\
+
+Assim, uma aplicação que visita uma área mais avermelhada (pixels com mais vermelho do que outras cores), possui um consumo de memória maior do que a velocidade e a aceleração (vcm e tvcm, respectivamente), visto que possui uma porção maior de vermelho na composição da cor. Uma aplicação que visita uma área mais azulada, possui uma variação na aceleração maior do que as outras duas dimensões, e assim por diante. Com base nessas características e no programa desenvolvido em \cite{Alecrim:07}, é possível identificar as áreas visitadas do SOM dado um log de entrada, ou seja, dado um vetor de entrada com os valores da memória consumida da aplicação testada no decorrer do tempo. Espera-se com isso conseguir identificar qual aplicação está executando com base no padrão de comportamento de áreas visitadas do SOM, ou ainda definir o perfil que o consumo de memória irá seguir, dado o consumo instantâneo.\\
+
+Nas Figuras \ref{fig:browser}, \ref{fig:browser-cc} e \ref{fig:browser-cc-tun}, temos a visualização das áreas visitadas do SOM de acordo com as amostras coletadas durante a execução do Browser, ou seja, quais foram os BMU's encontrados de acordo com o valor da memória consumida pelo Browser. Note que as áreas são diferentes dado um cenário (Alpha, Beta ou Gama). Isso confirma o fato de que o comportamento do consumo de memória do Browser é influenciado quando o Cache Comprimido está presente ou ainda quando o \textit{swappiness} é configurado com valor igual a $60$.
 
 \begin{figure}[htbp]
 	\centering
@@ -880,15 +889,55 @@ Nas Figuras \ref{fig:browser}, \ref{fig:browser-cc } e \ref{fig:browser-cc-tun},
 	\label{fig:browser-cc-tun}
 \end{figure}
 
-Como o esperado, o Browser teve um consumo mais baixo da memória quando o Cache Comprimido estava ativo e o swap configurado para receber mais páginas, mais cedo. Isso pode ser visualizado no gráfico do cenário Gama.\\
+Como visto nas Figuras \ref{fig:browser}, \ref{fig:browser-cc} e \ref{fig:browser-cc-tun}, nos cenários Alpha e Beta, o consumo de memória do Browser, mapeado no SOM de cada rede mostra que o mesmo é maior do que a velocidade e a aceleração, indicando um valor alto. No cenário Gama, quando o Cache Comprimido e o swappiness estavam configurados, o consumo de memória do Browser visitou mais áreas azuladas do SOM, indicando um consumo de memória mais baixo.\\
 
-Uma outra medida, não menos importante, é a frequência de visita dos pontos (visualizada aqui no retângulo central de cada figura). Esse gráfico mostra quais pontos foram mais visitados durante a execução da aplicação avaliada. A frequência é calculada pela quantidade de vezes que um BMU é encontrado quando comparada uma amostra com os dados da rede treinada. Cada vez que um ponto é visitado, ele ganha 1 unidade de cor preta. Assim, pontos mais escuros indicam mais visitas do que os pontos mais claros.\\
+As áreas visitadas para o Canola e o PDF viewer são mostradas nas Figuras \ref{fig:canola}, \ref{fig:canola-cc}, \ref{fig:canola-cc-tun}, \ref{fig:pdf}, \ref{fig:pdf-cc} e \ref{fig:pdf-cc-tun}.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/canola.png}
+	\caption{Cenário Alpha: regiões onde o 'Canola' visitou no SOM.}
+	\label{fig:canola}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/cc-canola.png}
+	\caption{Cenário Beta: regiões onde o 'Canola' visitou no SOM.}
+	\label{fig:canola-cc}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/cc-tun-canola.png}
+	\caption{Cenário Gama: regiões onde o Canola visitou no SOM.}
+	\label{fig:canola-cc-tun}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/pdf.png}
+	\caption{Cenário Alpha: regiões onde o 'PDF viewer' visitou no SOM.}
+	\label{fig:pdf}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/cc-pdf.png}
+	\caption{Cenário Beta: regiões onde o 'PDF viewer' visitou no SOM.}
+	\label{fig:pdf-cc}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/cc-tun-pdf.png}
+	\caption{Cenário Gama: regiões onde o 'PDF viewer' visitou no SOM.}
+	\label{fig:pdf-cc-tun}
+\end{figure}
+
+Nas áreas visitadas pelo PDF e pelo Canola, não notamos uma diferença quando os cenários são mudados. Conclui-se que o Cache Comprimido não possui muita influência no consumo de memória dessas aplicações. Porém, no caso do Browser, houve um consumo mais baixo da memória quando o Cache Comprimido estava ativo e o \textit{swap virtual} configurado para receber as páginas de memória mais cedo (swappiness = 60). Isso pode ser visualizado no gráfico do cenário Gama, Figura \ref{fig:browser-cc-tun}.\\
+
+Uma outra medida, não menos importante, é a frequência de visita dos pontos (visualizada aqui no retângulo central de cada figura). Esse gráfico mostra quais pontos foram mais visitados durante a execução da aplicação avaliada. A frequência é calculada pela quantidade de vezes que um BMU é encontrado quando comparado a um valor dos dados de entrada. Cada vez que um pixel é visitado, ele ganha 1 unidade de cor preta. Assim, pontos mais escuros indicam mais visitas.\\
 
 De novo, podemos notar que quando o Cache Comprimido estava ligado, os pontos mais visitados estavam na área azulada do SOM, indicando um baixo consumo da memória principal do sistema.
 
-No Anexo A, pode-se encontrar os perfis para as outras aplicações: visualizador de arquivos pdf e multimídia \textit{player}.
-
-Analisando os 3 logs de execução de cada aplicação testada, podemos chegar à conclusão de 3 tipos de perfis:
+Analisando as áreas do SOM, visitadas por cada aplicação testada, podemos chegar à conclusão de 3 perfis para o consumo de memória:
 
 \begin{itemize}
  \item Alto consumo de memória: são aquelas aplicações que tiveram seus perfis visitando áreas no SOM em tons de vermelho.
@@ -896,35 +945,51 @@ Analisando os 3 logs de execução de cada aplicação testada, podemos chegar à con
  \item Mediano consumo de memória: são aquelas aplicações que possuem seus perfis como uma mistura dos outros dois, não prevalecendo nenhuma área.
 \end{itemize}
 
-Dado cada perfil, foi desenvolvido um programa capaz de identificar qual aplicação está sendo executada, com base na rede neural já treinada de acordo com o cenário utilizado: Alpha, Beta ou Gama. Esse programa é usado para tomar uma decisão: ligar ou não o Cache Comprimido e ainda, qual será a configuração do mesmo. Esse sistema é apresentado no capítulo a seguir.
+Dado cada perfil, é possível desenvolver um programa capaz de identificar qual aplicação está sendo executada ou em qual perfil de consumo ela se encaixa, com base na rede neural já treinada de acordo com o cenário utilizado: Alpha, Beta ou Gama. Esse programa é usado para tomar uma decisão: ligar ou não o Cache Comprimido e ainda, qual será a configuração do mesmo. Esse sistema é apresentado no capítulo a seguir.
 
 \section{Sumário}
 
-Neste Capítulo foram apresentados conceitos de redes neurais e mapas auto-organizáveis. Também foi apresentado um resumo dos trabalhos usados como referência \cite{Mlin:06, Alecrim:07}, os quais também demonstram resultados utilizando SOM's para classificar padrões de consumo de memória.\\
+Neste Capítulo foram apresentados conceitos de redes neurais e mapas auto-organizáveis. Também foi apresentado um resumo dos trabalhos usados como referência \cite{Mlin:06, Alecrim:07}, os quais também demonstram resultados utilizando SOMs para classificar padrões de consumo de memória.\\
 
-Na seção \ref{sec:classificando}, foi verificado que o SOM apresenta uma forma diferente quando se muda o cenário, ou seja, quando o Cache Comprimido está ligado, desligado ou quando o kernel não está configurado. Isso influencia diretamente as regiões do SOM que cada aplicação visita quando está consumindo memória. É nessa variação que é implementada a adaptatividade do Cache Comprimido no próximo Capítulo.
+Neste Capítulo também foram mostradas as redes neurais e seus respectivos SOMs, treinadas para identificar o consumo de memória das aplicações testadas em diferentes cenários, entre eles, o cenário com o Cache Comprimido ligado. Com isso, foi observado que o Cache Comprimido exerce uma influência positiva no consumo de memória de aplicações que requerem uma quantidade grande de memória. Com o Cache Comprimido o comportamento do consumo de memória de tais aplicações cai, liberando assim mais memória para outras aplicações.
 
 \chapter{Cache Comprimido Adaptativo}
 
-Neste capítulo será apresentada a solução para implementar uma característica de adaptação do Cache Comprimido, frente à memória consumida em tempo real.
+Neste Capítulo será apresentada uma solução para implementar o Cache Comprimido Adaptativo, ou seja, a possibilidade do Cache Comprimido ser ligado ou desligado e ser configurado em tempo real de acordo com o perfil de consumo de memória atual e em um futuro próximo.\\
+
+Os testes com o Cache Comprimido (CC) são executados em Linux embarcado na plataforma ARM OMAP. O equipamento não possui área de swap configurada e possui memória total igual a 128MB. Para mais detalhes sobre a configuração de hardware do dispositivo, ver seção  \ref{sec:metodologia}.
 
 \section{Adaptatividade no Cache Comprimido}
 
-Implementar a adaptatividade ao Cache Comprimido é adaptá-lo de acordo com o consumo de memória instantâneo. Para implementar essa nova característica alguns requisitos são necessários:
+Implementar a adaptatividade ao CC é adaptá-lo de acordo com o consumo de memória instantâneo e futuro. Para implementar essa nova característica alguns requisitos são necessários:
 
 \begin{itemize}
- \item Ter uma amostra do consumo de memória instantâneo.
+ \item Ter uma amostra do consumo de memória durante um tempo pré-definido.
  \item Ter um padrão que confronte Configurações do CC versus Padrão de Consumo de memória. Esse padrão vale para decidir o que fazer quando determinado nível de memória é atingido.
  \item Implementar uma heurística para definir a configuração do CC que será adotada, de acordo com a amostra de memória.
 \end{itemize}
 
-Como visto na seção \ref{sec:classificando}, cada aplicação possui um SOM característico. Além disso, o SOM de cada aplicação testada depende do cenário adotado: se existe ou não CC ativo, por exemplo. O programa utilizado em \cite{Alecrim:07}, além de gerar o SOM para um log de consumo de memória, também gera uma matriz de frequências, como visto nas Figuras \ref{fig:browser-freq}, \ref{fig:canola-freq} e \ref{fig:pdf-freq} (área sombreada):
+Como visto na seção \ref{sec:classificando}, cada aplicação possui um SOM característico. Além disso, o SOM de cada aplicação testada depende do cenário adotado: se existe ou não CC ativo, por exemplo. O programa utilizado em \cite{Alecrim:07}, além de gerar o SOM para um log de consumo de memória, também gera uma matriz de frequências, como visto nas Figuras \ref{fig:browser-freq}, \ref{fig:browser-freq-beta}, \ref{fig:browser-freq-gama}, \ref{fig:canola-freq}, \ref{fig:canola-freq-beta}, \ref{fig:canola-freq-gama}, \ref{fig:pdf-freq}, \ref{fig:pdf-freq-beta} e \ref{fig:pdf-freq-gama} (área sombreada):
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1\textwidth]{figs/browser-freq.png}
 	\caption{Cenário Alpha: imagem que representa o SOM para o Browser e sua matriz de frequências.}
 	\label{fig:browser-freq}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/browser-freq-beta.png}
+	\caption{Cenário Beta: imagem que representa o SOM para o Browser e sua matriz de frequências.}
+	\label{fig:browser-freq-beta}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/browser-freq-gama.png}
+	\caption{Cenário Gama: imagem que representa o SOM para o Browser e sua matriz de frequências.}
+	\label{fig:browser-freq-gama}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -936,24 +1001,52 @@ Como visto na seção \ref{sec:classificando}, cada aplicação possui um SOM caract
 
 \begin{figure}[htbp]
 	\centering
+	\includegraphics[width=1\textwidth]{figs/canola-freq-beta.png}
+	\caption{Cenário Beta: imagem que representa o SOM para o media player Canola e sua matriz de frequências.}
+	\label{fig:canola-freq-beta}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/canola-freq.png}
+	\caption{Cenário Gama: imagem que representa o SOM para o media player Canola e sua matriz de frequências.}
+	\label{fig:canola-freq-gama}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
 	\includegraphics[width=1\textwidth]{figs/pdf-freq.png}
 	\caption{Cenário Alpha: imagem que representa o SOM para o visualizador de PDF's e sua matriz de frequências.}
 	\label{fig:pdf-freq}
 \end{figure}
 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/pdf-freq-beta.png}
+	\caption{Cenário Beta: imagem que representa o SOM para o visualizador de PDF's e sua matriz de frequências.}
+	\label{fig:pdf-freq-beta}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figs/pdf-freq-gama.png}
+	\caption{Cenário Gama: imagem que representa o SOM para o visualizador de PDF's e sua matriz de frequências.}
+	\label{fig:pdf-freq-gama}
+\end{figure}
+
 A matriz de frequência de cada aplicação mostra quantas vezes aquele BMU foi visitado. Quanto mais escuro é o pixel, mais vezes o BMU foi selecionado.\\
 
-Se for possível determinar os BMU's em tempo de execução e compará-lo com as matrizes de frequência das três aplicações testadas, é possível determinar qual aplicação está sendo executada e tomar medidas quanto ao Cache Comprimido assim que essa identificação é feita. O algoritmo seria o seguinte:
+Se for possível determinar os BMUs em tempo de execução e compará-los com as matrizes de frequência das três aplicações testadas, é possível determinar qual aplicação está sendo executada e tomar medidas quanto ao Cache Comprimido assim que essa identificação é feita. O algoritmo seria o seguinte:
 
 \begin{enumerate}
- \item Ler o saved\_som.txt contendo a rede neural treinada para o cenário dado. A rede neural é representada por uma matriz quadrática de ordem 40 em que cada célula representa um \textbf{som\_node} com os pesos sinápticos.
+ \item Ler o saved\_som.txt contendo a rede neural treinada para o cenário dado (o código está disponível no Apêndice B). A rede neural é representada por uma matriz quadrática de ordem 40 em que cada célula representa um \textbf{som\_node} com os pesos sinápticos.
  \item Armazenar em matrizes de ordem 40 a tabela de frequência para cada aplicação: browser, pdf e canola.
  \item Realizar leituras periódicas da memória livre em um intervalo de tempo ($t = 1$s). Guardar os valores em um vetor de inteiros.
  \item Calcular o BMU para cada valor do vetor construído no item anterior. Comparar esse BMU com a matriz de frequências de cada aplicação.
 \end{enumerate}
 
 
-O algoritmo descrito foi implementado em um programa e testado na plataforma ARM. O código mostrado em \ref{alg:calc_profile}, escrito em linguagem C, ilustra o algoritmo apresentado:
+O algoritmo descrito foi implementado em um programa e testado na plataforma ARM, mais detalhes na seção \ref{sec:metodologia}. O código mostrado em \ref{alg:calc_profile}, escrito em linguagem C, ilustra o algoritmo apresentado:
 
 \begin{program}
 \begin{verbatim}
@@ -1011,11 +1104,11 @@ int calculate_profile() {
 \label{alg:calc_profile}
 \end{program}
 
-A variável \texttt{MAX\_INPUTS} possui o tamanho do vetor das amostras de memória livre ao longo do tempo. O programa foi feito para realizar leituras no \texttt{/proc/sys/vm/memfree} a cada segundo. Assim, o programa possui uma latência de \texttt{MAX\_INPUTS} segundos, tirando o tempo de processamento, para calcular os \textbf{fatores de semelhança}.
+A variável \texttt{MAX\_INPUTS} possui o tamanho do vetor das amostras de memória livre em tempo real. O programa foi feito para realizar leituras no \texttt{/proc/sys/vm/memfree} a cada segundo. Assim, o programa possui uma latência de \texttt{MAX\_INPUTS} segundos, tirando o tempo de processamento, para calcular os \textbf{fatores de semelhança}. Esse fator de semelhança é a quantidade de vezes que o BMU calculado em tempo real é igual ao BMU de uma das 3 matrizes de frequências, dado um dos cenários Alpha, Beta ou Gama.\\
 
-O objetivo dessa função é calcular um \textit{fator de semelhança}, ou seja, o maior fator entre \texttt{pdf\_factor}, \texttt{browser\_factor} e \texttt{canola\_factor}, indica ainda qual matriz de frequências teve mais BMU's em comum em relação à coleta de memória livre do sistema. Assim, o maior fator indica qual aplicação está sendo executada em um determinado momento.\\
+O objetivo dessa função é calcular um \textit{fator de semelhança}, ou seja, o maior valor entre \texttt{pdf\_factor}, \texttt{browser\_factor} e \texttt{canola\_factor}, indica ainda qual matriz de frequências teve mais BMUs em comum em relação à coleta de memória livre do sistema. Assim, o maior valor entre as 3 variáveis indica qual aplicação está sendo executada em um determinado momento.\\
 
-Identificando qual aplicação está sendo executada, e conhecendo seu comportamento de consumo de memória, pode-se decidir qual configuração passar para o CC, em termos de tamanho, e ainda qual valor para o \texttt{swappiness} e \texttt{min\_free\_kbytes}, ambos variáveis de configurações do kernel do Linux.\\
+Identificando qual aplicação está sendo executada, e conhecendo seu comportamento de consumo de memória, pode-se decidir qual configuração passar para o CC, em termos de tamanho, e ainda qual valor para o \texttt{swappiness} e \texttt{min\_free\_kbytes}, ambas variáveis de configurações do kernel do Linux. Isso é feito em tempo de execução.\\
 
 \subsection{Daemon para adaptar o Cache Comprimido}
 
@@ -1099,15 +1192,15 @@ int main()
 \label{alg:main}
 \end{program}
 
-Note que cada perfil adotado executa ações diferentes no sistema. Para o perfil \texttt{ALPHA}, o CC é desligado e os módulos são descarregados. Para o perfil \texttt{BETA}, o CC é ligado com tamanho aproximado de 5MB, nesse caso espera-se um consumo mediano da memória. Para o perfil \texttt{GAMA}, o CC é ligado com tamanho aproximado de 10MB e \texttt{swappiness} $= 60$, o que faz as páginas irem mais cedo para o swap virtual onde são comprimidas e armazenadas. Nesse perfil esperamos um consumo intenso da memória ou a possível falta da mesma.\\
+Note que cada perfil adotado executa ações diferentes no sistema. Para o perfil \texttt{ALPHA}, o CC é desligado e a área de swap virtual é retirada através do comando do Linux, \texttt{swapoff}. Para o perfil \texttt{BETA}, o CC é ligado com tamanho aproximado de 5MB, nesse caso espera-se um consumo mediano da memória. Para o perfil \texttt{GAMA}, o CC é ligado com tamanho aproximado de 10MB e \texttt{swappiness} $= 60$, o que faz as páginas irem mais cedo para o swap virtual onde são comprimidas e armazenadas. Nesse perfil esperamos um consumo intenso da memória ou a possível falta da mesma.\\
 
-Cada perfil é encontrado usando a função apresentada no Algoritmo \ref{alg:calc_profile}. Esse algoritmo utiliza a rede neural treinada, a matriz de frequência do BMU de cada aplicação e as coletas da memória livre instantânea do sistema.\\
+Cada perfil é encontrado usando a função apresentada no Algoritmo \ref{alg:calc_profile}. Esse algoritmo utiliza a rede neural treinada, as matrizes de frequência do BMU de cada aplicação (Browser, Canola e PDF viewer) e as coletas da memória livre durante 20 segundos (valor da variável MAX\_INPUTS). A cada 20 segundos, um vetor contendo 20 leituras da memória consumida é passado para a função apresentada no Algoritmo \ref{alg:calc_profile}. Essa função determina qual das 3 matrizes de frequência teve BMUs mais visitados. A matriz de frequência que teve mais BMUs visitados indica que aplicação está sendo executada naquele instante, ou ainda, qual é o perfil de consumo da memória.\\
 
-O acerto em determinar o perfil de memória depende da quantidade de coletas que serão feitas antes da análise nas matrizes de frequências. Porém, coletar a memória leva \texttt{MAX\_INPUT} segundos, onde esse valor é o tamanho do vetor de coletas da memória livre. Assim, existe um ajuste para que o \textit{daemon} não leve muito tempo para determinar em que perfil está ou para qual perfil o consumo de memória está caminhando.\\
+O acerto em determinar o perfil de memória depende da quantidade de coletas que serão feitas antes da análise nas matrizes de frequências. Porém, coletar a memória leva, como dito anteriormente, \texttt{MAX\_INPUT} segundos, onde esse valor é o tamanho do vetor de coletas da memória livre. Assim, existe um ajuste para que o \textit{daemon} não leve muito tempo para determinar em que perfil está ou para qual perfil o consumo de memória está caminhando.\\
 
-Na Figura \ref{fig:mem-adapt}, está representado a memória livre ao longo de um teste feito para checar se a adaptatividade do CC trás benefícios ou não. O teste consiste em abrir 8 instâncias do Browser, tocar um vídeo no \textit{media player}, simultaneamente e ainda abrir um arquivo PDF.\\
+Na Figura \ref{fig:mem-adapt}, está representada a memória livre ao longo de um teste feito para checar se a adaptatividade do CC traz benefícios ou não. O teste consiste em abrir 8 instâncias do Browser, tocar um vídeo no Canola, simultaneamente e ainda abrir um arquivo PDF. De acordo com que a memória vai sendo consumida, os BMUs das leituras feitas em tempo real visitam mais as áreas avermelhadas do SOM treinado para o perfil (Alpha, Beta ou Gama) atual. A cada 20 segundos é feita a avaliação do consumo de memória e determinado o perfil do mesmo. De acordo com o perfil determinado, o CC é ligado ou desligado, o swappiness é configurado ou não. (mais detalhes, ver Algoritmo \ref{alg:main}. Se o padrão de consumo da memória se mantém constante, não há mudança de perfil.\\
 
-Podemos que a memória livre (MemFree), varia e acontecem alguns picos. Isso se deve ao fato de que quando o perfil é alterado, existe uma liberação ou um consumo maior de memória. Também podemos notar que o uso do \textit{daemon} mantém uma média de memória livre maior do que em casos onde ele não é utilizado.
+Ainda na Figura \ref{fig:mem-adapt}, podemos notar que a memória livre (MemFree), varia bastante ao longo do tempo do teste. Também podemos notar que existem alguns picos de liberação da memória. Acreditamos que isso se deve ao fato de que quando o perfil Alpha é selecionado, o swap virtual é retirado da memória e acontece um aumento na memória livre. Também podemos notar que o uso do \textit{daemon} mantém uma média de memória livre maior do que em casos onde ele não é utilizado (Ver Figura \ref{fig:mem-consumption-all-apps}, para comparação).
 
 \begin{figure}[htb]
  \centering
@@ -1116,12 +1209,37 @@ Podemos que a memória livre (MemFree), varia e acontecem alguns picos. Isso se d
  \label{fig:mem-adapt}
 \end{figure}
 
+\begin{figure}[htb]
+ \centering
+ \includegraphics[scale=0.6]{figs/mem-consumption-all-apps-no-cc.pdf}
+ \caption{Memória livre (MemFree) para cada aplicação sem CC.}
+ \label{fig:mem-consumption-all-apps}
+\end{figure}
+
+Na Figura \ref{fig:mem-consumption-all-apps}, está plotado um gráfico que mostra a variação na memória livre para cada uma das aplicações testadas. Os dados mostram como a memória é consumida ao longo do tempo quando o CC está desligado. Comparando com a Figura \ref{fig:mem-adapt}, pode-se notar que a memória média é maior quando o \textit{daemon} desenvolvido (chamado de adaptived), está sendo executado.
+
 \section{Sumário}
-Neste Capítulo foi apresentado a heurística e a solução encontrada para utilizar redes neurais e perfis de consumo de memória na adaptatividade do Cache Comprimido. Também foi mostrado que um \textit{daemon} foi implementado para configurar o CC e a área de swap virtual afim de obter um uso mais eficiente da memória total do sistema.
+Neste Capítulo foi apresentada uma heurística e a solução encontrada para utilizar redes neurais e perfis de consumo de memória na adaptatividade do Cache Comprimido. Também foi mostrado que um \textit{daemon} foi implementado para configurar o CC e a área de swap virtual afim de obter um uso mais eficiente da memória total do sistema.\\
+
+Nos gráficos de consumo de memória das aplicações, notamos que o daemon deixa uma memória livre média maior do que quando o CC está desligado, indicando assim um consumo de memória mais otimizado.
 
 
 \chapter{Conclusão e Trabalhos Futuros}
 Neste Capítulo são apresentados algumas ideias para trabalhos futuros envolvendo o Cache Comprimido e a adaptatividade. Também é apresentada a conclusão deste trabalho de mestrado.
+
+
+
+\section{Conclusão}
+
+Neste trabalho de mestrado foi mostrada uma solução para otimização da memória livre no Linux através da compressão de dados. Os dados estão armazenados em páginas de memória e são comprimidos quando são enviados para uma área de swap virtual. Essa solução é chamada Cache Comprimido.\\
+
+O Cache Comprimido é estático. Ou seja, seu tamanho não varia de acordo com o consumo de memória, ou ainda, de acordo com alguma heurística que busque a otimização da sua utilização. Foi mostrado que um Cache Comprimido de tamanho errado pode gerar mais situações de falta de memória, chamando um dispositivo do kernel chamado \textit{Out-of-memory killer} (OOM killer).\\
+
+Como proposto nesta dissertação, a classificação dos padrões de consumo de memória utilizando redes neurais e Mapas Auto-organizáveis (ou SOMs), desenvolvida em \cite{Alecrim:07} e \cite{Mlin:06}, é bastante útil para determinar padrões de consumo de memória e pré-determinar um comportamento nesse consumo. Utilizando essa ferramenta, foram determinados perfis de consumo de memória afim de implementar a adaptatividade do CC. Essa adaptatividade consiste em implementar um programa que identifique o padrão de consumo e configure o CC de acordo com esse padrão, tudo feito em tempo de execução. Utilizando os mapas gerados pela análise de cada aplicação, pode-se avaliar em quais momentos é necessário que o tamanho do CC seja alterado afim de suprir a necessidade de memória livre do sistema.\\
+ 
+Com a criação de um mapa com casos de uso que simulem a utilização do sistema por um usuário final, é possível determinar quais são as áreas mais acessadas por determinadas aplicações. Nesse caso, é possível verificar qual é o comportamento de consumo de memória para um determinado caso de uso e assim, tomar medidas para que não falte memória. Essas medidas podem ser o aumento ou diminuição do tamanho do CC, a mudança para um algoritmo de compressão mais eficaz (porém mais lento), etc. A tripla $<$memória, vcm, tvcm$>$, pode ser utilizada para "prever" o consumo de memória baseado no consumo anterior e no perfil (mapa) da aplicação analisada. O parâmetro "tvcm" é especialmente importante pois pode ser utilizado como a "velocidade" que uma aplicação aloca mais memória. Muito útil para evitar que situações que o OOM \textit{killer} seja invocado.\\
+
+A heurística utilizando SOMs e redes neurais, proposta para implementar a adaptatividade ao Cache Comprimido mostrou-se eficiente, aumentando a quantidade média de memória livre mesmo quando o consumo de memória é alto. Essa conclusão leva a acreditar que é possível executar as aplicações com mais memória disponível, ou ainda, executar um número maior de aplicações com a mesma quantidade de memória, sem a necessidade de alterações de \textit{hardware} (aumentando a capacidade da memória, por exemplo).
 
 \section{Trabalhos Futuros}
 Quanto ao Cache Comprimido, existem alguns pontos, apresentados em \cite{ccache09} de melhorias e implementação de novas características:
@@ -1133,14 +1251,11 @@ Quanto ao Cache Comprimido, existem alguns pontos, apresentados em \cite{ccache0
 
 No daemon implementado com a adaptatividade, o SOM representando a rede neural treinada é carregado para cada perfil adotado. Isso é um problema se tivermos muitos perfis ou se usarmos uma rede neural com uma grade maior de neurônios (a grade atual tem tamanho $40 x 40$). O ideal seria ter um SOM para a rede neural treinada que conseguisse identificar os vários perfis adotados.\\
 
-Uma característica ao daemon que pode ser implementada é a identificação dos perfis em um tempo menor. Assim o tempo de reação do daemon ao consumo de memória pode ser menor, evitando casos em que a memória atinja um nível mínimo entre uma leitura e outra. Hoje o tempo mínimo para identificar um perfil é de $25$ segundos, que é o tempo gasto para coletar as informações de memória livre. Esse tempo não está levando em conta o tempo de processamento para achar o BMU.
+Uma característica ao daemon que pode ser implementada é a identificação dos perfis em um tempo menor. Assim o tempo de reação do daemon ao consumo de memória pode ser menor, evitando casos em que a memória atinja um nível mínimo entre uma leitura e outra. Hoje o tempo mínimo para identificar um perfil é de $25$ segundos, que é o tempo gasto para coletar as informações de memória livre. Esse tempo não está levando em conta o tempo de processamento para achar o BMU.\\
 
-\section{Conclusão}
-Como proposto nesta dissertação, a utilização da ferramenta desenvolvida em \cite{Alecrim:07} e \cite{Mlin:06}, é bastante útil na implementação da adaptatividade do CC. Utilizando os mapas gerados pela análise de cada aplicação, pode-se avaliar em quais momentos é necessário que o tamanho do CC seja alterado afim de suprir a necessidade de memória livre do sistema.\\
- 
-Com a criação de um mapa com casos de uso que simulem a utilização do sistema por um usuário final, é possível determinar quais são as áreas mais acessadas por determinadas aplicações. Nesse caso, é possível verificar qual é o comportamento de consumo de memória para um determinado caso de uso e assim, tomar medidas para que não falte memória. Essas medidas podem ser o aumento ou diminuição do tamanho do CC, a mudança para um algoritmo de compressão mais eficaz (porém mais lento), etc. A tripla $<$memória, vcm, tvcm$>$, pode ser utilizada para "prever" o consumo de memória baseado no consumo anterior e no perfil (mapa) da aplicação analisada. O parâmetro "tvcm" é especialmente importante pois pode ser utilizado como a "velocidade" que uma aplicação aloca mais memória. Muito útil para evitar que situações que o OOM \textit{killer} seja invocado.\\
+Um outro trabalho futuro que visa a otimização do consumo da memória em Linux embarcado é alterar o algoritmo de seleção das páginas de memória que vão para a área de swap (o PFRA, \textit{Page Frame Reclaiming Algorithm}). Implementando flags de identificação nas páginas afim de definir quais são comprimidas, seria possível tratá-las de forma diferente e adiar ou antecipar a compressão e descompressão, otimizando o overhead de leitura e escrita das páginas.\\
 
-A heurística utilizando SOM's e redes neurais, proposta para implementar a adaptatividade ao Cache Comprimido mostrou-se eficiente, aumentando a quantidade média de memória livre ao longo de um alto consumo.
+O Cache Comprimido usado neste trabalho faz uso da memória RAM do Linux. Existem soluções mais especializadas que fazem uso de uma memória em cache (L1 ou L2), ou ainda um chip especial para armazenar dados comprimidos, sem necessariamente utilizar a memória RAM.\\
 
 %\chapter{Conclusão}
 %\section{Conclusão}
@@ -1160,5 +1275,7 @@ A heurística utilizando SOM's e redes neurais, proposta para implementar a adapt
 	\bibliography{briglia-ref}
 	\bibliographystyle{plain}
 \end{flushleft}
+
+\input{apendice}
 
 \end{document}

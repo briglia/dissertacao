@@ -1,0 +1,130 @@
+\chapter{Apêndices}
+
+\section{Apêndice - A}
+
+Algoritmos utilizados em \cite{Mlin:06}, para inicialização dos pesos sinápticos dos neurônios da grade, encontrar o BMU e cálculo da distância euclidiana. Esses algoritmos são parte do treinamento das redes neurais e geração dos SOM's.
+
+\begin{program}
+\begin{verbatim}
+
+void init_grid(struct som_node * grids[][GRIDS_YSIZE]) {
+    int i, j, k;
+    srand(time(0));
+    for (i=0; i<GRIDS_XSIZE; i++) {
+        for (j=0; j<GRIDS_YSIZE; j++) {
+            grids[i][j] = (struct som_node *)
+                    malloc(sizeof(struct som_node));
+            grids[i][j]->xp = i;
+            grids[i][j]->yp = j;
+            for (k=0; k<WEIGHTS_SIZE; k++) {
+                grids[i][j]->weights[k] = rand_float();
+            }
+        }
+    }
+}
+\end{verbatim}
+  \caption{Inicialização dos pesos sinápticos dos neurônios da grade.}
+  \label{tab:init_som}
+\end{program}
+
+\begin{program}
+\begin{verbatim}
+
+struct som_node * get_bmu(double input_vector[],
+                      int len_input,
+                      struct som_node * grids[][GRIDS_YSIZE]
+                      ) {
+    struct som_node *bmu = grids[0][0];
+    double best_dist = euclidean_dist(input_vector, 
+                                      bmu->weights, 
+                                      len_input);
+    double new_dist;
+    int i, j;
+    for (i=0; i<GRIDS_XSIZE; i++) {
+        for (j=0; j<GRIDS_YSIZE; j++) {
+            new_dist = euclidean_dist(input_vector,
+                                      grids[i][j]->weights,
+                                      len_input);
+            if (new_dist < best_dist) {
+                bmu = grids[i][j];
+                best_dist = new_dist;
+            }
+        }
+    }
+    return bmu;
+}
+\end{verbatim}
+  \caption{Pesquisa o neurônio vencedor (BMU) durante o processo competitivo.}
+  \label{tab:bmu}	
+\end{program}
+
+\begin{program}
+\begin{verbatim}
+
+double euclidean_dist(double *input, double *weights, int len) {
+    double summation = 0;
+    double temp;
+    int i;
+    for (i=0; i<len; i++) {
+        temp = (input[i]-weights[i]) * (input[i]-weights[i]);
+        summation += temp;
+    }
+    return summation;
+}
+\end{verbatim}
+\caption{Cálculo da distância Euclidiana.}
+    \label{tab:euclidean}
+\end{program}
+
+\section{Apêndice - B}
+
+\begin{program}
+ \begin{verbatim}
+int read_trained_som(char filename[], struct som_node * grids[][GRIDS_YSIZE]) {
+    FILE * fp;
+    ssize_t bytes_read;
+    size_t len = 0;
+    char * line = NULL;
+    char * input[WEIGHTS_SIZE];
+    int i, j;
+
+    fp = fopen(filename, "r");
+
+    if (fp == NULL) {
+        return 0; 
+    }
+
+    for (i=0; i<WEIGHTS_SIZE; i++) 
+        input[i] = (char *)malloc(10);
+
+    while((bytes_read = getline(&line, &len, fp)) != -1) {
+        sscanf(line, "(%d, %d) %s %s %s",
+                     &i, &j, input[0], input[1], input[2]);
+
+        grids[i][j] = (struct som_node *)
+                     malloc(sizeof(struct som_node));
+        grids[i][j]->xp = i;
+        grids[i][j]->yp = j;
+        grids[i][j]->weights[0] = strtod(input[0], NULL);
+        grids[i][j]->weights[1] = strtod(input[1], NULL);
+        grids[i][j]->weights[2] = strtod(input[2], NULL);
+    }
+
+    for (i=0; i<WEIGHTS_SIZE; i++)
+        free(input[i]);
+		
+        if (line)
+            free(line);
+	
+        if (fclose(fp)) {
+            fprintf(stderr,
+                         "error closing file %s: %s\n",
+                         filename, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        return 1; 
+}
+
+ \end{verbatim}
+ \caption{Função que lê os dados do saved\_som.txt.}
+\end{program}
