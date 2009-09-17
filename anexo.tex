@@ -1,0 +1,240 @@
+\chapter{Anexos}
+
+\section{Anexo - I}
+
+Programas em linguagem Python utilizados para interagir com o sistema gráfico e as aplicações, automaticamente.
+
+\begin{program}
+\begin{scriptsize}
+\begin{verbatim}
+#!/usr/bin.python
+
+import time
+from os import system
+
+class TestBrowser:
+
+    def __init__(self):
+
+        self.send_url_cmd = 'run-standalone.sh dbus-send --type=method_call --dest=com.nokia.osso_browser
+        /com/nokia/osso_browser com.nokia.osso_browser.load_url string:'
+        self.urls = ['www.uol.com.br', 'www.acritica.com.br', 'www.kibeloco.com.br',
+                'www.wikipedia.org', 'www.humortadela.com.br', 'www.google.com',
+                'www.ufam.edu.br', 'www.gmail.com',
+                'sanguedelpredador.briglia.net', 'techblog.briglia.net']
+        self.wcount = 0
+        self.__steps = []
+
+    def close_window(self):
+        cmd = ("xte -x :0.0 'mousemove 776 25' 'mouseclick 1'", 2)
+        self.add_step(cmd)
+
+    def open_new_browser(self):
+        '''
+        This is necessary to open first browser window.
+        '''
+        if self.wcount == 0:
+            self.add_step((self.send_url_cmd, 5))
+        else:
+            cmd = ("xte -x :0.0 'mousemove 150 30' 'mouseclick 1'", 1)
+            self.add_step(cmd)
+            cmd = ("xte -x :0.0 'mousemove 150 85' 'mouseclick 1'", 1)
+            self.add_step(cmd)
+            cmd = ("xte -x :0.0 'key Page_Down' 'key Page_Down' 'key Down' 'key Return'", 10)
+            self.add_step(cmd)
+        self.wcount = self.wcount + 1
+
+    def open_url(self, url):
+        self.open_new_browser()
+        cmd = self.send_url_cmd + url
+        self.add_step((cmd, 20))
+
+    def add_step(self, cmd):
+        self.__steps.append(cmd)
+
+    def close_all(self):
+        for i in xrange(0, self.wcount):
+            self.close_window()
+
+    def play_steps(self):
+        '''
+        Run each command stored in self.__steps.
+        Uses time.sleep() to make an interval between each command.
+        '''
+        for cmd in self.__steps:
+            #print 'CMD: ', cmd[0]
+            system(cmd[0])
+            time.sleep(cmd[1])
+
+    def begin_test(self):
+        for url in self.urls:
+            self.open_url(url)
+        self.close_all()
+        self.play_steps()
+
+if __name__ == '__main__':
+    print 'Initiating tests...'
+    test = TestBrowser()
+    test.begin_test()
+    print 'Test Finished...'
+
+\end{verbatim}
+\end{scriptsize}
+  \caption{Programa para automatizar o teste com o Browser.}
+  \label{tab:automation_browser}
+\end{program}
+
+\begin{program}
+\begin{scriptsize}
+\begin{verbatim}
+#!/usr/bin.python
+
+import time
+from os import system
+
+BT_Y = 222 # Since they are in horizontal, y is the same
+BT_OFFSET = 150 # Position offset
+
+'''
+Positions for main buttons when they are in even layout
+'''
+EV_FIRST_BT_X = 170 # X position for first bt
+AUDIO_BT = 0
+PHOTOS_BT = 1
+VIDEOS_BT = 2
+SETT_BT = 3
+MY_PHOTOS_BT = 1
+MY_VIDEOS_BT = 1
+
+'''
+Positions for buttons when they are in uneven layout
+'''
+UNEV_FIRST_BT_X = 248
+MY_MUSIC_BT = 0
+PODCASTS_BT = 1
+RADIO_BT = 2
+
+class TestCanola:
+
+    def __init__(self):
+        self.__steps = []
+
+    def click(self, pos, sleep):
+        cmd = ("xte -x :0.0 'mousemove " + str(pos[0]) + " " + str(pos[1]) + "' 'mouseclick 1'", sleep)
+        self.add_step(cmd)
+
+    def click_back(self):
+        '''
+        Click back button.
+        '''
+        self.click((45, 455), 3)
+
+    def click_bt(self, button, first_bt_pos):
+        '''
+        Click buttons presented in main window.
+        '''
+        x = (button * BT_OFFSET) + first_bt_pos
+        self.click((x, BT_Y), 3)
+
+    def click_list(self, pos):
+        '''
+        Click in a list position
+        Since just seven elements are showed each time, pos must be
+        checked against these values. This method does not implement
+        list rolling.
+        '''
+        if (pos >= 0) and (pos < 7):
+            self.click((160, 68 + (pos * 63)), 3)
+
+    def play_pause_music(self):
+        self.click((759, 227), 2);
+\end{verbatim}
+\end{scriptsize}
+  \caption{Programa para automatizar o teste com o Canola (Parte 1/2).}
+  \label{alg:automate-canola-1}	
+\end{program}
+
+\begin{program}
+\begin{scriptsize}
+\begin{verbatim}
+    def photo_click(self, photo):
+        '''
+        photo = photo number, starting in 0.
+        '''
+        x1 = 58
+        y1 = 118
+        x_offset = 146
+        y_offset = 115
+        if photo < 5:
+            self.click(x1 + (photo * x_offset), y1)
+        elif (photo >= 5) and (photo < 10):
+            self.click((x1 + ((photo - 6) * x_offset), y1 + y_offset), 4)
+        elif (photo >= 10) and (photo < 15):
+            self.click((x1 + ((photo - 11) * x_offset), y1 + (2 * y_offset)), 4)
+
+    def click_yes(self):
+        self.click((508, 297), 2)
+
+    def add_delay(self, delay):
+        self.add_step(('', delay))
+
+    def add_step(self, cmd):
+        self.__steps.append(cmd)
+
+    def play_steps(self):
+        '''
+        Run each command stored in self.__steps.
+        Uses time.sleep() to make an interval between each command.
+        '''
+        for cmd in self.__steps:
+            #print cmd
+            if cmd[0] != '':
+                system(cmd[0])
+            time.sleep(cmd[1])
+
+    def begin_test(self):
+        # Playing a music
+        self.click_bt(AUDIO_BT, EV_FIRST_BT_X)
+        self.click_bt(MY_MUSIC_BT, UNEV_FIRST_BT_X)
+        self.click_list(0)
+        self.click_list(1)
+        self.add_delay(10)
+        self.play_pause_music()
+        self.click_back()
+        self.click_back()
+        self.click_back()
+        self.click_back()
+        #Opening a photo
+        self.click_bt(PHOTOS_BT, EV_FIRST_BT_X)
+        self.click_bt(MY_PHOTOS_BT, EV_FIRST_BT_X)
+        self.click_list(0)
+        self.photo_click(6)
+        self.click_back()
+        self.click_back()
+        self.click_back()
+        self.click_back()
+        #Opening a video
+        self.click_bt(VIDEOS_BT, EV_FIRST_BT_X)
+        self.click_bt(MY_VIDEOS_BT, EV_FIRST_BT_X)
+        self.click_list(0)
+        self.click_list(3)
+        self.add_delay(210)
+        self.click_back()
+        self.click_back()
+        self.click_back()
+        self.click_back()
+        # End
+        self.click_back()
+        self.click_yes()
+        self.play_steps()
+
+if __name__ == '__main__':
+    print 'Initializing tests...'
+    test = TestCanola()
+    test.begin_test()
+    print 'Test finished...'
+\end{verbatim}
+\end{scriptsize}
+  \caption{Programa para automatizar o teste com o Canola (Parte 2/2).}
+  \label{alg:automate-canola-2}
+\end{program}
