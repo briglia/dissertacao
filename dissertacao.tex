@@ -16,45 +16,206 @@
 \floatname{program}{Algoritmo}
 \renewcommand{\theprogram}{\thechapter.\arabic{program}}
 
+\newcommand{\tittese}{%
+	\textsf{\bfseries\LARGE Cache Comprimido Adaptativo \\
+	\vspace{0.8ex}
+	via SOM (Mapas Auto-organizáveis)}
+}
+
+\newcommand{\descrtese}{%
+\hspace{\stretch{1}}\parbox{0.51\textwidth}{%
+Dissertação apresentada ao Programa de Pós-Graduação em Informática do Departamento de Ciência 
+da Computação da Universidade Federal do Amazonas, como requisito para obtenção do 
+Título de Mestre em Informática. Área de concentração: Inteligência Artificial.
+}}
+
 \begin{document} 
 
+% -- Capa ---------------------------------------------------------------------
+
+{\singlespacing\centering
+\includegraphics[bb=0 0 646 638,height=2.5cm]{figs/ufam.png}
+
+\textsf{\large%
+Universidade Federal do Amazonas\\
+Instituto de Ciências Exatas\\
+Departamento de Ciência da Computação\\
+Programa de Pós-Graduação em Informática
+}
+
+\vspace*{\stretch{1}}
+
+\tittese
+
+\vspace*{\stretch{1}}
+
+{\large Anderson Farias Briglia}
+
+\vspace*{\stretch{1}}
+
+Manaus -- Amazonas
+
+2009
+
+}
+\cleardoublepage
+
+
+% -- Contracapa ---------------------------------------------------------------
+
+{\singlespacing\centering
+{\large Anderson Farias Briglia}
+
+\vspace*{\stretch{2}}
+
+\tittese
+
+\vspace*{\stretch{1}}
+
+\descrtese
+
+\vspace*{\stretch{1}}
+
+Orientador: Dr. Edward Moreno
+
+}
+\cleardoublepage
+
+
+% -- Banca Examinadora --------------------------------------------------------
+
+{\singlespacing\centering
+
+{\large Anderson Farias Briglia}
+
+\vspace*{\stretch{2}}
+
+\tittese
+
+\vspace*{\stretch{1}}
+
+\descrtese
+
+\vspace*{\stretch{1}}
+
+Banca Examinadora
+\vspace{1em}
+
+Prof. Edward David Moreno, Ph.D. -- Orientador \\
+Departamento de Ciência da Computação -- UFS/DCOMP
+\vspace{1em}
+
+Prof. Dr. Raimundo da Silva Barreto, Ph.D. -- Co-Orientador \\
+Departamento de Ciência da Computação -- UFAM/PPGI
+\vspace{1em}
+
+Prof. \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ \\
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+
+\vspace*{\stretch{0.5}}
+
+Manaus -- Amazonas
+
+2009
+
+}
+\cleardoublepage
+
+
+% -- Dedicatória --------------------------------------------------------------
+
+\vspace*{\stretch{2}}
+
+\hspace{\stretch{1}}\textit{Aos meus pais Francisco e Irene.}\hspace{1cm}
+
+\vspace*{\stretch{1}}
+
+\cleardoublepage
+
+% -- Agradecimentos -----------------------------------------------------------
+
+\chapter*{Agradecimentos}
 \thispagestyle{empty}
 
-\begin{center}
-\begin{Large}
-Anderson Farias Briglia \\
-Orientador: Dr. Edward David Moreno\\
-Co-orientador: Dr. Raimundo Barreto\\
-\end{Large}
-\end{center}
+{\setlength{\parindent}{0cm}
 
-\vspace {3.8 cm}
+Aos meus pais, por sempre acreditarem que o estudo é o melhor caminho para o crescimento.
 
-\begin{center}
-\begin{huge}
-Mapas Auto-organizáveis na Compressão de Memória Cache em Sistemas Embarcados
-\end{huge}
-\end{center}
+A minha esposa, Mariana Paraguassu, pela alegria, carinho e total apoio nas horas mais turbulentas durante o curso de mestrado.
 
-\vspace {3.8 cm}
+Aos meus orientadores, Edward Moreno e Raimundo Barreto, por me ajudarem a terminar esta dissertação.
 
-\begin{flushright}
-\begin{minipage}[t]{9 cm}
-Dissertação apresentada ao Departamento de Ciência da Computação do Instituto de Ciências Exatas da Universidade Federal do Amazonas, como requisito parcial para obtenção do título de Mestre em Informática.
-\end{minipage}
-\end{flushright}
+Ao meu ex-chefe e colega, Ilias Biris, pelo incentivo de ingressar no mestrado e orientação de como iniciar o trabalho.
 
-%\vspace {3.8 cm}
-\vspace {4 cm}
+Ao colega indiano Nitin Gupta, por ter disponibilizado o projeto de Cache Comprimido na Internet, o qual foi baseado esta dissertação.
 
-\begin{center}
-%\begin{Large}
-Manaus \\
-Setembro de 2009\\
-%\end{Large}
-\end{center}
+Aos meus colegas de trabalho Maurício Lin e Francisco Alecrim por me darem total apoio ao usar o trabalho deles afim de auxiliar o desenvolvimento desta dissertação.
 
-\newpage
+A todas as pessoas que me ajudaram de alguma forma na conclusão deste trabalho, muito obrigado.
+
+}
+
+\cleardoublepage
+
+
+% -- Epígrafe -----------------------------------------------------------------
+
+{\singlespacing
+\vspace*{\stretch{1}}
+
+\hspace{\stretch{1}}\parbox{0.5\textwidth}{%
+Só é útil o conhecimento que nos torna melhores.
+}
+\vspace{2em}
+
+\hspace{\stretch{1}}{\emph{Sócrates}}
+
+\vspace*{\stretch{1}}
+}
+\cleardoublepage
+
+
+% -- Resumo -------------------------------------------------------------------
+
+\chapter*{Resumo} 
+\thispagestyle{empty}
+
+{\onehalfspacing
+
+Sistemas embarcados geralmente possuem limitações de memória e processamento. Com o aumento do uso dos dispositivos móveis é mais comum encontrarmos sistemas operacionais embarcados, como o Linux, sendo usados para executar aplicações multimída, acessar a Internet, etc. Aumentar a memória de um dispositivo pode ser custoso e implementar mecanismos via software é uma saída mais barata.
+
+O Cache Comprimido é uma técnica que permite comprimir a memória das aplicações, possibilitando um aumento da memória disponível sem a necessidado de trocar o hardware. Porém, a falta de um Cache Comprimido Adaptativo faz com que essa solução tenha um escopo reduzido de benefícios.
+
+A ferramenta desenvolvida nesta dissertação mostra a possibilidade de utilizar a classificação de padrões de consumo de memória usando Mapas Auto-Organizáveis para implementar um Cache Comprimido Adaptativo, que consiga se adequar ao consumo da memória em tempo de execução.
+
+\vspace*{\stretch{1}} %texto se adapta para ocupar toda a página
+
+\noindent \textsf{Palavras-chave:} Linux, Gerenciamento de Memória, Classificação de Padrões e Redes Neurais, Cache Comprimido.
+
+} %onehalfspacing
+
+
+\cleardoublepage
+
+
+% -- Abstract -----------------------------------------------------------------
+
+\chapter*{Abstract}
+\thispagestyle{empty}
+
+{\onehalfspacing
+
+Embedded systems usually have memory and processing limitations. Due the growth of mobile devices usage, it is common to see embedded systems being used to run multimedia applications, access the Internet, etc. Increase the mobile memory amount could be expensive and implement a software solution is cheaper than latter one. 
+
+Compresse Cache is a solution which provides applications memory compression, improving a increasement in available memory without using hardware changes. But, the lack of an Adaptive Compressed Cache implementation makes this solution's scope smaller in terms of benefits.
+
+The developed tool presented in this dissertation shows the possibility of using memory consumption patterns through Self Organized Maps usage in Adaptative Compressed Cache. This approach makes Cache Compression behavior aligned with memory consumption in real time. 
+
+} %ondehalfspacing
+
+\cleardoublepage
+
 
 \tableofcontents
 \listoffigures
@@ -423,7 +584,7 @@ Os testes utilizando aplicações, consistem em:
 	\item Abrir um documento em formato PDF.
 \end{itemize}
 
-Para fazer a interação entre o \textit{X system} e as aplicações, foi utilizado uma ferramenta chamada Xautomation \cite{xauto07}. Com esta ferramenta foi possível controlar toda a movimentação do cursor na tela e os cliques. Enquanto as aplicações são executadas, outros programas ficam responsáveis de fazer a coleta das informações referentes ao consumo de memória, através de leituras das estatísticas exportadas pelo \texttt{procfs}. É com base nesses dados que alguns gráficos foram plotados e discutidos nas seções posteriores deste trabalho.\\
+Para fazer a interação entre o \textit{X system} e as aplicações, foi utilizado uma ferramenta chamada Xautomation \cite{xauto07}. Com esta ferramenta foi possível controlar toda a movimentação do cursor na tela e os cliques. Os programas usados para realizar os testes com interação automatizada estão presentes no Anexo - I. Enquanto as aplicações são executadas, outros programas ficam responsáveis de fazer a coleta das informações referentes ao consumo de memória, através de leituras das estatísticas exportadas pelo \texttt{procfs}. É com base nesses dados que alguns gráficos foram plotados e discutidos nas seções posteriores deste trabalho.\\
 
 Os testes utilizando \textit{benchmarks} sintéticos, foram executados usando um conjunto de utilitários chamado MemTest \cite{memtest06}. MemTest foi implementado para avaliar a estabilidade e consistência do sistema de gerência de memória do Linux \textit{kernel}. Do MemTest foi utilizado um utilitário chamado \texttt{fillmem}. Este utilitário faz várias alocações de memória, ou seja, de páginas de memória, disparando a necessidade de mandar algumas páginas para o ramzswap, ou seja, o \textit{swap} virtual.
 
@@ -1233,7 +1394,17 @@ Neste Capítulo são apresentados algumas ideias para trabalhos futuros envolvendo
 
 Neste trabalho de mestrado foi mostrada uma solução para otimização da memória livre no Linux através da compressão de dados. Os dados estão armazenados em páginas de memória e são comprimidos quando são enviados para uma área de swap virtual. Essa solução é chamada Cache Comprimido.\\
 
+Nesta dissertação foram realizados vários testes com o Cache Comprimido. Todos os testes foram realizados em uma máquina real, ou seja, sem virtualização ou simulação. Essa máquina compreende um dispositivo móvel com Linux embarcado, 128MB de RAM e um processador ARM1136 com 400Mhz de \textit{clock}. O dispositivo móvel possui tela sensível ao toque e um conjunto de aplicações pré-instaladas. Essa aplicações são, na sua maioria, para acessar os serviços da Internet e também prover acesso ao conteúdo multimídia instalado.\\
+
+Os testes com o Cache Comprimido visam identificar se é benéfico ou não o uso desse mecanismo no consumo de memória das aplicações e na performance das mesmas. Foi verificado que com o uso do Cache Comprimido, existe um aumento da memória livre disponível, resultando assim na possibilidade de abrir outras aplicações simultaneamente ou melhor a velocidade de respostas das aplicações que já estão em execução.\\
+
+Porém, também foi verificado que em situações que o consumo de memória é altíssimo, a memória alocada para o Cache Comprimido se torna prejudicial e o ideal seria que seu tamanho fosse diminuído, ou ainda que existisse um mecanismo para liberar a memória consumida pelo próprio Cache Comprimido.\\
+
 O Cache Comprimido é estático. Ou seja, seu tamanho não varia de acordo com o consumo de memória, ou ainda, de acordo com alguma heurística que busque a otimização da sua utilização. Foi mostrado que um Cache Comprimido de tamanho errado pode gerar mais situações de falta de memória, chamando um dispositivo do kernel chamado \textit{Out-of-memory killer} (OOM killer).\\
+
+Após os testes com o Cache Comprimido, redes neurais foram treinadas para gerar os SOMs e assim encontrar um padrão de consumo para cada aplicação testada: Browser, Canola (\textit{media player}) e PDF \textit{viewer}. Essas aplicações foram escolhidas pois representam ações reais que um usuário comum poderia executar nesse tipo de dispositivo móvel.\\
+
+Foi verificado um padrão de consumo para cada aplicação testada dentro de cada cenário: Alpha -- sem Cache Comprimido, Beta -- com Cache Comprimido e Gama -- Cache Comprimido e configuração extra para swap. Também mostramos que o consumo de cada aplicação é diferente dado um cenário.\\
 
 Como proposto nesta dissertação, a classificação dos padrões de consumo de memória utilizando redes neurais e Mapas Auto-organizáveis (ou SOMs), desenvolvida em \cite{Alecrim:07} e \cite{Mlin:06}, é bastante útil para determinar padrões de consumo de memória e pré-determinar um comportamento nesse consumo. Utilizando essa ferramenta, foram determinados perfis de consumo de memória afim de implementar a adaptatividade do CC. Essa adaptatividade consiste em implementar um programa que identifique o padrão de consumo e configure o CC de acordo com esse padrão, tudo feito em tempo de execução. Utilizando os mapas gerados pela análise de cada aplicação, pode-se avaliar em quais momentos é necessário que o tamanho do CC seja alterado afim de suprir a necessidade de memória livre do sistema.\\
  
@@ -1257,16 +1428,6 @@ Um outro trabalho futuro que visa a otimização do consumo da memória em Linux em
 
 O Cache Comprimido usado neste trabalho faz uso da memória RAM do Linux. Existem soluções mais especializadas que fazem uso de uma memória em cache (L1 ou L2), ou ainda um chip especial para armazenar dados comprimidos, sem necessariamente utilizar a memória RAM.\\
 
-%\chapter{Conclusão}
-%\section{Conclusão}
-%Armazenar páginas de memória em formato comprimido pode diminuir o número de acessos à dispositivos de bloco, como por exemplo, discos-rígidos, que são mais lentos que a memória RAM. Os benefícios de um sistema com Cache Comprimido são mais evidentes quando a diferença de velocidade de acesso entre a área de \textit{swap} e a memória RAM são maiores.\\
-
-%Utilizando uma área de \textit{swap} na memória mostrou-se uma boa técnica para armazenar mais páginas em menos espaço. Porém, os metadados continuam sendo um problema, assim como a localização de páginas comprimidas. Utilizando a abordagem de \textit{chunks}, a fragmentação é diminuída porém o custo de manter as estruturas para também é alto. Apesar disso, os \textit{overheads} impostos pelo uso do CC foram superados pelo benefícios que a compressão provê. Aplicações que possuem um \textit{working set} muito grande, podem ser beneficiadas com o uso da memória comprimida pois a memória é virtualmente incrementada, deixando mais espaço para as aplicações.\\
-
-%As Redes Neurais s\~{a}o uma t\'{e}cnica poderosa para a classificaç\~{a}o de padrões. Por\'{e}m, o grande desafio está na representaç\~{a}o dos dados do problema de uma forma que seja possível serem mapeados em um mapa topológico.\\
-
-%Uma classificaç\~{a}o dos padrões de consumo de memória das aplicações pode ser muito útil para melhorar a política de alocaç\~{a}o de memória encontrada atualmente no núcleo (ou \textit{kernel}) do Linux. Todavia, por precisar de um grande volume de dados de entrada, esta t\'{e}cnica \'{e} totalmente inviável para ser utilizada \textit{on-the-fly}, ou seja, durante a execuç\~{a}o do sistema. Como um trabalho futuro, o que pode ser realizado \'{e} a busca de um algoritmo que leve em conta mapas j\'{a} reconhecidos de alguma forma. Desta forma poderia ser possível predizer o comportamento do consumo de memória, e com isso utilizar diferentes políticas afim de garantir a integridade do sistema.\\
-
 \addcontentsline{toc}{section}{Referências}
 %\bibliographystyle{alpha}
 %\newpage
@@ -1277,5 +1438,6 @@ O Cache Comprimido usado neste trabalho faz uso da memória RAM do Linux. Existem
 \end{flushleft}
 
 \input{apendice}
+\input{anexo}
 
 \end{document}
