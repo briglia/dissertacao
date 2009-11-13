@@ -112,7 +112,7 @@ Departamento de Ciência da Computação -- UFAM/PPGI
 \vspace{1em}
 
 Prof. Carlos Alberto Estombelo, Ph.D. -- Banca \\
-IFAM - Manaus
+Instituto Federal do Amazonas - Manaus
 \vspace{1em}
 
 Prof. Gabriel Pereira da Silva, Ph.D. -- Banca \\
@@ -260,7 +260,7 @@ Um ponto motivacional deste trabalho é a realização de uma implementação do Cach
 
 Na versão do Cache Comprimido Adaptativo apresentada em \cite{ccache09}, não foi utilizada nenhuma técnica para estimar o comportamento do tamanho da memória comprimida. A escolha de uma heurística inadequada pode impactar no desempenho de todo o sistema, pois a relação memória comprimida X memória não-comprimida é muito importante quando se trata de adaptatividade. Estudos realizados anteriormente em \cite{castro03}, mostram que uma escolha errada no tamanho da memória comprimida pode criar \textit{overheads} desnecessários ao sistema, acarretando em perda de performance. Assim, a implementação de um esquema de adaptatividade utilizando SOM se torna um outro ponto de motivação do trabalho.\\
 
-Por último, e não menos importante, um outro ponto de destaque da motivação deste trabalho é que a pesquisa realizada utilizando classificação de padrões de consumo de memória e Cache Comprimido é pioneira nesta arquitetura. Testes com a última versão do Cache Comprimido foram feitos em versões do Linux para desktops e netbooks, mas ainda não foram realizadas medições em um ambiente de Linux embarcado para arquitetura ARM.
+Por último, e não menos importante, um outro ponto de destaque da motivação deste trabalho é que a pesquisa realizada utilizando classificação de padrões de consumo de memória e Cache Comprimido é pioneira nesta arquitetura. Testes com a última versão do Cache Comprimido foram feitos em versões do Linux para desktops e netbooks, mas ainda não foram realizadas medições em um ambiente de Linux embarcado para arquitetura ARM (\textit{Advance Risc Machine}).
 
 \section{Objetivos}
 \label{sec:objetivos}
@@ -273,7 +273,7 @@ A área para memória comprimida será adicionada ao sistema existente como mostrad
 
 \begin{figure}[ht]%htbp
 \centering
-\includegraphics[scale=0.85]{figs/cc-intro}
+\includegraphics[scale=0.85]{figs/hierarquia-memoria}
 \caption{Hierarquia de memória com cache comprimido}
 \label{fig:cc_intro}
 \end{figure}
@@ -552,7 +552,7 @@ A memória livre no segundo teste é maior pois mais páginas de memória são enviad
 \label{tab:browser-compcache}
 \end{table}
 
-A Tabela \ref{tab:browser-compcache}, mostra que quando o swappiness é maior, a quantidade de páginas armazenadas e comprimidas pelo CC também é maior. Assim, em situações de grande consumo de memória é bom ter um swappiness com um valor maior que zero pois mais páginas são comprimidas. Nos testes podemos ver que o tamanho original da memória ocupada pelas páginas, quando o swappiness é igual a 60, é de 10176 KB, após a compressão, somente 3337 KB é armazenado na área de swap virtual do CC, o ramzswap. Essa dado mostra que no teste foi possível armazenar as páginas de memória gastando-se $1/3$ da memória sem compressão. Mesmo quando o swappiness é zero, a taxa de compressão continua muito boa pois temos 2528 KB de páginas sem compressão e apenas 857 KB de memória após a compressão.\\
+A Tabela \ref{tab:browser-compcache}, mostra que quando o swappiness é maior, a quantidade de páginas armazenadas e comprimidas pelo CC também é maior. Assim, em situações de grande consumo de memória é bom ter um swappiness com um valor maior que zero pois mais páginas são comprimidas. Nos testes podemos ver que o tamanho original da memória ocupada pelas páginas, quando o swappiness é igual a 60, é de 10176 KB, após a compressão, somente 3337 KB é armazenado na área de swap virtual do CC, o ramzswap. Esse dado mostra que no teste foi possível armazenar as páginas de memória gastando-se $1/3$ da memória sem compressão. Mesmo quando o swappiness é zero, a taxa de compressão continua muito boa pois temos 2528 KB de páginas sem compressão e apenas 857 KB de memória após a compressão.\\
 
 
 \textbf{Testes com o Canola}\\
@@ -1247,7 +1247,7 @@ int main()
 
 Note que cada perfil adotado executa ações diferentes no sistema. Para o perfil \texttt{ALPHA}, o CC é desligado e a área de swap virtual é retirada através do comando do Linux, \texttt{swapoff}. Para o perfil \texttt{BETA}, o CC é ligado com tamanho aproximado de 5MB, nesse caso espera-se um consumo mediano da memória. Para o perfil \texttt{GAMA}, o CC é ligado com tamanho aproximado de 10MB e \texttt{swappiness} $= 60$, o que faz as páginas irem mais cedo para o swap virtual onde são comprimidas e armazenadas. Nesse perfil esperamos um consumo intenso da memória ou a possível falta da mesma.\\
 
-Cada perfil é encontrado usando a função apresentada no Algoritmo \ref{alg:calc_profile}. Esse algoritmo utiliza a rede neural treinada, as matrizes de frequência do BMU de cada aplicação (Browser, Canola e PDF viewer) e as coletas da memória livre durante 20 segundos (valor da variável MAX\_INPUTS). A cada 20 segundos, um vetor contendo 20 leituras da memória consumida é passado para a função apresentada no Algoritmo \ref{alg:calc_profile}. Essa função determina qual das 3 matrizes de frequência teve BMUs mais visitados. A matriz de frequência que teve mais BMUs visitados indica que aplicação está sendo executada naquele instante, ou ainda, qual é o perfil de consumo da memória.\\
+Cada perfil é encontrado usando a função apresentada no Algoritmo \ref{alg:calc_profile}. Esse algoritmo utiliza a rede neural treinada, as matrizes de frequência do BMU de cada aplicação (Browser, Canola e PDF viewer) e as coletas da memória livre durante 20 segundos (valor da variável MAX\_INPUTS). A cada 20 segundos, um vetor contendo 20 leituras da memória consumida é passado para a função apresentada no Algoritmo \ref{alg:calc_profile}. Essa função determina qual das 3 matrizes de frequência teve BMUs mais visitados. A matriz de frequência que teve mais BMUs visitados indica que aplicação está sendo executada naquele instante, ou ainda, qual é o perfil de consumo da memória. O tempo de 20 segundos foi escolhido com base na quantidade de dados necessária para se identificar qual perfil de consumo de memória. Utilizando um tempo de leitura menor que 20 segundos, ou 20 iterações, observou-se que a rede neural não conseguia identificar o comportamento tendencioso do consumo.\\
 
 O acerto em determinar o perfil de memória depende da quantidade de coletas que serão feitas antes da análise nas matrizes de frequências. Porém, coletar a memória leva, como dito anteriormente, \texttt{MAX\_INPUT} segundos, onde esse valor é o tamanho do vetor de coletas da memória livre. Assim, existe um ajuste para que o \textit{daemon} não leve muito tempo para determinar em que perfil está ou para qual perfil o consumo de memória está caminhando.\\
 
@@ -1258,7 +1258,7 @@ Ainda na Figura \ref{fig:mem-adapt}, pode-se notar que a memória livre (MemFree)
 \begin{figure}[htb]
  \centering
  \includegraphics[scale=0.6]{figs/mem-adapt.pdf}
- \caption{Memória livre (MemFree) ao longo do teste com o CC adaptativo.}
+ \caption{Memória livre (MemFree) ao longo do teste com o CC adaptativo. Os picos de memória livre indicam que quando o perfil de consumo de memória é trocado, existe uma liberação maior e um aumento da memória livre total.}
  \label{fig:mem-adapt}
 \end{figure}
 
